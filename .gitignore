@@ -1,0 +1,15 @@
+# ignore roblox files
+*.rbxlx
+*.rbxmx
+*.rbxm
+*.rbxl
+*.lock
+
+# ignore debug folder
+src/client
+
+
+
+
+
+
