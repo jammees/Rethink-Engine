@@ -69,6 +69,10 @@ local function applyDefaultSettings(properties)
     return array
 end
 
+local function verifyInCanvasValue(val)
+    return val or false
+end
+
 local rigid = {}
 
 
@@ -76,15 +80,17 @@ function rigid.makeRigid(idx, properties, keepInCanvas)
     assert(typeof(idx) ~= "number", "Expected number got: "..typeof(idx))
     applyDefaultSettings(properties)
 
-
-    properties.Object.Parent = canvas
+    local status = verifyInCanvasValue(keepInCanvas)
     local rigidBody = engine:Create("RigidBody", properties)
-    rigidBody:KeepInCanvas(keepInCanvas or true)
+    rigidBody:KeepInCanvas(status)
 
     savedRigidbodies[#savedRigidbodies + 1] = {
         id = idx,
         rigidBody = rigidBody,
     }
+
+    properties.Object.Parent = canvas
+    return rigidBody
 end
 
 function rigid.defineNew(idx, properties, keepInCanvas)
@@ -115,7 +121,7 @@ function rigid.defineNew(idx, properties, keepInCanvas)
 
     -- set it up
     properties.Object = newInstance
-    rigid.makeRigid(idx, properties, keepInCanvas)
+    return rigid.makeRigid(idx, properties, keepInCanvas)
 end
 
 
