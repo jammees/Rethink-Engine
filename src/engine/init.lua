@@ -5,12 +5,6 @@
     Version: 0.10 - EARLY ALPHA RELEASE
     Description: A simple yet useful 2D game engine for roblox
 
-    Available tools:
-    - controls
-    - spritem (sprite manager for not static elements)
-    - physics (Nature2D)
-    - scene (handler for Nature2D for switching levels/maps)
-
 ]] 
 
 -- get tools
@@ -114,7 +108,7 @@ end
 return {
     physics = engine,
     rigid = rigid,
-    level = require(tools.levelManager),
+    scene = require(tools.scene),
 
     gameWindow = gameFrame,
     gameRender = renderFrame,
