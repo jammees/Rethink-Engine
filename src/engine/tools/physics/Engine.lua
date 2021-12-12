@@ -86,7 +86,7 @@ end
 
 -- This method is used to start simulating rigid bodies and constraints.
 function Engine:Start()
-	if self.enabled then return end -- <-- makes sure that you cannot start the engine more than once :)
+	if self.enabled then return warn("Cannot start the engine more than once!") end -- <-- makes sure that you cannot start the engine more than once :)
 	if not self.canvas then throwException("error", "NO_CANVAS_FOUND") end
 	if #self.bodies == 0 then throwException("warn", "NO_RIGIDBODIES_FOUND") end
 	
