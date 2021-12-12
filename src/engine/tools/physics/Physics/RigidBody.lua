@@ -72,12 +72,21 @@ local function UpdateVertices(frame: GuiObject, vertices, engine)
 	end
 end
 
--- [CUSTOM] took me a day to find a post that tells me how to do this
+-- [CUSTOM FUNCTIONS]
+
+-- took me a day to find a post that tells me how to do this
 local function toVector2(udim2, parentAbsSize)
 	local x = udim2.X.Scale*parentAbsSize.X + udim2.X.Offset
 	local y = udim2.Y.Scale*parentAbsSize.Y + udim2.Y.Offset
 	return Vector2.new(x, y)
 end
+
+-- used by scene.flush() function
+function RigidBody.is()
+	return "rigidbody"
+end
+
+
 
 -- [PUBLIC]
 -- This method is used to initialize a new RigidBody.
