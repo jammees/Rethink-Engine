@@ -20,6 +20,7 @@ Planned features for the plugin:
 - Hitbox editor
 - Design editor
 - Trigger editor
+- UI editor
 
 # Contribution
 Feel free to open issues and pull request, to report a bug or simply want to request a feature!
