@@ -2,7 +2,7 @@
 
     RethinkEngine                                      @JamRBX
 
-    Version: 0.10 - EARLY ALPHA RELEASE
+    Version: 0.40 - EARLY ALPHA RELEASE
     Description: A simple yet useful 2D game engine for roblox
 
 ]] 
@@ -30,6 +30,7 @@ local gameFrame = nil
 local renderFrame = nil
 local canvas = nil
 local layer = nil
+local hud = nil
 
 --// modules
 local engine = nil
@@ -63,6 +64,15 @@ if not playerGui:FindFirstChild("gameFrame") then
     canvas.Transparency = 1
     canvas.Parent = renderFrame
 
+    -- setup a frame to hold ui elements
+    hud = Instance.new("Frame")
+    hud.Name = "ui"
+    hud.AnchorPoint = Vector2.new(0.5, 0.5)
+    hud.Position = UDim2.fromScale(0.5, 0.5)
+    hud.Size = UDim2.fromScale(1, 1)
+    hud.Transparency = 1
+    hud.Parent = renderFrame
+
     -- set up a frame for holding the parts that don't interact with Nature2D
     layer = Instance.new("Frame")
     layer.Name = "layer"
@@ -71,9 +81,6 @@ if not playerGui:FindFirstChild("gameFrame") then
     layer.Size = UDim2.fromScale(1, 1)
     layer.Transparency = 1
     layer.Parent = renderFrame
-else
-    gameFrame = playerGui:FindFirstChild("gameFrame")
-    canvas = gameFrame:WaitForChild("Canvas")
 end
 
 if not started then
@@ -103,6 +110,7 @@ if not started then
     globals.set("render", renderFrame)
     globals.set{"canvas", canvas}
     globals.set("layer", layer)
+    globals.set("hud", hud)
 end
 
 return {
@@ -114,4 +122,5 @@ return {
     gameRender = renderFrame,
     canvas = canvas,
     layer = layer,
+    hud = hud,
 }
