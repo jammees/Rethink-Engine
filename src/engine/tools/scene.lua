@@ -21,8 +21,6 @@
     scene.getCurrent() -> returns the current level's name
     scene.flush() -> deletes the level
     scene.deleteOnFlush(object) -> deletes that object when scene.flush() is called
-    
-    [DEPRECATED] scene.defineNew(level data)
 ]]
 
 local package = script.Parent.Parent
@@ -34,7 +32,6 @@ local rigid = require(tools.rigid)
 local globals = require(package.globals)
 
 -- get globals
-local canvas = globals.get("canvas")
 local layer = globals.get("layer")
 
 -- gui object reference table for later deleting them
