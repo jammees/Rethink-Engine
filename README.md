@@ -24,3 +24,7 @@ Planned features for the plugin:
 
 # Contribution
 Feel free to open issues and pull request, to report a bug or simply want to request a feature!
+However before that, please read CONTRIBUTION.md!
+
+
+<h1 align="center">test</h1>
