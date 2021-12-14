@@ -4,12 +4,3 @@
 *.rbxm
 *.rbxl
 *.lock
-
-# ignore debug folder
-src/client
-
-
-
-
-
-
