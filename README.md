@@ -1,15 +1,15 @@
-# Rethink Game Engine
- Rethink Engine is a unique 2D game engine created for roblox!
+<h1 align="center">Rethink Game Engine</h1>
+<h2 align="center"> Rethink Engine is a unique 2D game engine created for roblox!</h2>
  
 # Features:
-Currently published features, ready to use:
+### Currently published features, ready to use:
 - Physics (https://github.com/jaipack17/Nature2D)
 - Scene loader
 - Rigidbody wrapper for Physics
 - Preset setting on game startup (delete player, disable core guis)
 
 # Planned features:
-These are features that I'm planning to implement it to the engine, so developers got more tools to work with
+### Features waiting to be implemented
 - Networking
 - Animations ( Using spritesheet or single images )
 - Scriptable objects
@@ -24,7 +24,5 @@ Planned features for the plugin:
 
 # Contribution
 Feel free to open issues and pull request, to report a bug or simply want to request a feature!
-However before that, please read CONTRIBUTION.md!
+However before that, please read [CONTRIBUTION.md](https://github.com/jammees/Rethink-Game-Engine-2D/blob/main/CONTRIBUTION.md)!
 
-
-<h1 align="center">test</h1>
