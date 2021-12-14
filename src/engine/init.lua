@@ -5,14 +5,13 @@
     Version: 0.40 - EARLY ALPHA RELEASE
     Description: A simple yet useful 2D game engine for roblox
 
+    Recommened to use a ui library for creating uis for your game, such as Roact or Fusion
+
 ]] 
 
 -- get tools
 local started = false
 local compModules = {}
-local autoRunComp = {
-    "engineSettings",
-}
 
 local components = script:WaitForChild("components")
 
@@ -91,16 +90,9 @@ if not started then
     engine.canvas.frame = canvas
     --------------------------------------------------------------------------------------------
 
-    -- run all components if autorun enabled
-    for _, module in ipairs(components:GetChildren()) do
-        if not module:IsA("ModuleScript") then return end
-        for _, autoRun in ipairs(autoRunComp) do
-            if module.Name == autoRun then
-                compModules[#compModules + 1] = require(module)
-            end
-        end
-    end
-
+    -- run the engineSettings
+    require(components.engineSettings)
+    
     -- setup some tools
     rigid = require(tools.rigid)
     rigid:_setEngine(engine, canvas)
@@ -117,6 +109,7 @@ return {
     physics = engine,
     rigid = rigid,
     scene = require(tools.scene),
+    inputs = require(tools.inputs),
 
     gameWindow = gameFrame,
     gameRender = renderFrame,
