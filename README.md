@@ -1,6 +1,8 @@
 <h1 align="center">Rethink Game Engine</h1>
 <h2 align="center"> Rethink Engine is a unique 2D game engine created for roblox!</h2>
  
+Rethink is still in alpha! Expect a lot of API changes, new tools, and removal of tools!
+ 
 # Features:
 ### Currently published features, ready to use:
 - Physics (https://github.com/jaipack17/Nature2D)
