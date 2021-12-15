@@ -1,5 +1,5 @@
 <h1 align="center">Rethink Game Engine</h1>
-<h2 align="center"> Rethink Engine is a unique 2D game engine created for roblox!</h2>
+<h3 align="center"> Rethink Engine is a unique 2D game engine created for roblox!</h3>
  
 Rethink is still in alpha! Expect a lot of API changes, new tools, and removal of tools!
  
@@ -9,6 +9,7 @@ Rethink is still in alpha! Expect a lot of API changes, new tools, and removal o
 - Scene loader
 - Rigidbody wrapper for Physics
 - Preset setting on game startup (delete player, disable core guis)
+- Inputs
 
 # Planned features:
 ### Features waiting to be implemented
