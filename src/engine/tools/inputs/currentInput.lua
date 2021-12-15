@@ -4,7 +4,7 @@
 
     Useful to let the game respond to input type change.
     
-    Took inspiration from Sletinkick's version of PreferredInput
+    Took inspiration from Sleitnick's version of PreferredInput
 
 ]]
 
