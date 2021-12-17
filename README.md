@@ -1,3 +1,7 @@
+<p align="center">
+    <img widht=600 height=240 src=https://github.com/jammees/Rethink-Game-Engine-2D/blob/main/assets/rethinkFullLogoStroke.png>
+</p>
+
 ![](https://github.com/jammees/Rethink-Game-Engine-2D/blob/main/assets/rethinkFullLogoStroke.png)
 <h3 align="center"> Rethink Engine is a unique 2D game engine created for roblox!</h3>
  
