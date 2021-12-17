@@ -1,4 +1,4 @@
-![](assets/images/rethinkFullLogoStroke.png)
+![](https://github.com/jammees/Rethink-Game-Engine-2D/blob/main/assets/rethinkFullLogoStroke.png)
 <h3 align="center"> Rethink Engine is a unique 2D game engine created for roblox!</h3>
  
 Rethink is still in alpha! Expect a lot of API changes, new tools, and removal of tools!
