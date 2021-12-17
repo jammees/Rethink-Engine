@@ -1,4 +1,4 @@
-<h1 align="center">Rethink Game Engine</h1>
+![](assets/images/rethinkFullLogoStroke.png)
 <h3 align="center"> Rethink Engine is a unique 2D game engine created for roblox!</h3>
  
 Rethink is still in alpha! Expect a lot of API changes, new tools, and removal of tools!
