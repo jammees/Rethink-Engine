@@ -2,7 +2,7 @@
 
     RethinkEngine                                      @JamRBX
 
-    Version: 0.40 - EARLY ALPHA RELEASE
+    Version: 0.5.0 - ALPHA
     Description: A simple yet useful 2D game engine for roblox
 
     Recommened to use a ui library for creating uis for your game, such as Roact or Fusion
@@ -11,7 +11,6 @@
 
 -- get tools
 local started = false
-local compModules = {}
 
 local components = script:WaitForChild("components")
 
@@ -103,6 +102,7 @@ if not started then
     globals.set{"canvas", canvas}
     globals.set("layer", layer)
     globals.set("hud", hud)
+    globals.set("physics", engine)
 end
 
 return {
