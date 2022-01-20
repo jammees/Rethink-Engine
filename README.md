@@ -13,6 +13,7 @@
 - Template
 - Outline for images
 - Give rigidbodies tags, that can be fetched by using scene
+- And more!
 
 # Planned features:
 ### Features waiting to be implemented
