@@ -4,14 +4,14 @@ export type Quadtree<T> = {
 	position: Vector2,
 	size: Vector2,
 	capacity: number,
-	objects: {T},
+	objects: { T },
 	divided: boolean,
 }
 
 export type Canvas = {
 	topLeft: Vector2,
 	size: Vector2,
-	frame: Frame?
+	frame: Frame?,
 }
 
 export type Point = {
@@ -31,7 +31,7 @@ export type Point = {
 	render: boolean,
 	keepInCanvas: boolean,
 	color: Color3?,
-	radius: number
+	radius: number,
 }
 
 export type RigidBody = {
@@ -53,12 +53,13 @@ export type RigidBody = {
 	anchorPos: Vector2?,
 	Touched: any,
 	CanvasEdgeTouched: any,
-	States: { any }
+	States: { any },
+	CanRotate: boolean,
 }
 
 export type SegmentConfig = {
-	restLength: number?, 
-	render: boolean, 
+	restLength: number?,
+	render: boolean,
 	thickness: number?,
 	support: boolean,
 	TYPE: string,
@@ -73,22 +74,22 @@ export type EngineConfig = {
 }
 
 export type PointConfig = {
-	snap: boolean, 
-	selectable: boolean, 
+	snap: boolean,
+	selectable: boolean,
 	render: boolean,
-	keepInCanvas: boolean
+	keepInCanvas: boolean,
 }
 
 export type Collision = {
 	axis: Vector2,
 	depth: number,
 	edge: any,
-	vertex: Point
+	vertex: Point,
 }
 
 export type Range = {
 	position: Vector2,
-	size: Vector2
+	size: Vector2,
 }
 
 export type Properties = {
@@ -101,16 +102,56 @@ export type Properties = {
 	Type: string?,
 	Point1: Point?,
 	Point2: Point?,
-	Thickness: number?, 
+	Thickness: number?,
 	RestLength: number?,
 	SpringConstant: number?,
-	Object: GuiObject?, 
-	Collidable: boolean?, 
+	Object: GuiObject?,
+	Collidable: boolean?,
 	Anchored: boolean?,
 	LifeSpan: number?,
 	Gravity: Vector2?,
 	Friction: number?,
 	AirFriction: number?,
+	Structure: {}?,
+	Mass: number?,
+	CanTouch: boolean?,
+	CanRotate: boolean?,
+}
+
+export type Custom = {
+	Vertices: { any },
+	Edges: { any },
+}
+
+export type Plugins = {
+	Triangle: (a: Vector2, b: Vector2, c: Vector2) -> (),
+	Quad: (a: Vector2, b: Vector2, c: Vector2, d: Vector2) -> (),
+	MouseConstraint: (engine: { any }, range: number, rigidbodies: { any }) -> (),
+}
+
+export type DebugInfo = {
+	Objects: {
+		RigidBodies: number,
+		Constraints: number,
+		Points: number,
+	},
+	Running: boolean,
+	Physics: {
+		Gravity: Vector2,
+		Friction: number,
+		AirFriction: number,
+		CollisionMultiplier: number,
+		TimeSteps: number,
+		SimulationSpeed: number,
+		UsingQuadtrees: boolean,
+		FramerateIndependent: boolean,
+	},
+	Path: ScreenGui,
+	Canvas: {
+		Frame: GuiObject,
+		TopLeft: Vector2,
+		Size: Vector2,
+	},
 }
 
 return nil

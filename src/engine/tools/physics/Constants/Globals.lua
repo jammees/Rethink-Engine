@@ -2,7 +2,7 @@
 
 return {
 	engineInit = {
-		gravity = Vector2.new(0, .3),
+		gravity = Vector2.new(0, 0.3),
 		friction = 0.99,
 		airfriction = 0.99,
 		bounce = 0.8,
@@ -29,11 +29,14 @@ return {
 			"KeepInCanvas",
 			"Gravity",
 			"Friction",
-			"AirFriction"
+			"AirFriction",
+			"Structure",
+			"Mass",
+			"CanRotate",
 		},
 		must_have = {
-			"Object"
-		}
+			"Object",
+		},
 	},
 	constraint = {
 		color = Color3.new(1, 1, 1),
@@ -41,7 +44,7 @@ return {
 		types = {
 			"rope",
 			"spring",
-			"rod"
+			"rod",
 		},
 		props = {
 			"Type",
@@ -57,7 +60,7 @@ return {
 			"Type",
 			"Point1",
 			"Point2",
-		}
+		},
 	},
 	point = {
 		radius = 2.5,
@@ -69,14 +72,14 @@ return {
 			"Snap",
 			"KeepInCanvas",
 			"Radius",
-			"Color"
+			"Color",
 		},
 		must_have = {
-			"Position"
-		}
+			"Position",
+		},
 	},
 	offset = Vector2.new(0, 36),
-	
+
 	VALID_OBJECT_PROPS = {
 		"Position",
 		"Visible",
@@ -87,7 +90,7 @@ return {
 		"Type",
 		"Point1",
 		"Point2",
-		"Thickness", 
+		"Thickness",
 		"RestLength",
 		"SpringConstant",
 		"Object",
@@ -96,9 +99,12 @@ return {
 		"LifeSpan",
 		"Gravity",
 		"Friction",
-		"AirFriction"
+		"AirFriction",
+		"Structure",
+		"Mass",
+		"CanRotate",
 	},
-	
+
 	OBJECT_PROPS_TYPES = {
 		Position = "Vector2",
 		Visible = "boolean",
@@ -107,7 +113,7 @@ return {
 		Radius = "number",
 		Color = "Color3",
 		Type = "string",
-		Thickness = "number", 
+		Thickness = "number",
 		RestLength = "number",
 		SpringConstant = "number",
 		Object = "Instance",
@@ -117,5 +123,8 @@ return {
 		Gravity = "Vector2",
 		Friction = "number",
 		AirFriction = "number",
+		Structure = "table",
+		Mass = "number",
+		CanRotate = "boolean",
 	},
 }
