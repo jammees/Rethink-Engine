@@ -8,27 +8,24 @@
 ### Currently published features, ready to use:
 - Physics (https://github.com/jaipack17/Nature2D)
 - Scene loader
-- Rigidbody wrapper for Physics (Rigid)
-- Preset setting on game startup (delete player, disable core guis)
-- Inputs
+- Game settings (delete player, disable core guis)
+- Inputs (currentInput, gamepad)
 - Template
+- Outline for images
+- Give rigidbodies tags, that can be fetched by using scene
 
 # Planned features:
 ### Features waiting to be implemented
 - Networking
 - Animations ( Using spritesheet or single images )
-- Scriptable objects
 - Raycasts
+- Camera system
+- Interactibles
 
-# Plugin
-There is also a plugin to help you use Rethink.
-Planned features for the plugin:
-- Hitbox editor
-- Design editor
-- Trigger editor
-- UI editor
+### Plugin
+There is also a plugin that will come near the future! (Possibly after the engine is pretty well finished)
 
 # Contribution
 Feel free to open issues and pull request, to report a bug or simply want to request a feature!
-However before that, please read [CONTRIBUTION.md](https://github.com/jammees/Rethink-Game-Engine-2D/blob/main/CONTRIBUTION.md)!
+However before that, please read [CONTRIBUTION](https://github.com/jammees/Rethink-Game-Engine-2D/blob/main/CONTRIBUTION.md)!
 
