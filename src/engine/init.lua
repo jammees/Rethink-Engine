@@ -4,14 +4,13 @@
     @JamRBX (twitter)
 
     Credit goes to:
-    @AstrealDev (devforum)
-    @jaipack17 (devforum)
+    @AstrealDev (devforum) for Roactive
+    @jaipack17 (devforum) for Nature2D
 
 ]]
 
 -- get tools
 local isRunning = false
-local requiredTools = {}
 local components = script:WaitForChild("Components")
 local tools = script:WaitForChild("Tools")
 
@@ -28,6 +27,7 @@ local nature2D = require(tools.Physics)
 if not isRunning then
 	isRunning = true
 	settings()
+
 	-- initiate Nature2D
 	engine = nature2D.init(exposedStates:Get().gameFrame)
 	engine.canvas.frame = exposedStates:Get().canvas
@@ -36,16 +36,6 @@ if not isRunning then
 		Engine = engine,
 		Ui = exposedStates:Get(),
 	})
-
-	--[[
-	for _, tool in ipairs(tools:GetChildren()) do
-		local required = require(tool)
-		pcall(function()
-			required._setReq(exposedStates:Get(), engine)
-		end)
-		requiredTools[tool.Name] = required
-	end
-	-]]
 end
 
 return readOnly({
