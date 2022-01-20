@@ -4,3 +4,6 @@
 *.rbxm
 *.rbxl
 *.lock
+
+# ignore docs, it's a mess
+docs
