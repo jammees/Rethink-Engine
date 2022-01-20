@@ -10,12 +10,6 @@
     scene:Add(object: Instance, tags: table) -> deletes that object when scene.flush() is called and gives the object tags based on the "tags" table
 	scene:GetRigidbodyFromTag(tag: string) -> returns a rigidbody that matches with that tag
 	scene:GetRigidbodiesFromTag(tag: string) -> returns all of the rigidbody classes that got tagged
-	
-	V: 0.5.4
-
-	Cleaned up Scene
-	Uses now metatables
-	Uses now Luau for typechecking
 
 ]]
 
@@ -145,7 +139,6 @@ function scene:Add(object: Instance, tags: { [number]: string } | string)
 	addToHolder(object)
 end
 
--- V: 0.5.2 - Cleaned up this function
 function scene:Flush()
 	if #sceneObjects == 0 then
 		return warn("[Scene] Cannot flush empty scene!")
@@ -170,7 +163,6 @@ function scene:GetObjects(): { [number]: any }
 	return sceneObjects
 end
 
--- V: 0.5.3
 -- These 2 functions are very similar, however the key difference between these is that one returns a table and the other one returns a table full of tables.
 
 function scene:GetRigidbodyFromTag(tag: string): { [number]: Instance | { [any]: any } }
