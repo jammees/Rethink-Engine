@@ -7,3 +7,6 @@
 
 # ignore docs, it's a mess
 docs
+src/plugin
+TODO.txt
+mkdocs.yml
