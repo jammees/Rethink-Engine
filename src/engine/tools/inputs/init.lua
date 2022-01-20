@@ -5,15 +5,16 @@
 ]]
 
 return {
-    current = require(script.currentInput),
+	Current = require(script.Current),
+	Gamepad = require(script.Gamepad),
 
-    --[[
+	--[[
 
         [Not Implemented Yet]
         
-        gamepad = require(script.gamepad),
-        keybaord = require(script.keybaord),
-        mouse = require(script.mouse),
-        touch = require(script.touch),
+        Gamepad = require(script.Gamepad),
+        Keybaord = require(script.Keybaord),
+        Mouse = require(script.Mouse),
+        Touch = require(script.Touch),
     ]]
 }
