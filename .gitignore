@@ -5,8 +5,8 @@
 *.rbxl
 *.lock
 
-# ignore docs, it's a mess
-docs
+# ignore some folders
 src/plugin
+docs
 TODO.txt
 mkdocs.yml
