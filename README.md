@@ -1,5 +1,5 @@
 <p align="center">
-    <img widht=600 height=240 src=https://github.com/jammees/Rethink-Game-Engine-2D/blob/main/assets/darkLogo.png>
+    <img widht=600 height=240 src=https://github.com/jammees/Rethink-Game-Engine-2D/blob/main/assets/Full.png>
 </p>
 <h3 align="center"> Rethink is a unique 2D game engine created for roblox!</h3>
 <h2 align="center">Rethink is still in alpha! Expect a lot of API changes, new tools, and removal of tools!</h2>
