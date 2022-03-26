@@ -6,15 +6,19 @@ local Globals = require(script.Parent.Parent.Constants.Globals)
 local Types = require(script.Parent.Parent.Types)
 local throwTypeError = require(script.Parent.Parent.Debugging.TypeErrors)
 local throwException = require(script.Parent.Parent.Debugging.Exceptions)
+local Janitor = require(script.Parent.Parent.Utilities.Janitor)
+local HttpService = game:GetService("HttpService")
 
 local Point = {}
 Point.__index = Point
 
 -- This method is used to initialize a new Point.
-function Point.new(pos: Vector2, canvas: Types.Canvas, engine: Types.EngineConfig, config: Types.PointConfig)
+function Point.new(pos: Vector2, canvas: Types.Canvas, engine: Types.EngineConfig, config: Types.PointConfig, parent)
 	local self = setmetatable({
-		Parent = nil,
+		id = HttpService:GenerateGUID(false),
+		Parent = parent,
 		frame = nil,
+		_janitor = nil,
 		engine = engine,
 		canvas = canvas,
 		oldPos = pos,
@@ -37,6 +41,13 @@ function Point.new(pos: Vector2, canvas: Types.Canvas, engine: Types.EngineConfi
 			force = Vector2.new()
 		}
 	}, Point)
+
+	local janitor = Janitor.new()
+	janitor:Add(self, "Destroy")
+	if self.Parent then
+		janitor:Add(self.Parent, "Destroy")
+	end
+	self._janitor = janitor
 
 	return self
 end
@@ -120,35 +131,35 @@ end
 function Point:KeepInCanvas()
 	-- vx = velocity.X
 	-- vy = velocity.Y
-	local vx = self.pos.x - self.oldPos.x
-	local vy = self.pos.y - self.oldPos.y
+	local vx = self.pos.X - self.oldPos.X
+	local vy = self.pos.Y - self.oldPos.Y
 
-	local width = self.canvas.size.x
-	local height = self.canvas.size.y
+	local boundX = self.canvas.topLeft.X + self.canvas.size.X
+	local boundY = self.canvas.topLeft.Y + self.canvas.size.Y
 
 	local collision = false
 	local edge
 
-	if self.pos.y > height then
-		self.pos = Vector2.new(self.pos.x, height)
-		self.oldPos = Vector2.new(self.oldPos.x, self.pos.y + vy * self.bounce)
+	if self.pos.Y > boundY then
+		self.pos = Vector2.new(self.pos.X, boundY)
+		self.oldPos = Vector2.new(self.oldPos.X, self.pos.Y + vy * self.bounce)
 		collision = true
 		edge = "Bottom"
-	elseif self.pos.y < self.canvas.topLeft.y then
-		self.pos = Vector2.new(self.pos.x, self.canvas.topLeft.y)
-		self.oldPos = Vector2.new(self.oldPos.x, self.pos.y - vy * self.bounce)
+	elseif self.pos.Y < self.canvas.topLeft.Y then
+		self.pos = Vector2.new(self.pos.X, self.canvas.topLeft.Y)
+		self.oldPos = Vector2.new(self.oldPos.X, self.pos.Y - vy * self.bounce)
 		collision = true
 		edge = "Top"
 	end
 
-	if self.pos.x < self.canvas.topLeft.x then
-		self.pos = Vector2.new(self.canvas.topLeft.x, self.pos.y)
-		self.oldPos = Vector2.new(self.pos.x + vx * self.bounce, self.oldPos.y)
+	if self.pos.X < self.canvas.topLeft.X then
+		self.pos = Vector2.new(self.canvas.topLeft.X, self.pos.Y)
+		self.oldPos = Vector2.new(self.pos.X + vx * self.bounce, self.oldPos.Y)
 		collision = true
 		edge = "Left"
-	elseif self.pos.x > width then
-		self.pos = Vector2.new(width, self.pos.y)
-		self.oldPos = Vector2.new(self.pos.x - vx * self.bounce, self.oldPos.y)
+	elseif self.pos.X > boundX then
+		self.pos = Vector2.new(boundX, self.pos.Y)
+		self.oldPos = Vector2.new(self.pos.X - vx * self.bounce, self.oldPos.Y)
 		collision = true
 		edge = "Right"
 	end
@@ -158,8 +169,11 @@ function Point:KeepInCanvas()
 	-- Fire CanvasEdgeTouched event
 	if body and body.Parent then
 		if collision then
+			local prev = body.Parent.Collisions.CanvasEdge
 			body.Parent.Collisions.CanvasEdge = true
-			body.Parent.CanvasEdgeTouched:Fire(edge)
+			if prev == false then
+				body.Parent.CanvasEdgeTouched:Fire(edge)
+			end
 		else
 			body.Parent.Collisions.CanvasEdge = false
 		end
@@ -188,6 +202,8 @@ function Point:Render()
 			border.Parent = p
 
 			self.frame = p
+
+			self._janitor:Add(self.frame, "Destroy")
 		end
 
 		-- Update the point's instance
@@ -196,6 +212,20 @@ function Point:Render()
 
 	if self.keepInCanvas then
 		self:KeepInCanvas()
+	end
+end
+
+function Point:Destroy()
+	self._janitor:Cleanup()
+
+	if not self.Parent then
+		for i, c in ipairs(self.engine.points) do
+			if c.id == self.id then
+				table.remove(self.engine.points, i)
+				self.engine.ObjectRemoved:Fire(self)
+				break
+			end
+		end
 	end
 end
 

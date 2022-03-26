@@ -1,6 +1,5 @@
 -- The Engine or the core of the library handles all the RigidBodies, constraints and points.
 -- It's responsible for the simulation of these elements and handling all tasks related to the library.
--- 463!!!!
 
 -- Services and utilities
 local RigidBody = require(script.Parent.Physics.RigidBody)
@@ -9,6 +8,7 @@ local Constraint = require(script.Parent.Physics.Constraint)
 local Globals = require(script.Parent.Constants.Globals)
 local Signal = require(script.Parent.Utilities.Signal)
 local Quadtree = require(script.Parent.Utilities.Quadtree)
+local Janitor = require(script.Parent.Utilities.Janitor)
 local Types = require(script.Parent.Types)
 local throwException = require(script.Parent.Debugging.Exceptions)
 local throwTypeError = require(script.Parent.Debugging.TypeErrors)
@@ -19,7 +19,7 @@ Engine.__index = Engine
 
 -- [PRIVATE]
 -- Search and return an element from a table using a lambda function
-local function SearchTable(t: { any }, a: any, lambda: (a: any, b: any) -> boolean): any
+local function SearchTable(t: { any }, a: any,  lambda: (a: any, b: any) -> boolean) : any
 	for _, v in ipairs(t) do
 		if lambda(a, v) then
 			return v
@@ -30,24 +30,13 @@ local function SearchTable(t: { any }, a: any, lambda: (a: any, b: any) -> boole
 end
 
 -- This method is responsible for separating two rigidbodies if they collide with each other.
-local function CollisionResponse(
-	body: Types.RigidBody,
-	other: Types.RigidBody,
-	isColliding: boolean,
-	Collision: Types.Collision,
-	dt: number,
-	oldCollidingWith
-)
-	if not isColliding then
-		return
-	end
+local function CollisionResponse(body: Types.RigidBody, other: Types.RigidBody, isColliding: boolean, Collision: Types.Collision, dt: number, oldCollidingWith, iteration: number)
+	if not isColliding then return end
 
 	-- Fire the touched event
-	if body.Touched._handlerListHead and body.Touched._handlerListHead.Connected then
-		if not SearchTable(oldCollidingWith, other, function(a, b)
-			return a.id == b.id
-		end) then
-			body.Touched:Fire(other.id)
+	if iteration == 1 and body.Touched._handlerListHead and body.Touched._handlerListHead.Connected then
+		if not SearchTable(oldCollidingWith, other, function(a, b) return a.id == b.id end) then
+			body.Touched:Fire(other.id, Collision)
 		end
 	end
 
@@ -59,13 +48,13 @@ local function CollisionResponse(
 	-- Calculate a t alpha value
 	local t
 	if math.abs(p1.pos.X - p2.pos.X) > math.abs(p1.pos.Y - p2.pos.Y) then
-		t = (Collision.vertex.pos.X - penetration.X - p1.pos.X) / (p2.pos.X - p1.pos.X)
+		t = (Collision.vertex.pos.X - penetration.X - p1.pos.X)/(p2.pos.X - p1.pos.X)
 	else
-		t = (Collision.vertex.pos.Y - penetration.Y - p1.pos.Y) / (p2.pos.Y - p1.pos.Y)
+		t = (Collision.vertex.pos.Y - penetration.Y - p1.pos.Y)/(p2.pos.Y - p1.pos.Y)
 	end
 
 	-- Create a lambda
-	local factor: number = 1 / (t ^ 2 + (1 - t) ^ 2)
+	local factor: number = 1 / (t^2 + (1 - t)^2)
 
 	-- Calculate masses
 	local bodyMass = Collision.edge.Parent.mass
@@ -89,27 +78,24 @@ local function CollisionResponse(
 end
 
 -- [PUBLIC]
--- A getter function for rigidbody's .IsRigidody() function
-function Engine.getIsRigidbody(metatable)
-	return RigidBody.IsRigidbody(metatable)
-end
-
 -- This method is used to initialize basic configurations of the engine and allocate memory for future tasks.
 function Engine.init(screengui: Instance)
 	if not typeof(screengui) == "Instance" or not screengui:IsA("Instance") then
 		error("Invalid Argument #1. 'screengui' must be a ScreenGui.", 2)
 	end
 
-	return setmetatable({
+	local self = setmetatable({
 		bodies = {},
 		constraints = {},
 		points = {},
 		connection = nil,
+		_janitor = nil,
 		gravity = Globals.engineInit.gravity,
 		friction = Globals.engineInit.friction,
 		airfriction = Globals.engineInit.airfriction,
 		bounce = Globals.engineInit.bounce,
 		timeSteps = Globals.engineInit.timeSteps,
+		mass = Globals.universalMass,
 		path = screengui,
 		speed = Globals.speed,
 		quadtrees = false,
@@ -117,7 +103,11 @@ function Engine.init(screengui: Instance)
 		canvas = {
 			frame = nil,
 			topLeft = Globals.engineInit.canvas.topLeft,
-			size = Globals.engineInit.canvas.size,
+			size = Globals.engineInit.canvas.size
+		},
+		iterations = {
+			constraint = 1,
+			collision = 1,
 		},
 		Started = Signal.new(),
 		Stopped = Signal.new(),
@@ -125,28 +115,32 @@ function Engine.init(screengui: Instance)
 		ObjectRemoved = Signal.new(),
 		Updated = Signal.new(),
 	}, Engine)
+
+	local janitor = Janitor.new()
+	janitor:Add(self.Started, "Destroy")
+	janitor:Add(self.Stopped, "Destroy")
+	janitor:Add(self.ObjectAdded, "Destroy")
+	janitor:Add(self.ObjectRemoved, "Destroy")
+	janitor:Add(self.Updated, "Destroy")
+
+	self._janitor = janitor
+
+	return self
 end
 
 -- This method is used to start simulating rigid bodies and constraints.
 function Engine:Start()
-	if not self.canvas then
-		throwException("error", "NO_CANVAS_FOUND")
-	end
-	if #self.bodies == 0 then
-		throwException("warn", "NO_RIGIDBODIES_FOUND")
-	end
-	if self.connection then
-		throwException("warn", "ALREADY_STARTED")
-		return
-	end
+	if not self.canvas then throwException("error", "NO_CANVAS_FOUND") end
+	if #self.bodies == 0 then throwException("warn", "NO_RIGIDBODIES_FOUND") end
+	if self.connection then throwException("warn", "ALREADY_STARTED") return end
 
 	-- Fire Engine.Started event
 	self.Started:Fire()
 
 	-- Create a RenderStepped connection
-	local connection
+	local connection;
 	connection = RunService.RenderStepped:Connect(function(dt)
-		local tree
+		local tree;
 
 		-- Create a quadtree and insert bodies if neccesary
 		if self.quadtrees then
@@ -156,6 +150,10 @@ function Engine:Start()
 				if body.collidable then
 					tree:Insert(body)
 				end
+			end
+		else
+			if self.iterations.collision ~= 1 then
+				self.iterations.collision = 1
 			end
 		end
 
@@ -167,6 +165,7 @@ function Engine:Start()
 			local CollidingWith = {}
 
 			if body.collidable then
+
 				local filtered = self.bodies
 
 				if self.quadtrees then
@@ -175,7 +174,7 @@ function Engine:Start()
 
 					local range = {
 						position = body.center - Vector2.new(side * 1.5, side * 1.5),
-						size = Vector2.new(side * 3, side * 3),
+						size = Vector2.new(side * 3, side * 3)
 					}
 
 					filtered = tree:Search(range, {})
@@ -186,11 +185,23 @@ function Engine:Start()
 				-- Process collision response
 				for _, other in ipairs(filtered) do
 					if body.id ~= other.id and other.collidable and not table.find(body.filtered, other.id) then
-						local result = body:DetectCollision(other)
-						local isColliding = result[1]
-						local Collision = result[2]
+						local result, isColliding, Collision, didCollide
 
-						if isColliding then
+						for i = 1, self.iterations.collision do
+							result = body:DetectCollision(other)
+							isColliding = result[1]
+							Collision = result[2]
+
+							if i == 1 and not isColliding then
+								break
+							end
+
+							didCollide = true
+
+							CollisionResponse(body, other, isColliding, Collision, dt, OldCollidingWith, i)
+						end
+
+						if didCollide then
 							body.Collisions.Body = true
 							other.Collisions.Body = true
 							table.insert(CollidingWith, other)
@@ -199,19 +210,12 @@ function Engine:Start()
 							other.Collisions.Body = false
 
 							-- Fire TouchEnded event
-
 							if body.TouchEnded._handlerListHead and body.TouchEnded._handlerListHead.Connected then
-								if
-									SearchTable(OldCollidingWith, other, function(a, b)
-										return a.id == b.id
-									end)
-								then
+								if SearchTable(OldCollidingWith, other, function (a, b) return a.id == b.id end) then
 									body.TouchEnded:Fire(other.id)
 								end
 							end
 						end
-
-						CollisionResponse(body, other, isColliding, Collision, dt, OldCollidingWith)
 					end
 				end
 			end
@@ -226,7 +230,14 @@ function Engine:Start()
 		-- Render all custom constraints
 		if #self.constraints > 0 then
 			for _, constraint in ipairs(self.constraints) do
-				constraint:Constrain()
+				if constraint._TYPE ~= "SPRING" then
+					for i = 1, self.iterations.constraint do
+						constraint:Constrain()
+					end
+				else
+					constraint:Constrain()
+				end
+
 				constraint:Render()
 			end
 		end
@@ -243,6 +254,7 @@ function Engine:Start()
 	end)
 
 	self.connection = connection
+	self._janitor:Add(self.connection, "Disconnect", "MainConnection")
 end
 
 -- This method is used to stop simulating rigid bodies and constraints.
@@ -251,12 +263,7 @@ function Engine:Stop()
 	-- Disconnect all connections
 	if self.connection then
 		self.Stopped:Fire()
-		self.connection:Disconnect()
-		self.Started:Destroy()
-		self.Stopped:Destroy()
-		self.ObjectAdded:Destroy()
-		self.ObjectRemoved:Destroy()
-		self.Updated:Destroy()
+		self._janitor:Remove("MainConnection")
 		self.connection = nil
 	end
 end
@@ -274,13 +281,14 @@ function Engine:Create(object: string, properties: Types.Properties)
 
 	-- Validate property table
 	for prop, value in pairs(properties) do
-		if
-			not table.find(Globals.VALID_OBJECT_PROPS, prop)
-			or not table.find(Globals[string.lower(object)].props, prop)
-		then
-			--throwException("error", "INVALID_PROPERTY")
-			-- better error for easier debug
-			error(("[Nature2D] Invalid property %d (%s) found in properties table!"):format(prop, typeof(prop)), 2)
+		if not table.find(Globals.VALID_OBJECT_PROPS, prop) then
+			throwException("error", "INVALID_PROPERTY", string.format("%q is not a valid property!", prop))
+			return
+		end
+
+		if not table.find(Globals[string.lower(object)].props, prop) then
+			throwException("error", "INVALID_PROPERTY", string.format("%q is not a valid property for a %s!", prop, object))
+			return
 		end
 
 		if Globals.OBJECT_PROPS_TYPES[prop] and typeof(value) ~= Globals.OBJECT_PROPS_TYPES[prop] then
@@ -306,7 +314,8 @@ function Engine:Create(object: string, properties: Types.Properties)
 			end
 
 			if throw then
-				throwException("error", "MUST_HAVE_PROPERTY")
+				throwException("error", "MUST_HAVE_PROPERTY", string.format("You must specify the %q property for a %s!", prop, object))
+				return
 			end
 		end
 	end
@@ -319,16 +328,12 @@ function Engine:Create(object: string, properties: Types.Properties)
 			snap = properties.Snap,
 			selectable = false,
 			render = properties.Visible,
-			keepInCanvas = properties.KeepInCanvas or true,
-		})
+			keepInCanvas = properties.KeepInCanvas or true
+		}, nil)
 
 		-- Apply properties
-		if properties.Radius then
-			newPoint:SetRadius(properties.Radius)
-		end
-		if properties.Color then
-			newPoint:Stroke(properties.Color)
-		end
+		if properties.Radius then newPoint:SetRadius(properties.Radius)	end
+		if properties.Color then newPoint:Stroke(properties.Color) end
 
 		table.insert(self.points, newPoint)
 		newObject = newPoint
@@ -342,6 +347,7 @@ function Engine:Create(object: string, properties: Types.Properties)
 		if properties.RestLength and properties.RestLength <= 0 then
 			throwException("error", "INVALID_CONSTRAINT_LENGTH")
 		end
+
 		if properties.Thickness and properties.Thickness <= 0 then
 			throwException("error", "INVALID_CONSTRAINT_THICKNESS")
 		end
@@ -355,16 +361,12 @@ function Engine:Create(object: string, properties: Types.Properties)
 				render = properties.Visible,
 				thickness = properties.Thickness,
 				support = false,
-				TYPE = string.upper(properties.Type),
+				TYPE = string.upper(properties.Type)
 			}, self)
 
 			-- Apply properties
-			if properties.SpringConstant then
-				newConstraint:SetSpringConstant(properties.SpringConstant)
-			end
-			if properties.Color then
-				newConstraint:Stroke(properties.Color)
-			end
+			if properties.SpringConstant then newConstraint:SetSpringConstant(properties.SpringConstant) end
+			if properties.Color then newConstraint:Stroke(properties.Color) end
 
 			table.insert(self.constraints, newConstraint)
 			newObject = newConstraint
@@ -384,7 +386,7 @@ function Engine:Create(object: string, properties: Types.Properties)
 
 		local custom: Types.Custom = {
 			Vertices = {},
-			Edges = {},
+			Edges = {}
 		}
 
 		if properties.Structure then
@@ -401,26 +403,18 @@ function Engine:Create(object: string, properties: Types.Properties)
 					error("[Nature2D]: Invalid point positions for custom RigidBody structure.", 2)
 				end
 
-				if support and typeof(support) ~= "boolean" then
-					error("[Nature2D]: 'support' must be a boolean or nil")
-				end
-				if a == b then
-					error("[Nature2D]: A constraint cannot have the same points.", 2)
-				end
+				if support and typeof(support) ~= "boolean" then error("[Nature2D]: 'support' must be a boolean or nil") end
+				if a == b then error("[Nature2D]: A constraint cannot have the same points.", 2) end
 
-				local PointA = SearchTable(custom.Vertices, a, function(i, v)
-					return i == v.pos
-				end)
-				local PointB = SearchTable(custom.Vertices, b, function(i, v)
-					return i == v.pos
-				end)
+				local PointA = SearchTable(custom.Vertices, a, function(i, v) return i == v.pos end)
+				local PointB = SearchTable(custom.Vertices, b, function(i, v) return i == v.pos end)
 
 				if not PointA then
 					PointA = Point.new(a, self.canvas, self, {
 						snap = properties.Anchored,
 						selectable = false,
 						render = false,
-						keepInCanvas = properties.KeepInCanvas or true,
+						keepInCanvas = properties.KeepInCanvas or true
 					})
 					table.insert(custom.Vertices, PointA)
 				end
@@ -430,7 +424,7 @@ function Engine:Create(object: string, properties: Types.Properties)
 						snap = properties.Anchored,
 						selectable = false,
 						render = false,
-						keepInCanvas = properties.KeepInCanvas or true,
+						keepInCanvas = properties.KeepInCanvas or true
 					})
 					table.insert(custom.Vertices, PointB)
 				end
@@ -439,7 +433,7 @@ function Engine:Create(object: string, properties: Types.Properties)
 					render = support and false or true,
 					thickness = 2,
 					support = support,
-					TYPE = "ROD",
+					TYPE = "ROD"
 				}, self)
 
 				table.insert(custom.Edges, edge)
@@ -448,41 +442,27 @@ function Engine:Create(object: string, properties: Types.Properties)
 
 		local newBody = RigidBody.new(
 			obj,
-			properties.Mass or Globals.universalMass,
-			properties.Collidable or true,
-			properties.Anchored or false,
+			properties.Mass or self.mass,
+			properties.Collidable,
+			properties.Anchored,
 			self,
 			properties.Structure and custom or nil,
-			properties.Structure,
-			properties.CanRotate or true
+			properties.Structure
 		)
 
 		--Apply properties
-		if properties.LifeSpan then
-			newBody:SetLifeSpan(properties.LifeSpan)
-		end
-		if properties.KeepInCanvas then
-			newBody:KeepInCanvas(properties.KeepInCanvas)
-		end
-		--if properties.CanRotate then
-		--	newBody:CanRotate(properties.CanRotate or true)
-		--end
-		if properties.Collidable then
-			newBody:CanCollide(properties.Collidable)
-		end
-		if properties.Gravity then
-			newBody:SetGravity(properties.Gravity)
-		end
-		if properties.Friction then
-			newBody:SetFriction(properties.Friction)
-		end
-		if properties.AirFriction then
-			newBody:SetAirFriction(properties.AirFriction)
-		end
+		if properties.LifeSpan then newBody:SetLifeSpan(properties.LifeSpan) end
+		if typeof(properties.KeepInCanvas) == "boolean" then newBody:KeepInCanvas(properties.KeepInCanvas) end
+		if properties.Gravity then newBody:SetGravity(properties.Gravity) end
+		if properties.Friction then newBody:SetFriction(properties.Friction) end
+		if properties.AirFriction then newBody:SetAirFriction(properties.AirFriction) end
+		if typeof(properties.CanRotate) == "boolean" and not properties.Structure then newBody:CanRotate(properties.CanRotate) end
 
 		table.insert(self.bodies, newBody)
 		newObject = newBody
 	end
+
+	self._janitor:Add(newObject, "Destroy")
 
 	self.ObjectAdded:Fire(newObject)
 	return newObject
@@ -546,6 +526,9 @@ function Engine:SetPhysicalProperty(property: string, value: Vector2 | number)
 		elseif string.lower(property) == "airfriction" then
 			throwTypeError("value", value, 2, "number")
 			object.airfriction = math.clamp(1 - value, 0, 1)
+		elseif string.lower(property) == "universalmass" then
+			throwTypeError("value", value, 2, "number")
+			object.mass = math.max(0, value)
 		end
 	end
 
@@ -592,14 +575,14 @@ function Engine:GetConstraintById(id: string)
 	return
 end
 
-function Engine:GetDebugInfo(): Types.DebugInfo
+function Engine:GetDebugInfo() : Types.DebugInfo
 	return {
 		Objects = {
 			RigidBodies = #self.bodies,
 			Constraints = #self.constraints,
-			Points = #self.points,
+			Points = #self.points
 		},
-		Running = not not self.connection,
+		Running = not not (self.connection),
 		Physics = {
 			Gravity = self.gravity,
 			Friction = 1 - self.friction,
@@ -608,14 +591,14 @@ function Engine:GetDebugInfo(): Types.DebugInfo
 			TimeSteps = self.timeSteps,
 			SimulationSpeed = self.speed,
 			UsingQuadtrees = self.quadtrees,
-			FramerateIndependent = self.independent,
+			FramerateIndependent = self.independent
 		},
 		Path = self.path,
 		Canvas = {
 			Frame = self.canvas.frame,
 			TopLeft = self.canvas.topLeft,
-			Size = self.canvas.size,
-		},
+			Size = self.canvas.size
+		}
 	}
 end
 
@@ -631,6 +614,26 @@ end
 function Engine:FrameRateIndependent(independent: boolean)
 	throwTypeError("independent", independent, 1, "boolean")
 	self.independent = independent
+end
+
+function Engine:SetConstraintIterations(iterations: number)
+	throwTypeError("iterations", iterations, 1, "number")
+	self.iterations.constraint = math.floor(math.clamp(iterations, 1, 10))
+end
+
+function Engine:SetCollisionIterations(iterations: number)
+	throwTypeError("iterations", iterations, 1, "number")
+
+	if self.quadtrees then
+		self.iterations.collision = math.floor(math.clamp(iterations, 1, 10))
+	else
+		throwException("warn", "CANNOT_SET_COLLISION_ITERATIONS")
+	end
+end
+
+function Engine:Destroy()
+	self._janitor:Destroy()
+	setmetatable(self, nil)
 end
 
 return Engine

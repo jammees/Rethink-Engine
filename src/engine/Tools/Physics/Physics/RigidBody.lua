@@ -6,6 +6,7 @@ local Constraint = require(script.Parent.Constraint)
 local Globals = require(script.Parent.Parent.Constants.Globals)
 local Signal = require(script.Parent.Parent.Utilities.Signal)
 local Types = require(script.Parent.Parent.Types)
+local Janitor = require(script.Parent.Parent.Utilities.Janitor)
 local throwTypeError = require(script.Parent.Parent.Debugging.TypeErrors)
 local throwException = require(script.Parent.Parent.Debugging.Exceptions)
 local restrict = require(script.Parent.Parent.Debugging.Restrict)
@@ -90,6 +91,16 @@ local function CalculateSize(vertices)
 	return Vector2.new(maxX - minX, maxY - minY)
 end
 
+local function CreateRotationCache(cache, center, vertices)
+	table.clear(cache)
+
+	for _, p in ipairs(vertices) do
+		local r = (p.pos - center).Magnitude
+		local theta = math.atan2(p.pos.Y - center.Y, p.pos.X - center.X)
+		table.insert(cache, { r, theta })
+	end
+end
+
 -- This method is used to update the positions of each point of a rigidbody to the corners of a UI element.
 local function UpdateVertices(frame: GuiObject, vertices, engine)
 	local corners = GetCorners(frame, engine)
@@ -99,11 +110,8 @@ local function UpdateVertices(frame: GuiObject, vertices, engine)
 end
 
 -- [PUBLIC]
-function RigidBody.IsRigidbody(metatable)
-	if typeof(metatable) == "table" and getmetatable(metatable) == RigidBody then
-		return true
-	end
-	return false
+function RigidBody.is(metatable)
+	return typeof(metatable) == "table" and getmetatable(metatable) == RigidBody
 end
 
 -- This method is used to initialize a new RigidBody.
@@ -114,8 +122,7 @@ function RigidBody.new(
 	anchored: boolean?,
 	engine,
 	custom: Types.Custom?,
-	structure,
-	canRotate: boolean?
+	structure
 )
 	local isCustom = false
 
@@ -130,7 +137,7 @@ function RigidBody.new(
 	local pointConfig = {
 		snap = anchored,
 		selectable = false,
-		render = true,
+		render = false,
 		keepInCanvas = true,
 	}
 
@@ -180,6 +187,7 @@ function RigidBody.new(
 	local self = setmetatable({
 		id = HttpService:GenerateGUID(false),
 		custom = isCustom,
+		_janitor = Janitor.new(),
 		structure = structure,
 		vertices = vertices,
 		edges = edges,
@@ -188,6 +196,8 @@ function RigidBody.new(
 		anchored = anchored,
 		mass = m,
 		collidable = collidable,
+		canRotate = true,
+		rotationCache = {},
 		center = isCustom and CalculateCenter(vertices) or frame.AbsolutePosition + frame.AbsoluteSize / 2,
 		engine = engine,
 		spawnedAt = os.clock(),
@@ -197,9 +207,6 @@ function RigidBody.new(
 		Touched = nil,
 		TouchEnded = nil,
 		CanvasEdgeTouched = nil,
-
-		CanRotate = canRotate,
-
 		Collisions = {
 			Body = false,
 			CanvasEdge = false,
@@ -209,13 +216,13 @@ function RigidBody.new(
 		filtered = {},
 	}, RigidBody)
 
-	warn(self.CanRotate)
-
 	-- Apply offsets if ScreenGui's IgnoreGuiInset property is set to true
 	-- Offset = Vector2.new(0, 36)
 	if engine.path and engine.path.IgnoreGuiInset then
 		self.anchorPos = self.anchorPos and self.anchorPos + Globals.offset or nil
-		self.center += Globals.offset
+		if not self.custom then
+			self.center += Globals.offset
+		end
 	end
 
 	-- Create events
@@ -225,9 +232,22 @@ function RigidBody.new(
 
 	-- Set parents of points and constraints
 	for _, edge in ipairs(edges) do
-		edge.point1.Parent = edge
-		edge.point2.Parent = edge
 		edge.Parent = self
+		edge._janitor:Add(edge.Parent, "Destroy")
+		self._janitor:Add(edge, "Destroy")
+	end
+
+	self._janitor:Add(self.Touched, "Destroy")
+	self._janitor:Add(self.TouchEnded, "Destroy")
+	self._janitor:Add(self.CanvasEdgeTouched, "Destroy")
+
+	if not self.custom then
+		self._janitor:Add(self.frame, "Destroy")
+		self._janitor:LinkToInstance(self.frame)
+	end
+
+	if #self.rotationCache < 1 then
+		CreateRotationCache(self.rotationCache, self.center, self.vertices)
 	end
 
 	return self
@@ -343,20 +363,24 @@ end
 function RigidBody:Update(dt: number)
 	self.center = CalculateCenter(self.vertices)
 
-	-- Update vertices and edges together
-	for i = 1, #self.vertices + #self.edges do
-		local edge = i > #self.vertices
+	for i, vertex in ipairs(self.vertices) do
+		if not self.canRotate then
+			local info = self.rotationCache[i]
+			local r = info[1]
+			local t = info[2]
 
-		if edge then
-			local e = self.edges[(#self.vertices + #self.edges) + 1 - i]
-			e:Constrain()
-			if self.custom then
-				e:Render()
-			end
-		else
-			self.vertices[i]:Update(dt)
-			self.vertices[i]:Render()
+			vertex:ApplyForce((self.center + Vector2.new(math.cos(t), math.sin(t)) * r) - vertex.pos)
 		end
+
+		vertex:Update(dt)
+		vertex:Render()
+	end
+
+	for _, edge in ipairs(self.edges) do
+		for i = 1, self.engine.iterations.constraint do
+			edge:Constrain()
+		end
+		edge:Render()
 	end
 end
 
@@ -378,13 +402,15 @@ function RigidBody:Render()
 		local anchorPos = self.anchorPos
 			- CalculateOffset(self.anchorPos, self.frame.AnchorPoint, self.frame.AbsoluteSize)
 		self.frame.Position = UDim2.fromOffset(anchorPos.X, anchorPos.Y)
-		self:Rotate(self.anchorRotation)
+		if self.canRotate then
+			self:Rotate(self.anchorRotation)
+		end
 	else
 		local center = self.center - CalculateOffset(self.center, self.frame.AnchorPoint, self.frame.AbsoluteSize)
-		self.frame.Position = UDim2.new(0, center.X, 0, center.Y)
+		local dif: Vector2 = self.vertices[2].pos - self.vertices[1].pos
 
-		if not self.canRotate then
-			local dif: Vector2 = self.vertices[2].pos - self.vertices[1].pos
+		self.frame.Position = UDim2.new(0, center.X, 0, center.Y)
+		if self.canRotate then
 			self.frame.Rotation = math.deg(math.atan2(dif.Y, dif.X))
 		end
 	end
@@ -432,38 +458,24 @@ end
 -- This method is used to destroy the RigidBody.
 -- The body's UI element is destroyed, its connections are disconnected and the body is removed from the engine.
 function RigidBody:Destroy(keepFrame: boolean)
+	self._janitor:Cleanup()
+
 	for i, body in ipairs(self.engine.bodies) do
 		if self.id == body.id then
-			-- Destroy events
-			-- Destroy the frame and remove the RigidBody from the Engine.
-			self.Touched:Destroy()
-			self.CanvasEdgeTouched:Destroy()
-			self.TouchEnded:Destroy()
-			self.Touched = nil
-			self.CanvasEdgeTouched = nil
-			self.TouchEnded = nil
-			if not self.custom and not keepFrame then
-				self.frame:Destroy()
-			end
-			if self.custom and not keepFrame then
-				for _, c in ipairs(self.edges) do
-					if c.frame then
-						c.frame:Destroy()
-					end
-				end
-			end
 			table.clear(self.Collisions.Other)
 			table.remove(self.engine.bodies, i)
 			self.engine.ObjectRemoved:Fire(self)
 			break
 		end
 	end
+
+	table.clear(self.vertices)
+	table.clear(self.edges)
 end
 
 -- This method is used to rotate the RigidBody's UI element.
 -- After rotation the positions of its points and constraints are automatically updated.
 function RigidBody:Rotate(newRotation: number)
-	restrict(self.custom)
 	throwTypeError("newRotation", newRotation, 1, "number")
 
 	-- Update anchorRotation if the body is anchored
@@ -473,20 +485,42 @@ function RigidBody:Rotate(newRotation: number)
 
 	-- Apply rotation and update positions
 	-- Update the RigidBody's points
-	local oldRotation = self.frame.Rotation
-	local offset = CalculateOffset(self.anchorPos, self.frame.AnchorPoint, self.frame.AbsoluteSize)
-	local position = self.anchorPos - offset
-	self.frame.Position = self.anchored and UDim2.fromOffset(position.X, position.Y)
-		or UDim2.fromOffset(self.center.x, self.center.y)
-	self.frame.Rotation = newRotation
-	UpdateVertices(self.frame, self.vertices, self.engine)
+	local oldRotation
+
+	if self.custom then
+		-- Will need to cache oldRotation somewhere.
+		-- This method will result in weird oldRotations for some custom rigid bodies.
+		local dif = self.vertices[2].pos - self.vertices[1].pos
+		oldRotation = math.deg(math.atan2(dif.Y, dif.X))
+
+		local tempRotationCache = {}
+		CreateRotationCache(tempRotationCache, self.center, self.vertices)
+
+		for i, info in ipairs(tempRotationCache) do
+			local r = info[1]
+			local t = info[2] + math.rad(newRotation)
+			local v = self.vertices[i]
+
+			v.pos = self.center + Vector2.new(math.cos(t), math.sin(t)) * r
+			v.oldPos = v.pos
+		end
+	else
+		oldRotation = self.frame.Rotation
+
+		local offset = CalculateOffset(self.anchorPos, self.frame.AnchorPoint, self.frame.AbsoluteSize)
+		local position = self.anchorPos - offset
+		self.frame.Position = self.anchored and UDim2.fromOffset(position.X, position.Y)
+			or UDim2.fromOffset(self.center.x, self.center.y)
+		self.frame.Rotation = newRotation
+		UpdateVertices(self.frame, self.vertices, self.engine)
+	end
 
 	return oldRotation, newRotation
 end
 
 -- This method is used to set a new position of the RigidBody's UI element.
 function RigidBody:SetPosition(PositionX: number, PositionY: number)
-	restrict(self.custom)
+	--restrict(self.custom)
 	throwTypeError("PositionX", PositionX, 1, "number")
 	throwTypeError("PositionY", PositionY, 2, "number")
 
@@ -495,11 +529,30 @@ function RigidBody:SetPosition(PositionX: number, PositionY: number)
 		self.anchorPos = Vector2.new(PositionX, PositionY)
 	end
 
+	local oldPosition
+
 	-- Update position
 	-- Update the RigidBody's points
-	local oldPosition = self.frame.Position
-	self.frame.Position = UDim2.fromOffset(PositionX, PositionY)
-	UpdateVertices(self.frame, self.vertices, self.engine)
+	if self.custom then
+		oldPosition = UDim2.fromOffset(self.center.X, self.center.Y)
+		local tempRotationCache = {}
+		CreateRotationCache(tempRotationCache, self.center, self.vertices)
+
+		self.center = Vector2.new(PositionX, PositionY)
+
+		for i, info in ipairs(tempRotationCache) do
+			local r = info[1]
+			local t = info[2]
+			local v = self.vertices[i]
+
+			v.pos = self.center + Vector2.new(math.cos(t), math.sin(t)) * r
+			v.oldPos = v.pos
+		end
+	else
+		oldPosition = self.frame.Position
+		self.frame.Position = UDim2.fromOffset(PositionX, PositionY)
+		UpdateVertices(self.frame, self.vertices, self.engine)
+	end
 
 	return oldPosition, UDim2.fromOffset(PositionX, PositionY)
 end
@@ -516,7 +569,32 @@ function RigidBody:SetSize(SizeX: number, SizeY: number)
 	self.frame.Size = UDim2.fromOffset(SizeX, SizeY)
 	UpdateVertices(self.frame, self.vertices, self.engine)
 
+	for _, edge in ipairs(self.edges) do
+		edge.restLength = (edge.point2.pos - edge.point1.pos).Magnitude
+	end
+
 	return oldSize, UDim2.fromOffset(SizeX, SizeY)
+end
+
+function RigidBody:SetScale(scale: number)
+	if not self.custom then
+		return
+	end
+	throwTypeError("scale", scale, 1, "number")
+	scale = math.max(0.00001, scale)
+
+	for i, info in ipairs(self.rotationCache) do
+		local r = info[1] * scale
+		local t = info[2]
+		local v = self.vertices[i]
+
+		v.pos = self.center + Vector2.new(math.cos(t), math.sin(t)) * r
+		v.oldPos = v.pos
+	end
+
+	for _, edge in ipairs(self.edges) do
+		edge.restLength = (edge.point2.pos - edge.point1.pos).Magnitude
+	end
 end
 
 -- This method is used to anchor the RigidBody.
@@ -550,6 +628,14 @@ end
 function RigidBody:CanCollide(collidable: boolean)
 	throwTypeError("collidable", collidable, 1, "boolean")
 	self.collidable = collidable
+end
+
+function RigidBody:CanRotate(canRotate: boolean)
+	restrict(self.custom)
+	throwTypeError("canRotate", canRotate, 1, "boolean")
+	self.canRotate = canRotate
+
+	CreateRotationCache(self.rotationCache, self.center, self.vertices)
 end
 
 -- The RigidBody's UI Element can be fetched using this method.
@@ -735,14 +821,6 @@ function RigidBody:SetMaxForce(maxForce: number)
 	for _, p in ipairs(self.vertices) do
 		p:SetMaxForce(maxForce)
 	end
-end
-
--- Determines if the frame can rotate. Useful for making playable characters.
-function RigidBody:CanRotate(value: boolean)
-	if typeof(value) ~= "string" then
-		error(("Expected string, got; %s"):format(typeof(value)), 2)
-	end
-	self.canRotate = value
 end
 
 return RigidBody
