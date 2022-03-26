@@ -1,5 +1,6 @@
 local StarterGui = game:GetService("StarterGui")
 local player = game:GetService("Players").LocalPlayer
+local camera = workspace.CurrentCamera
 
 -- edit this:
 local data = {
@@ -12,6 +13,8 @@ local data = {
 
 	["disablePlayerMovement"] = true,
 	["deleteCharacter"] = true,
+
+	["scriptableCamera"] = true,
 }
 
 local function run()
@@ -37,6 +40,11 @@ local function run()
 						connection:Disconnect()
 					end)
 				end
+			elseif enumName == "scriptableCamera" and value == true then
+				repeat
+					wait()
+					camera.CameraType = Enum.CameraType.Scriptable
+				until camera.CameraType == Enum.CameraType.Scriptable
 			end
 		end
 	end
