@@ -1,19 +1,11 @@
-local CollectionService = game:GetService("CollectionService")
-
-local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
-local localPlayer = Players.LocalPlayer
-local canvas = localPlayer
-	:WaitForChild("PlayerGui")
-	:WaitForChild("gameFrame")
-	:WaitForChild("renderFrame")
-	:WaitForChild("canvas")
-
-local rethink = require(game:GetService("ReplicatedStorage").RethinkEngine)
-local physics = rethink.Physics
-local scene = rethink.Scene
+local RethinkEngine = require(game:GetService("ReplicatedStorage").RethinkEngine)
+local Physics = RethinkEngine.Physics
+local Scene = RethinkEngine.Scene
+local Camera = RethinkEngine.Camera
+local canvas = RethinkEngine.Ui.Canvas
 
 local playerObject = Instance.new("Frame")
 playerObject.Name = "Player Hitbox"
@@ -23,9 +15,10 @@ playerObject.Position = UDim2.fromOffset(500, 150)
 playerObject.Size = UDim2.fromOffset(75, 75)
 playerObject.Parent = canvas
 
-local player = physics:Create("RigidBody", {
+local player = Physics:Create("RigidBody", {
 	Object = playerObject,
 	CanRotate = false,
+	Collidable = true,
 })
 
 local lastInputs = {}
@@ -47,6 +40,9 @@ UserInputService.InputBegan:Connect(function(key)
 	end
 end)
 
+--Scene:Add(playerObject, "Player", false)
+--Camera:BindTo(playerObject)
+
 spawn(function()
 	RunService.Heartbeat:Connect(function()
 		-- get kets pressed
@@ -59,7 +55,7 @@ spawn(function()
 			checkKey(key, Enum.KeyCode.Right, 1)
 
 			if key == Enum.KeyCode.M then
-				local box1 = scene:GetRigidbodyFromTag("box1")
+				local box1 = Scene:GetRigidbodyFromTag("box1")
 				box1.Object.BackgroundColor3 = Color3.fromRGB(
 					math.random(0, 255),
 					math.random(0, 255),
@@ -75,14 +71,29 @@ spawn(function()
 	end)
 end)
 
-local coin = scene:GetRigidbodyFromTag("coin")
+local function setupCoin()
+	local coins = Scene:GetRigidbodiesFromTag("coin")
 
-warn(coin.Object:GetFullName())
-warn(coin.Class:GetFrame():GetFullName())
+	for _, coin in ipairs(coins) do
+		warn(coin.Object:GetFullName())
+		warn(coin.Class:GetFrame():GetFullName())
 
-coin.Class.Touched:Connect(function(touchingId)
-	if touchingId == player:GetId() then
-		coin.Class:Destroy()
-		print("Coin collected!")
+		coin.Class.Touched:Connect(function(touchingId)
+			print(touchingId)
+			if touchingId == player:GetId() then
+				coin.Class:Destroy()
+				print("Coin collected!")
+			end
+		end)
 	end
-end)
+end
+
+if Scene:GetName() ~= nil then
+	print("A")
+	setupCoin()
+else
+	Scene.Events.loadFinished:Connect(function()
+		print("B")
+		setupCoin()
+	end)
+end
