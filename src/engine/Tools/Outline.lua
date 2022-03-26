@@ -131,7 +131,7 @@ end
 local outline = {}
 outline.__index = outline
 
-function outline.new(config)
+function outline.New(config)
 	local self = {}
 	---
 	self.obj = config.Object or error("Must-have property: Object is missing!")
@@ -169,11 +169,11 @@ function outline.new(config)
 	return setmetatable(self, outline)
 end
 
-function outline:rebake()
+function outline:Rebake()
 	rerenderize(self)
 end
 
-function outline:destroy()
+function outline:Destroy()
 	self.obj = nil
 	self.outlineParent = nil
 	self.data = nil
