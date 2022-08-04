@@ -2,11 +2,7 @@ name: CI
 
 on:
   push:
-    branches:
-      -main
   pull_request:
-    branhces:
-      -main
 
 jobs:
   lint:
@@ -16,22 +12,27 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - uses: Roblox/setup-foreman@v1
+    - uses: rojo-rbx/setup-foreman@v1
       name: Download Foreman
       with:
           version: "^1.0.0"
-          token: $(( SECRETS.GITHUB_TOKEN ))
+          token: $(( secrets.GITHUB_TOKEN ))
 
-    - name: Lint
-      run: 
-        selene ./src
+    - name: Run Selene on src
+      run: selene src
 
   style:
     name: Style
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: JohnnyMorganz/stylua-action@1.0.0
+    - name: Checkout code
+      uses: actions/checkout@v3
+   
+    - uses: rojo-rbx/setup-foreman@v1
+      name: Download Foreman
       with:
-        token: $(( SECRETS.GITHUB_TOKEN ))
-        args: --check .
+          version: "^1.0.0"
+          token: $(( secrets.GITHUB_TOKEN ))
+
+    - name: Run StyLua on src
+      run: stylua src --check
