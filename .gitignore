@@ -6,7 +6,12 @@
 *.lock
 
 # ignore some folders
-src/plugin
 docs
-TODO.txt
 mkdocs.yml
+
+# temporary (still not ready to release 0.6.0)
+# camera not working :(
+src
+unit
+manual
+benchmark
