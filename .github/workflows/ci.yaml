@@ -12,10 +12,9 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - uses: rojo-rbx/setup-foreman@v1
+    - uses: rojo-rbx/setup-foreman@1.0.0
       name: Download Foreman
       with:
-          version: "^1.0.0"
           token: $(( secrets.GITHUB_TOKEN ))
 
     - name: Run Selene on src
@@ -28,10 +27,9 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
    
-    - uses: rojo-rbx/setup-foreman@v1
+    - uses: rojo-rbx/setup-foreman@1.0.0
       name: Download Foreman
       with:
-          version: "^1.0.0"
           token: $(( secrets.GITHUB_TOKEN ))
 
     - name: Run StyLua on src
