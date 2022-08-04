@@ -16,8 +16,8 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Download Foreman
-      uses: Roblox/setup-foreman@v1
+    - uses: Roblox/setup-foreman@v1
+      name: Download Foreman
       with:
         version: "^1.0.0"
         token: $((SECRETS.GITHUB_TOKEN))
