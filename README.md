@@ -10,6 +10,8 @@
     Rethink is still in ALPHA! This is not the final product.
 </div>
 
+<h4><strong>Note:</strong> This README is not accurate to the current product! This version refers to v. 0.6.0 that will come out soon.</h4>
+
 <h3>Interested in using it? Here's some if it's features</h3>
 
 - Physics
