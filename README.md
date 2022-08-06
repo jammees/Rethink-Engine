@@ -1,32 +1,50 @@
 <p align="center">
-    <img widht=600 height=240 src=https://github.com/jammees/Rethink-Game-Engine-2D/blob/main/assets/Full.png>
+    <img widht=400 height=100 src="./assets/dark.png#gh-light-mode-only">
 </p>
-<h3 align="center"> Rethink is a unique 2D game engine created for roblox!</h3>
-<h2 align="center">Rethink is still in alpha! Expect a lot of API changes, new tools, and removal of tools!</h2>
- 
-# Features:
-### Currently published features, ready to use:
-- Physics (https://github.com/jaipack17/Nature2D)
-- Scene loader
-- Game settings (delete player, disable core guis)
-- Inputs (currentInput, gamepad)
-- Template
-- Outline for images
-- Give rigidbodies tags, that can be fetched by using scene
+<p align="center">
+    <img widht=400 height=100 src="./assets/light.png#gh-dark-mode-only">
+</p>
+
+<div align="center">
+    <h3><strong>Versatile, easy-to-use 2D game engine</strong>.</h3>
+    Rethink is still in ALPHA! This is not the final product.
+</div>
+
+<h3>Interested in using it? Here's some if it's features</h3>
+
+- Physics
+- Manage scenes with Scene
+- Disable 3D rendering (kind of)
+- Use Camera to explore your whole scene
+- Raycasts
+- Animations with spritesheets or a group of images
+- Collisions
+- Custom scene API with symbols
 - And more!
 
-# Planned features:
-### Features waiting to be implemented
-- Networking
-- Animations ( Using spritesheet or single images )
-- Raycasts
-- Camera system
-- Interactibles
+<h3>Features that I plan to implement</h3>
 
-### Plugin
-There is also a plugin that will come near the future! (Possibly after the engine is pretty well finished)
+- Expand on the Input library
+- Support Fusion and Roact for Scene
 
-# Contribution
-Feel free to open issues and pull request, to report a bug or simply want to request a feature!
-However before that, please read [CONTRIBUTION](https://github.com/jammees/Rethink-Game-Engine-2D/blob/main/CONTRIBUTION.md)!
+<h3>RePreview</h3>
 
+RePreview is a small plugin that will help you create scenes from code by visualizing it in a widget.
+
+Download not available at the moment.
+
+Progress: 90% done
+
+<h3>Credits</h3>
+
+- jaipack17 for Nature2D / GuiCollisionService / RayCast2
+- evaera for Promise
+- Validark and HowManySmall for Janitor
+- Brownsage for helping with Camera
+
+<h3>Contribution</h3>
+
+Feel free to open up issues and pull requests! All contributions are welcome.
+But before you would like to open up an issue or a pull request you should read the [CONTRIBUTION.md](https://github.com/jammees/Rethink-Game-Engine-2D/blob/main/CONTRIBUTION.md) file.
+
+The project is not dead, it's just that I'm working on this alone and I'm not a guy known for working fast.
