@@ -1,24 +1,26 @@
 {
-  "name": "Rethink Game Engine",
+  "name": "Rethink Engine",
   "tree": {
     "$className": "DataModel",
 
     "ReplicatedStorage": {
       "RethinkEngine": {
-        "$path": "src/engine"
-      }
-    },
-
-    "ServerScriptService": {
-      "LevelEditorPlugin": {
-        "$path": "src/plugin"
+        "$path": "src"
+      },
+      "Benchmarks": {
+        "$path": "benchmark"
+      },
+      "Unit tests": {
+        "$path": "unit"
       }
     },
 
     "StarterPlayer": {
       "StarterPlayerScripts": {
-        "Test": {
-          "$path": "src/test"
+        "$className": "StarterPlayerScripts",
+
+        "Manual tests": {
+          "$path": "manual"
         }
       }
     },
