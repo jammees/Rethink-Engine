@@ -55,7 +55,7 @@ return {
 			My_group = {
 				[Property] = {
 					[Rigidbody] = {
-						Anchored = true,
+						Anchored = false,
 					},
 				},
 
