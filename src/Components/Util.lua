@@ -169,7 +169,7 @@ function Util.AddTagToInstance(object: Instance, tags: { [number]: string } | st
 end
 
 local ignoredPorperties = {
-	"Class",
+	Class = 0,
 }
 
 -- Compiler
@@ -179,13 +179,14 @@ function Util.Compiler.ApplyProperties(object: Instance, properties: { [string]:
 			if typeof(i) == "table" and i.Type == "Symbol" and i.Name == "Tag" then
 				Util.AddTagToInstance(object, v)
 			else
-				if not table.find(ignoredPorperties, i) then
+				if ignoredPorperties[i] == nil and i.Type == nil then --> ignore Class and Symbols
 					object[i] = v
 				end
 			end
 		end):catch(function()
 			if RunService:IsStudio() and LOG_ON_PROPERTY_FAIL then
 				print(i, "(", v, ") is not a valid property of; ", object, "stacktrace:\n", debug.traceback())
+				--warn(consoleMessage)
 			end
 		end)
 	end
