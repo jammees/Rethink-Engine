@@ -5,6 +5,7 @@ local sceneFolder = script.Parent:WaitForChild("Scenes")
 
 local SceneController = {}
 SceneController.Scene = Scene
+SceneController.SceneFolder = sceneFolder
 
 function SceneController:LoadScene(name: string)
 	for _, v in ipairs(sceneFolder:GetChildren()) do
