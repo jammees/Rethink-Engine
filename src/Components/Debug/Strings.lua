@@ -7,7 +7,7 @@ return {
     |  _ <  __/ |_| | | | | | | |   <   | |___| | | | (_| | | | | |  __/
     |_| \_\___|\__|_| |_|_|_| |_|_|\_\  |_____|_| |_|\__, |_|_| |_|\___|
                                                      |___/              
-    A 2D game engine for ROBLOX!
+    Versatile, easy-to-use 2D game engine.
     Version: 0.6.0 - DEV
 
     ]],
