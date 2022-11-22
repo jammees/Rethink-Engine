@@ -23,12 +23,4 @@ return {
 		Type = "Symbol",
 		Name = "DAF",
 	},
-	DAF = {
-		Type = "Symbol",
-		Name = "DAF",
-	},
-	DAF = {
-		Type = "Symbol",
-		Name = "DAF",
-	},
 }
