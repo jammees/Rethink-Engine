@@ -39,10 +39,11 @@ Progress: 90% done
 
 <h3>Credits</h3>
 
-- jaipack17 for Nature2D / GuiCollisionService / RayCast2
-- evaera for Promise
+- jaipack17 (GitHub) for Nature2D / GuiCollisionService / RayCast2
+- evaera (GitHub) for Promise
 - Validark and HowManySmall for Janitor
 - Brownsage for helping with Camera
+- nidorx (GitHub) for dat.GUI
 
 <h3>Contribution</h3>
 
