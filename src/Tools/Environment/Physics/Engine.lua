@@ -8,7 +8,7 @@ local Constraint = require(script.Parent.Physics.Constraint)
 local PhysicsRunner = require(script.Parent.Physics.Runner)
 local Globals = require(script.Parent.Constants.Globals)
 local Signal = require(script.Parent.Utilities.Signal)
-local Quadtree = require(script.Parent.Utilities.Quadtree)
+--local Quadtree = require(script.Parent.Utilities.Quadtree) --> Rethink
 local Janitor = require(script.Parent.Utilities.Janitor)
 local Types = require(script.Parent.Types)
 local throwException = require(script.Parent.Debugging.Exceptions)
@@ -23,6 +23,15 @@ local function SearchTable(t: { any }, a: any, lambda: (a: any, b: any) -> boole
 	end
 
 	return nil
+end
+
+local function HookUpdateCanvasSize(self)
+	local camera = workspace.CurrentCamera
+	PhysicsRunner.RunBeforeUpdate(function()
+		if self.canvas.size ~= camera.ViewportSize then
+			self.canvas.size = camera.ViewportSize
+		end
+	end)
 end
 
 local Engine = {}
@@ -79,11 +88,6 @@ function Engine.init(screengui: Instance)
 	return self
 end
 
-function Engine:HookCamera(cameraComponent: { any })
-	assert(type(cameraComponent) == "table", ("Expected table, got; %s"):format(tostring(typeof(cameraComponent))))
-	self.Camera = cameraComponent
-end
-
 -- This method is used to start simulating rigid bodies and constraints.
 function Engine:Start()
 	if not self.canvas then
@@ -111,6 +115,11 @@ function Engine:Start()
 			accumulator += deltaTime
 
 			while accumulator > 0 do
+				-- Rethink
+				-- Implement a fix for an edge case, if the viewport's size changes after the canvas has been
+				-- initialized.
+				HookUpdateCanvasSize(self)
+
 				accumulator -= fixedDeltaTime
 				PhysicsRunner.Update(self, deltaTime)
 				PhysicsRunner.Render(self)
@@ -135,6 +144,11 @@ function Engine:Start()
 				accumulator = 0
 			end
 		else
+			-- Rethink
+			-- Implement a fix for an edge case, if the viewport's size changes after the canvas has been
+			-- initialized.
+			HookUpdateCanvasSize(self)
+
 			accumulator = 0
 			PhysicsRunner.Update(self, deltaTime)
 			PhysicsRunner.Render(self)

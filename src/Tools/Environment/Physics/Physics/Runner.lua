@@ -74,8 +74,17 @@ function Runner.CollisionResponse(
 	end
 end
 
+-- Rethink
+-- Hook into .Update to check if the viewport's size has changed
+local runBeforeUpdateCallback = nil
+function Runner.RunBeforeUpdate(callback)
+	runBeforeUpdateCallback = callback
+end
+
 function Runner.Update(self, dt)
 	local tree
+
+	runBeforeUpdateCallback()
 
 	-- Create a quadtree and insert bodies if neccesary
 	if self.quadtrees then
