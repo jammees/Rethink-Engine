@@ -143,6 +143,8 @@ end
 -- they still get destroyed, they still need to be created
 -- won't delete the code in case someone will have a better idea
 function Scene.Prototype_1v_Cache(cacheName: string)
+	warn("Prototype_1v_Cache is unfinished")
+
 	if Scene.SceneName == nil then
 		return warn((Strings.MethodFailNoScene):format("cache"))
 	end
@@ -194,6 +196,8 @@ function Scene.Prototype_1v_Cache(cacheName: string)
 end
 
 function Scene.Prototype_1v_UnCache(cacheName: string)
+	warn("Prototype_1v_Cache is unfinished")
+
 	if sceneCache[cacheName] then
 		table.clear(sceneCache[cacheName])
 		sceneCache[cacheName] = nil
@@ -202,9 +206,19 @@ function Scene.Prototype_1v_UnCache(cacheName: string)
 	end
 end
 
-function Scene.Prototype_1v_LoadCache(cacheName: string, flushLoaded: boolean) end
+function Scene.Prototype_1v_LoadCache(cacheName: string, flushLoaded: boolean)
+	warn("Prototype_1v_Cache is unfinished")
+
+	if sceneCache[cacheName] then
+		if flushLoaded then
+			Scene.Flush()
+		end
+	end
+end
 
 function Scene.Prototype_1v_GetCache()
+	warn("Prototype_1v_Cache is unfinished")
+
 	return sceneCache
 end
 
