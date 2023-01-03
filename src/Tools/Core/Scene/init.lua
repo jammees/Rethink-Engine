@@ -7,44 +7,62 @@
 
 type SceneObject = {
 	Object: Instance | { any },
-	Id: string,
-	DAF: boolean,
+	ShouldFlush: boolean,
 }
+
+type Tag = { [number]: string } | string?
+type SceneConfig = { Name: string }
 
 local CollectionService = game:GetService("CollectionService")
 local HttpService = game:GetService("HttpService")
 
-local package = script.Parent.Parent.Parent
+local package = script:FindFirstAncestor("Tools").Parent
 local components = package.Components
-local lib = components.Lib
+local library = components.Library
 local tools = package.Tools
 
-local Util = require(components.Util)
-local Strings = require(components.Debug.Strings)
-local Signal = require(components.Lib.Signal)
-local Janitor = require(lib.Janitor).new()
 local RigidBody = require(tools.Environment.Physics.Physics.RigidBody)
-local Symbols = require(script.Symbols)
-local Compiler = require(script.Compiler)
 local Template = require(package.Tools.Utility.Template)
+local DebugStrings = require(components.Debug.Strings)
+local Signal = require(library.Signal)
+local Compiler = require(script.Compiler)
+local Symbols = require(script.Symbols)
+local TypeCheck = require(components.Debug.TypeCheck)
+local UiPool = Template.FetchGlobal("__Rethink_Pool")
 
 local PhysicsEngine = Template.FetchGlobal("__Rethink_Physics")
 
 local sceneObjects = {}
-local sceneCache = {}
+
+local function AddTag(object: Instance, tags: { [number]: string } | string?)
+	if typeof(tags) == "table" then
+		for _, tag in ipairs(tags) do
+			CollectionService:AddTag(object, tag)
+		end
+	else
+		CollectionService:AddTag(object, tags)
+	end
+end
 
 local Scene = {}
 
 -- public properties
-
-Scene.Symbols = Symbols
+Scene.Symbols = Symbols.Types
 Scene.SceneName = nil
 Scene.Events = {
+	--	Fires before the scene gets loaded.
 	LoadStarted = Signal.new(),
+	--	Fires after the scene finished loading.
 	LoadFinished = Signal.new(),
+	--	Fires before the scene gets flushed.
 	FlushStarted = Signal.new(),
+	--	Fires after the scene got flushed.
 	FlushFinished = Signal.new(),
+	--	Fires after an object got added to the scene.
+	--	@returns {Object} Can be a rigidbody class or a gui element
 	ObjectAdded = Signal.new(),
+	--	Fires after an object got removed from the scene.
+	--	@returns {Object} Can be a rigidbody class or a gui element
 	ObjectRemoved = Signal.new(),
 }
 
@@ -64,18 +82,24 @@ Scene.Events = {
 	|--------------------------------------------------------------
 	| Tag				| Gives the given object a `tag(s)` fetch it with `CollectionService` or `Scene:GetRigidbodyFromTag`
 	| Property			| Applies `properties` or `symbols` to objects in the `group` or the `container`
-	| Type				| How the compiler handles the object `Layer` and `Rigidbody`
+	| Type				| How the compiler handles the object `UiBase` and `Rigidbody`
 	| Children			| Add objects that are parented to the given object
 	| Event				| Hook events to the given object
-	| DAF				| Determines if the object will get deleted on `.Flush()`
+	| ShouldFlush		| Determines if the object will get deleted on `.Flush()` (Delete After Flush)
 	| Rigidbody			| Add rigidbody properties that later get fed into the Physics engine
+
+	**Aliases with TYPE**
+
+	There are a couple of aliases that are available to make indentifying the type easier.
+	Additionally `UiBase` and `Rigidbody` can be used as well!
 	
+	| Alias:			| Base type:
+	|--------------------------------------------------------------
+	| Layer 			| UiBase
+	| Static 			| UiBase
+	| Dynamic 			| Rigidbody
+
 	Symbols **must** be wrapped with `[]`
-
-	**Protocols**:
-
-	Protocols are a pair of modules, that define how an object can be reconstructed from a pair of tables.
-	In case if there's no `CompileMode` defined or it can't find the one specified, it will fall back to `Standard`'s modules.
 
 	```lua
 	local Rethink = require(game:GetService("ReplicatedStorage").RethinkEngine)
@@ -85,7 +109,7 @@ Scene.Events = {
 	local Property = Scene.Symbols.Property
 	local Tag = Scene.Symbols.Tag
 
-	Scene.Load({Name = "My scene", CompileMode = "Standard"}, {
+	Scene.Load({Name = "My scene"}, {
 		My_Container = {
 			[Type] = "Layer",
 			[Property] = {
@@ -111,18 +135,28 @@ Scene.Events = {
 		},
 	})
 	```
+
+	@param {dictionary} sceneConfig
+	@return {dictionary} sceneTable
+	@async
+	@fires LoadStarted
+	@fires LoadFinished
 ]=]
-function Scene.Load(sceneConfig: { any }, sceneTable: { [string | number]: any })
-	assert(typeof(sceneConfig) == "table", string.format(Strings.Expected, "table", typeof(sceneConfig), "1"))
-	assert(typeof(sceneTable) == "table", string.format(Strings.Expected, "table", typeof(sceneConfig), "2"))
+function Scene.Load(sceneConfig: SceneConfig, sceneData: { any })
+	assert(typeof(sceneConfig) == "table", string.format(DebugStrings.Expected, "table", typeof(sceneConfig), "1"))
+	assert(typeof(sceneData) == "table", string.format(DebugStrings.Expected, "table", typeof(sceneConfig), "2"))
 
 	Scene.Events.LoadStarted:Fire()
 
-	return Compiler(sceneConfig, sceneTable):andThen(function(layers, rigids)
+	-- Returns a promise to allow the function to yield
+	-- In this Promise:
+		-- Reassign SceneName to the specified one in the sceneConfig
+		-- Loop over the objects that the Compiler returned and add them to the scene
+		-- After all fire the .LoadFinished event
+	return Compiler.Compile(sceneData):andThen(function(compiledObjects)
 		Scene.SceneName = sceneConfig.Name or "Unnamed scene"
 
-		-- do some stuffs
-		for _, v in ipairs(Util.MergeTablesIndex(layers, rigids)) do
+		for _, v in ipairs(compiledObjects) do
 			Scene.Add(v)
 		end
 
@@ -130,107 +164,12 @@ function Scene.Load(sceneConfig: { any }, sceneTable: { [string | number]: any }
 	end):catch(warn)
 end
 
----------------------------------------------------------------------
--- UNFINISHED CODE
--- NOT WORKING ON IT
-
--- function for caching a scene
--- basically saving instances so later down the line it won't need to
-
--- UPDATE: cache methods are discontinued now because I figured that
--- it's better to create all of the instances at the same time
--- because this whole cache doesn't apply to rigidbody's
--- they still get destroyed, they still need to be created
--- won't delete the code in case someone will have a better idea
-function Scene.Prototype_1v_Cache(cacheName: string)
-	warn("Prototype_1v_Cache is unfinished")
-
-	if Scene.SceneName == nil then
-		return warn((Strings.MethodFailNoScene):format("cache"))
-	end
-
-	-- save the sceneObjects to a cache so later it can be grabbed again
-
-	local localCache = sceneObjects
-	local newCache = { CachedRigids = {}, CachedLayers = {} }
-
-	for _, v: SceneObject in ipairs(localCache) do
-		if RigidBody.is(v.Object) then
-			local rigidObject: Instance | GuiBase2d = v.Object:GetFrame()
-			local newSceneRef = v
-
-			newSceneRef.Object = rigidObject
-			newSceneRef.Temp = { Parent = rigidObject.Parent, Transparency = rigidObject.Transparency }
-
-			-- thought about a new way, by simply getting all of the settings and
-			-- encoding the table into JSON to hopefully
-			-- save memory or something like that
-			-- also would be cool if there are mutliple properties that match
-			-- they would just reference eachother or something like that
-			-- not sure if it would save memory
-			newSceneRef.Prop = HttpService:JSONEncode(v.Object:GetSettings())
-
-			warn(newSceneRef)
-
-			--local newObject = rigidObject:Clone()
-			--newSceneRef.Object.Parent = cacheFolder
-			--newSceneRef.Object = newObject
-
-			--v.Object:Destroy()
-
-			-- prevent the rigidbody to update itself.
-			-- thinking about maybe trying to save it's properties and then destroy the rigidbody to save up memory
-			-- since we already use memory to save the scene object's properties
-
-			table.insert(newCache.CachedRigids, newSceneRef)
-		else
-			table.insert(newCache.CachedLayers, v)
-		end
-	end
-
-	sceneCache[cacheName or Scene.SceneName] = newCache
-
-	print("Finished caching scene", cacheName or Scene.SceneName, newCache)
-
-	print(sceneCache)
-end
-
-function Scene.Prototype_1v_UnCache(cacheName: string)
-	warn("Prototype_1v_Cache is unfinished")
-
-	if sceneCache[cacheName] then
-		table.clear(sceneCache[cacheName])
-		sceneCache[cacheName] = nil
-	else
-		warn(("Cache %s not found!"):format(cacheName))
-	end
-end
-
-function Scene.Prototype_1v_LoadCache(cacheName: string, flushLoaded: boolean)
-	warn("Prototype_1v_Cache is unfinished")
-
-	if sceneCache[cacheName] then
-		if flushLoaded then
-			Scene.Flush()
-		end
-	end
-end
-
-function Scene.Prototype_1v_GetCache()
-	warn("Prototype_1v_Cache is unfinished")
-
-	return sceneCache
-end
-
----------------------------------------------------------------------
-
 --[=[
 	Can be used to add an instance into the scene, after it has been compiled.
 
-	**Notes:**
-
-	- As an addition, tags can be added to the instance.
-	- If destroy after flush is false it will prevent the `:Flush` method to clean that object up
+	Tags can be added to the instance.
+	If ShouldFlush is false it will prevent the `:Flush` method to clean that object up.
+	Does not support adding symbols to the object.
 
 	```lua
 	local Rethink = require(game:GetService("ReplicatedStorage").RethinkEngine)
@@ -241,31 +180,29 @@ end
 
 	Scene.Add(frame, {"Test1", "Test2"}, false)
 	```
+
+	@param {instance} object - The object to be added to the scene
+	@param {array} tags - List of tags to add to the object
+	@param {boolean} destroyAfterFlush - Whether the object will get deleted after .Flush() was called
+	@fires ObjectAdded
 ]=]
-function Scene.Add(object: Instance, tags: { [number]: string } | string, destroyAfterFlush: boolean)
-	Util.Assert(Strings.ExpectedNoArg, object, "Instance", "table")
-	Util.Assert(Strings.ExpectedNoArg, tags, "table", "string", "nil")
-	Util.Assert(Strings.ExpectedNoArg, destroyAfterFlush, "boolean", "nil")
+function Scene.Add(object: any, tags: Tag?, shouldFlush: boolean?)
+	TypeCheck.Assert(DebugStrings.ExpectedNoArg, object, "Instance", "table")
+	TypeCheck.Assert(DebugStrings.ExpectedNoArg, tags, "table", "string", "nil")
+	TypeCheck.Assert(DebugStrings.ExpectedNoArg, shouldFlush, "boolean", "nil")
 
 	if tags then
-		if RigidBody.is(object) then
-			Util.AddTagToInstance(object:GetFrame(), tags)
+		if Scene.IsRigidbody(object) then
+			AddTag(object:GetFrame(), tags)
 		else
-			Util.AddTagToInstance(object, tags)
+			AddTag(object, tags)
 		end
 	end
 
-	local objectId = HttpService:GenerateGUID(false)
-
 	table.insert(sceneObjects, {
 		Object = object,
-		Id = objectId,
-		DAF = destroyAfterFlush,
+		ShouldFlush = shouldFlush,
 	})
-
-	if destroyAfterFlush ~= false then
-		Janitor:Add(object, "Destroy", objectId)
-	end
 
 	Scene.Events.ObjectAdded:Fire(object)
 end
@@ -288,15 +225,20 @@ end
 
 	Scene.Remove(frame)
 	```
+
+	@param {instance} object - The object to get removed from the scene dictionary
+	@fires ObjectRemoved
 ]=]
 function Scene.Remove(object: Instance)
-	assert(typeof(object) == "Instance", string.format(Strings.ExpectedNoArg, "Instance", typeof(object)))
+	assert(typeof(object) == "Instance", string.format(DebugStrings.ExpectedNoArg, "Instance", typeof(object)))
 
 	-- remove it from the scene dictionary
-	for index, sceneObject in ipairs(sceneObjects) do
+	for index, sceneObject: SceneObject in ipairs(sceneObjects) do
 		if sceneObject.Object == object then
-			Janitor:RemoveFromSelf(sceneObject.Id) --> remove from janitor
-			sceneObject[index] = nil
+			-- Return it to the pool
+			UiPool:Return(object)
+
+			table.remove(sceneObject, index)
 
 			Scene.Events.ObjectRemoved:Fire(object)
 
@@ -304,7 +246,7 @@ function Scene.Remove(object: Instance)
 		end
 	end
 
-	warn(string.format(Strings.RemoveErrorNoObject, object.Name, typeof(object)))
+	warn(string.format(DebugStrings.RemoveErrorNoObject, object.Name, typeof(object)))
 end
 
 --[=[
@@ -313,7 +255,7 @@ end
 
 	**Notes:**
 	- If the scene is empty, it will throw a warning instead.
-	- Will ignore objects that have their `DAF` set to false
+	- Will ignore objects that have their `ShouldFlush` set to false
 
 	**Example:**
 	```lua
@@ -339,26 +281,38 @@ end
 
 	Scene.Flush()
 	```
+
+	@fires Flush#FlushStarted
+	@fires Flush#FlushFinished
 ]=]
 function Scene.Flush()
 	if Scene.SceneName == nil then
-		return warn((Strings.MethodFailNoScene):format("flush"))
+		return warn((DebugStrings.MethodFailNoScene):format("flush"))
 	end
 
 	Scene.Events.FlushStarted:Fire()
 
+	Compiler.CompilerDistributor:Cancel()
 	Scene.SceneName = nil
-
-	Janitor:Cleanup() --> cleans up all the objects
 
 	-- remove the left references to the deleted objects from sceneObjects
 	for index, sceneObject in ipairs(sceneObjects) do
-		if sceneObject.DAF ~= false then
+		if sceneObject ~= false then
+			local isRigidbody = Scene.IsRigidbody(sceneObject.Object)
+
+			UiPool:Return(isRigidbody and sceneObject.Object:GetFrame() or sceneObject.Object)
+
+			if isRigidbody then
+				sceneObject.Object:Destroy()
+			end
+
 			sceneObjects[index] = nil
 		end
 	end
 
 	Scene.Events.FlushFinished:Fire()
+
+	return
 end
 
 --[=[
@@ -395,9 +349,14 @@ end
 	local myBox = Scene.GetBodyFromTag("Object!")
 	print(myBox)
 	```
+
+	@param {string} tag - Look for objects with the specified tag
+	@yields
+	@public
+	@returns {array} Collection of all rigidbodies with the given tag
 ]=]
 function Scene.GetBodyFromTag(tag: string): { [number]: { any } } | { any }
-	assert(typeof(tag) == "string", string.format(Strings.ExpectedNoArg, "string", typeof(tag)))
+	assert(typeof(tag) == "string", string.format(DebugStrings.ExpectedNoArg, "string", typeof(tag)))
 
 	local results = {}
 
@@ -415,6 +374,18 @@ function Scene.GetBodyFromTag(tag: string): { [number]: { any } } | { any }
 	return results
 end
 
+--[=[
+	Checks the given instance if it is a rigidbody
+
+	@param {Instance | table} object - The object to check if it is a rigidbody
+	@yields
+	@public
+	@returns {boolean}
+]=]
+function Scene.IsRigidbody(object: any): boolean
+	return getmetatable(typeof(object) == "table" and object or nil) == RigidBody
+end
+
 -- Some getter functions
 
 --[=[
@@ -426,7 +397,7 @@ end
 	- `FlushStarted`: fired before starting to flush the scene
 	- `FlushFinished`: fired after finished flushing the scene
 	- `ObjectAdded`: fired after an object has been added to the scene
-	- `ObjectRemoved`: fired after an object has been removed from the scene and from the janitor
+	- `ObjectRemoved`: fired after an object has been removed from the scene
 
 	Alternative way of getting a signal: `Scene.Events`
 
@@ -439,17 +410,28 @@ end
 		print("Finished loading in scene, called.. " .. Scene.SceneName)
 	end)
 	```
+
+	@param {string} signalName
+	@yields
+	@public
+	@alias Scene.Events
+	@returns {signal} Returns a signal object
 ]=]
-function Scene.GetSignal(signalName: string)
+function Scene.GetSignal(signalName: string): { any }?
 	if Scene.Events[signalName] then
 		return Scene.Events[signalName]
 	end
 
-	warn(string.format(Strings.SignalNotFound, tostring(signalName)))
+	warn(string.format(DebugStrings.SignalNotFound, tostring(signalName)))
+	return
 end
 
 --[=[
 	Can be used to retrieve the currently compiled scene's name, specified in the sceneTable.
+
+	@yields
+	@public
+	@returns {string} Returns the loaded scene's name
 ]]
 ]=]
 function Scene.GetName(): string
@@ -458,6 +440,10 @@ end
 
 --[=[
 	Can be used to retrieve all of the scene objects, that make the currently compiled scene.
+
+	@yields
+	@public
+	@returns {array} Returns all of the trakced objects
 ]=]
 function Scene.GetObjects(): { [number]: any }
 	return sceneObjects
