@@ -107,10 +107,6 @@ function Runner.Update(self, dt)
 	for _, body in ipairs(self.bodies) do
 		body:Update(dt)
 
-		-- code to move rigidbody
-
-		-- update after camera
-
 		local OldCollidingWith = body.Collisions.Other
 		local CollidingWith = {}
 
