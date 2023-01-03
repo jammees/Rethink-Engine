@@ -98,7 +98,7 @@ local function checkCollisions(collider, hitter)
 					end
 				end
 			end
-			hitter.i.Position = hitter.i.Position - UDim2.new(0, MTV.x, 0, MTV.y)
+			hitter.i.Position = hitter.i.Position - UDim2.new(0, MTV.X, 0, MTV.Y)
 		end
 	end
 
@@ -145,12 +145,15 @@ function GuiCollisionService.isInCore(gui0, gui1)
 
 	local corners0, corners1 = getCorners(gui0), getCorners(gui1)
 
-	local x = NumberRange.new(corners1[1].x, corners1[4].x)
-	local y = NumberRange.new(corners1[1].y, corners1[2].y)
+	--local x = NumberRange.new(corners1[1].x, corners1[4].x)
+	--local y = NumberRange.new(corners1[1].y, corners1[2].y)
+
+	local x = NumberRange.new(corners1.topleft.x, corners1.bottomright.x)
+	local y = NumberRange.new(corners1.topleft.y, corners1.bottomleft.y)
 
 	local cornersInside = 0
 
-	for _, corner in ipairs(corners0) do
+	for _, corner in pairs(corners0) do
 		if inRange(corner.x, x) and inRange(corner.y, y) then
 			cornersInside += 1
 		end
@@ -231,7 +234,7 @@ function GuiCollisionService.createCollisionGroup()
 	self.hitters = {}
 	self.hierarchy = false
 
-	game:GetService("RunService").RenderStepped:Connect(function(dt)
+	game:GetService("RunService").RenderStepped:Connect(function()
 		for _, hitter in ipairs(self.hitters) do
 			local res = check(hitter, self.colliders, self.hierarchy)
 
