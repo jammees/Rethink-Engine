@@ -4,7 +4,7 @@
     "$className": "DataModel",
 
     "ReplicatedStorage": {
-      "RethinkEngine": {
+      "Rethink": {
         "$path": "src"
       },
       "Benchmarks": {
@@ -19,8 +19,8 @@
       "StarterPlayerScripts": {
         "$className": "StarterPlayerScripts",
 
-        "Manual tests": {
-          "$path": "manual"
+        "Tests": {
+          "$path": "test"
         }
       }
     },
