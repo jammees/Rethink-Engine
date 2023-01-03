@@ -2,8 +2,6 @@
 
 	Outline
 	
-	Not the best solution to give an image an outline, but at least it somewhat works.
-
 	Config:
 
 		Name:					Must-have:	Default value:	Description:
@@ -21,10 +19,12 @@
 
     API:
 
-    outline.new()
-	outline:rebake
-    outline:destroy()
+    outline.New()
+	outline:Rebake()
+    outline:Destroy()
 
+	This is an outdated module.
+	I will still keep it around, because it may come handy in the future.
 ]]
 
 local SIDES = 8
