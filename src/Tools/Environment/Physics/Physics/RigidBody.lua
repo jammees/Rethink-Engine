@@ -12,6 +12,10 @@ local throwException = require(script.Parent.Parent.Debugging.Exceptions)
 local restrict = require(script.Parent.Parent.Debugging.Restrict)
 local HttpService = game:GetService("HttpService")
 
+-- Rethink
+-- Prevented the object being destroyed, instead it gets returned to the pool
+local Template = require(script.Parent.Parent.Parent.Parent.Utility.Template)
+
 local RigidBody = {}
 RigidBody.__index = RigidBody
 
@@ -107,15 +111,6 @@ local function UpdateVertices(frame: GuiObject, vertices, engine)
 	for i, vertex in ipairs(vertices) do
 		vertex:SetPosition(corners[i].X, corners[i].Y)
 	end
-end
-
--- [PUBLIC]
-function RigidBody.is(metatable: { any }): boolean
-	return typeof(metatable) == "table" and getmetatable(metatable) == RigidBody
-end
-
-function RigidBody.GetCenter(vertices: { any })
-	return CalculateCenter(vertices)
 end
 
 -- This method is used to initialize a new RigidBody.
@@ -218,6 +213,9 @@ function RigidBody.new(
 		},
 		States = {},
 		filtered = {},
+
+		--  Rethink
+		ShouldCalculatePhysics = true, -- Added a boolean property to skip the physics calculation for the object.
 	}, RigidBody)
 
 	-- Apply offsets if ScreenGui's IgnoreGuiInset property is set to true
@@ -247,8 +245,18 @@ function RigidBody.new(
 	self._janitor:Add(self.CanvasEdgeTouched, "Destroy")
 
 	if not self.custom then
-		self._janitor:Add(self.frame, "Destroy")
-		self._janitor:LinkToInstance(self.frame)
+		-- Curently I'm skipping this
+		local UiPool = Template.FetchGlobal("__Rethink_Pool")
+
+		self._janitor:Add(function()
+			UiPool:Return(self.frame)
+		end)
+
+		UiPool.ObjectReturned:Connect(function(object: Instance)
+			if self.frame == object then
+				self._janitor:Cleanup()
+			end
+		end)
 	end
 
 	if #self.rotationCache < 1 then
@@ -366,6 +374,11 @@ end
 
 -- This method updates the positions of the RigidBody's points and constraints.
 function RigidBody:Update(dt: number)
+	-- Rethink
+	if self.ShouldCalculatePhysics == false then
+		return
+	end
+
 	self.center = CalculateCenter(self.vertices)
 
 	for i, vertex in ipairs(self.vertices) do
@@ -393,6 +406,11 @@ end
 
 -- This method updates the positions and appearance of the RigidBody on screen.
 function RigidBody:Render()
+	-- Rethink
+	if self.ShouldCalculatePhysics == false then
+		return
+	end
+
 	-- If the RigidBody exceeds its life span, it is destroyed.
 	if self.lifeSpan and os.clock() - self.spawnedAt >= self.lifeSpan then
 		self:Destroy()
@@ -473,7 +491,7 @@ end
 
 -- This method is used to destroy the RigidBody.
 -- The body's UI element is destroyed, its connections are disconnected and the body is removed from the engine.
-function RigidBody:Destroy(keepFrame: boolean)
+function RigidBody:Destroy()
 	self._janitor:Cleanup()
 
 	for i, body in ipairs(self.engine.bodies) do
@@ -837,23 +855,6 @@ function RigidBody:SetMaxForce(maxForce: number)
 	for _, p in ipairs(self.vertices) do
 		p:SetMaxForce(maxForce)
 	end
-end
-
--- custom function for fetching all of the proprties of the rigidbody
-function RigidBody:GetSettings(): {}
-	return {
-		anchored = self.anchored,
-		collidable = self.collidable,
-		canRotate = self.canRotate,
-		lifeSpan = self.lifeSpan,
-		keepInCanvas = self.vertices[1].keepInCanvas,
-		friction = self.vertices[1].friction,
-		airfriction = self.vertices[1].airfriction,
-		gravity = self.vertices[1].gravity,
-		mass = self.mass,
-		states = self.States,
-		filtered = self.filtered,
-	}
 end
 
 return RigidBody
