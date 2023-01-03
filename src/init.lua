@@ -1,77 +1,80 @@
 --[[
-	
-     ____      _   _     _       _       _____             _            
-    |  _ \ ___| |_| |__ (_)_ __ | | __  | ____|_ __   __ _(_)_ __   ___ 
-    | |_) / _ \ __| '_ \| | '_ \| |/ /  |  _| | '_ \ / _` | | '_ \ / _ \
-    |  _ <  __/ |_| | | | | | | |   <   | |___| | | | (_| | | | | |  __/
-    |_| \_\___|\__|_| |_|_|_| |_|_|\_\  |_____|_| |_|\__, |_|_| |_|\___|
-                                                     |___/              
-    
-    Version: 0.6.0 indev
-    james_mc98
-    
-    Thanks to:
-    jaipack17 for Nature2D / GuiCollisionService / RayCast2
-    Brownsage for helping with Camera
-    sleitnick for Symbol
-	evaera for Promise
-	Validark and HowManySmall for Janitor
-
+	Version: 1.0.0-alpha
+    @james_mc98
+	Under MIT license
 ]]
 
--- variables
 local components = script.Components
 local tools = script.Tools
 local core = tools.Core
 local environment = tools.Environment
 local utility = tools.Utility
 
-local PhysicsClass = nil
-
-local isStarted = false
-local engineUi = nil
-
--- modules
---local Settings = require(components.Bootstrap.EngineSettings)
-local Strings = require(components.Debug.Strings)
---local Wrapper = require(components.Wrapper)
+local DebugStrings = require(components.Debug.Strings)
 local Physics = require(environment.Physics)
 local Template = require(utility.Template)
+local Settings = require(script.Settings)
 
-if not isStarted then
-	isStarted = true
+-- These are valies that will get exported with the rest of the modules after
+-- The engine was fully intitialized
+local engineStarted = false
+local engineUi = nil
+local physicsClass = nil
 
-	-- setup core game ui and apply the settings
-	engineUi = require(components.Bootstrap.SetupUi)()
+if not engineStarted then
+	engineStarted = true
 
-	-- initiate Nature2D
-	PhysicsClass = Physics.init(engineUi.GameFrame)
-	PhysicsClass:CreateCanvas(Vector2.new(0, 0), workspace.CurrentCamera.ViewportSize, engineUi.Canvas)
-
-	Template.NewGlobal("__Rethink_Settings", require(components.Bootstrap.EngineSettings.Settings), true)
-	Template.NewGlobal("__Rethink_Physics", PhysicsClass, true)
+	-- setup core game ui
+	engineUi = require(components.Bootstrap.GenerateGUI)()
+	
+	-- Initiate some globals that other components/tools can have access to
+	-- These are mainly exists for the sole purpose of quality of life benefits
+	Template.NewGlobal("__Rethink_Settings", Settings, true)
 	Template.NewGlobal("__Rethink_Ui", engineUi, true)
-
+	Template.NewGlobal("__Rethink_Pool", require(components.Library.UIPool).new(), true)
+	
+	-- initiate Nature2D
+	physicsClass = Physics.init(engineUi.GameFrame)
+	
+	-- Apply settings
+	-- More in-depth explanation can be found in the Settings module
+	physicsClass:UseQuadtrees(Settings.Physics.QuadTreesEnabled)
+	physicsClass:SetCollisionIterations(Settings.Physics.CollisionIteration)
+	physicsClass:SetConstraintIterations(Settings.Physics.ConstraintIteration)
+	
+	-- Initiate a canvas
+	-- This is basically unnecessary if KeepInCanvas is always false
+	physicsClass:CreateCanvas(Vector2.new(0, 0), workspace.CurrentCamera.ViewportSize, engineUi.Canvas)
+	
+	-- Create a new global to get access to the now initialized Nature2D class
+	Template.NewGlobal("__Rethink_Physics", physicsClass, true)
+	
+	-- Apply engine settings and optimizations
+	-- After everything has been initialized
 	require(components.Bootstrap.EngineSettings)
 
-	if Template.FetchGlobal("__Rethink_Settings").Console.LogHeader == true then
-		warn(Strings.ConsoleHero)
+	-- Print header into the console if the LogHeader flag is enabled
+	if Settings.Console.LogHeader == true then
+		warn(DebugStrings.ConsoleHero)
 	end
 end
 
 return {
 	Collision = require(environment.Collision),
 	Raycast = require(environment.Raycast),
+	Animation = require(core.Animation),
 	Outline = require(utility.Outline),
 	Scene = require(core.Scene),
-	Physics = PhysicsClass,
 	Template = Template,
-
+	Physics = physicsClass,
 	Ui = engineUi,
+
+	-- Expose the paths for easier access
+	Components = components,
+	Tools = tools,
 
 	-- Unfinsished, unstable tools
 	Prototypes = {
 		Camera = require(core.Camera),
-		Inputs = require(utility.Inputs),
 	},
 }
