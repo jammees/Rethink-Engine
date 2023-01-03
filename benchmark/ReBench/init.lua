@@ -63,7 +63,7 @@ end
 	ReBench.Run({MyModule})
 	```
 ]=]
-function ReBench.Run(benchmarkModules: { [number]: ModuleScript })
+function ReBench.RunBenchmarks(benchmarkModules: { [number]: ModuleScript })
 	Score.Group.ResetData()
 
 	for _, v in ipairs(benchmarkModules) do
