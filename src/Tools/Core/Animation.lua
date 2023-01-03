@@ -1,13 +1,13 @@
 --[[
 
-	 _              _                       _                  
-    / \     _ __   (_)  _ __ ___     __ _  | |_    ___    _ __ 
-   / _ \   | '_ \  | | | '_ ` _ \   / _` | | __|  / _ \  | '__|
-  / ___ \  | | | | | | | | | | | | | (_| | | |_  | (_) | | |   
- /_/   \_\ |_| |_| |_| |_| |_| |_|  \__,_|  \__|  \___/  |_|  
+	    _              _                       _                  
+	   / \     _ __   (_)  _ __ ___     __ _  | |_    ___    _ __
+	  / _ \   | '_ \  | | | '_ ` _ \   / _` | | __|  / _ \  | '__|
+	 / ___ \  | | | | | | | | | | | | | (_| | | |_  | (_) | | |
+	/_/   \_\ |_| |_| |_| |_| |_| |_|  \__,_|  \__|  \___/  |_|
 
- Standalone version 0.1.0 - dev
- james_mc98
+	Rethink version 0.1.0
+	james_mc98
 
 ]]
 
@@ -25,30 +25,14 @@ type Animations = {
 
 local RunService = game:GetService("RunService")
 
-local Promise = require(script.Promise)
---local Argument = require(script.Argument)
-local ConsoleErrors = require(script.ConsoleErrors)
+local package = script.Parent.Parent.Parent
+local components = package.Components
 
-local function ValidateArguments(LogContainer: string, ...)
-	local logs = ConsoleErrors[LogContainer]
-	local checks = table.pack(...)
-	local passes = 0
+local TypeCheck = require(components.Debug.TypeCheck)
+local Promise = require(components.Library.Promise)
+local DebugStrings = require(components.Debug.Strings)
 
-	return Promise.new(function(resolve, reject)
-		for index, argumentData: ArgumentData in ipairs(checks) do
-			if typeof(argumentData.Value) ~= argumentData.Type then
-				reject((logs["Invalid" .. tostring(index)]):format(typeof(argumentData.Value)))
-			end
-
-			passes += 1
-		end
-
-		if passes >= #checks then
-			resolve()
-		end
-	end):catch(warn)
-end
-
+-- This function calculates and returns a table with all of the offsets.
 local function CalculateAnimationOffsets(animationData: { any }, animationSize: Vector2)
 	local animation = {}
 
@@ -68,9 +52,7 @@ local function CalculateAnimationOffsets(animationData: { any }, animationSize: 
 	return animation
 end
 
--- Restrictions:
--- ImageLabel
--- ImageButton
+-- This function only allows ImageLabels and ImageButtons.
 local function CheckObjectIsValid(object: any)
 	local success, result = pcall(function()
 		if object:IsA("ImageLabel") or object:IsA("ImageButton") then
@@ -86,7 +68,19 @@ end
 local Animator = {}
 Animator.__index = Animator
 
-function Animator.new(objects: { [number]: ImageLabel | ImageButton }?)
+--[=[
+	Constructs a new animator.
+
+	```lua
+	local Animator = require(Rethink.Animator)
+	local myAnimation = Animator.new()
+	```
+
+	@param {array} Objects - List of initial objects to apply animations to
+	@constructs Animator
+	@returns {animator}
+]=]
+function Animator.new(objects: { [number]: ImageLabel | ImageButton }?): typeof(Animator)
 	local self = setmetatable({}, Animator)
 
 	self._AnimationData = {}
@@ -110,7 +104,7 @@ function Animator.new(objects: { [number]: ImageLabel | ImageButton }?)
 			frames will be displayed.
 
 			```lua
-			local Animator = this.module
+			local Animator = Rethink.Animator
 
 			-- This will create a table with 5 indexes and their value set to 1
 			print(Animator.Tools.PopulateRow(5))
@@ -138,7 +132,7 @@ function Animator.new(objects: { [number]: ImageLabel | ImageButton }?)
 			Shorthand for using `Animator.Tools.PopulateRow()`.
 
 			```lua
-			local Animator = this.module
+			local Animator = Rethink.Animator
 
 			-- This will create 5 tables with 5 indexes and their value set to 1
 			print(table.pack(Animator.Tools.PopulateColumn(5, 5)))
@@ -173,9 +167,10 @@ end
 	Used to add a spritesheet with it's own mapped animations.
 
 	```lua
-	local Animator = this.module
+	local Animator = require(Rethink)
+	local myAnimation = Animator.new()
 
-	Animation:AddSpritesheet("6928232464", Vector2.new(100, 100), {
+	myAnimation:AddSpritesheet("6928232464", Vector2.new(100, 100), {
 		["run"] = {
 			{ 1, 1, 1, 1, 1 },
 		},
@@ -186,12 +181,13 @@ end
 	In case the animation does not start at the first row you can use r in the map table to offset it.
 
 	```lua
-	local Animator = this.module
+	local Animator = require(Rethink)
+	local myAnimation = Animator.new()
 
-	Animation:AddSpritesheet("6928232464", Vector2.new(100, 100), {
+	myAnimation:AddSpritesheet("6928232464", Vector2.new(100, 100), {
 		["run"] = {
 			-- This should normally represent to 1st row but since there's an `r` key
-			-- `Animator` will offset it by that amiunt.
+			-- `Animator` will offset it by that amount.
 
 			-- In our case this will represent the 2nd row, instead of the 1st row.
 			{ r = 2, 1, 1, 1, 1, 1 },
@@ -199,18 +195,18 @@ end
 	})
 	
 	```
-
-	@param (imageId: string) - the spritesheet's id as a string \n
-	@param (size: vector2) - the size of one frame in the spritesheet
-	@param (map: table) - assign the spritesheet's frames into different animations
+	
+	@param (string) imageId - Spritesheet's id as a string
+	@param (vector2) size - Size of one frame in the spritesheet
+	@param (dictionary) animationFrames - Split up the spritesheet into animations by mappping it's frames
 ]=]
-function Animator:AddSpritesheet(imageId: string, size: Vector2, map: { [string]: { [number]: number } })
+function Animator:AddSpritesheet(imageId: string, size: Vector2, animationFrames: { [string]: { [number]: number } })
 	-- Simple and easy-to-use argument validator
-	ValidateArguments(
-		"AddSpritesheet",
+	TypeCheck.IsWrongType(
+		":AddSpritesheet",
 		{ Value = imageId, Type = "string" },
 		{ Value = size, Type = "Vector2" },
-		{ Value = map, Type = "table" }
+		{ Value = animationFrames, Type = "table" }
 	):andThen(function() --> if the check is successful proceed
 		local newAnimation = {
 			ImageId = imageId,
@@ -218,9 +214,9 @@ function Animator:AddSpritesheet(imageId: string, size: Vector2, map: { [string]
 			Animations = {},
 		}
 
-		-- loop trough the map table 3 times
+		-- loop trough the animationFrames table
 		-- get animation name and data
-		for animationName, animationData in pairs(map) do
+		for animationName, animationData in pairs(animationFrames) do
 			local AnimationOffsets = CalculateAnimationOffsets(animationData, size)
 
 			newAnimation.Animations[animationName] = AnimationOffsets
@@ -231,21 +227,28 @@ function Animator:AddSpritesheet(imageId: string, size: Vector2, map: { [string]
 	end)
 end
 
---[[
-	Animator:AddCollection(size: vector2, map: table)
+--[=[
+	Adds a collection of images as an animation.
 
-	Animator:AddImages(Vector2.new(50,50), {
-		["Hello world"] = {
-			123,
-			1234,
-			12345,
+	```lua
+	local Animator = require(Rethink)
+	local myAnimation = Animator.new()
+	
+	myAnimation:AddCollection({
+		["Example"] = {
+			10590477428,
+			8036970459,
+			8425069718,
 		}
 	})
-]]
+	```
+	
+	@param {dictionary} collection - List of all the animations' frames
+]=]
 function Animator:AddCollection(collection: { [string]: number })
 	-- Simple and easy-to-use argument validator
-	ValidateArguments("AddImages", { Value = collection, Type = "table" }):andThen(
-		function() --> if the check is successful proceed
+	TypeCheck.IsWrongType(":AddCollection", { Value = collection, Type = "table" })
+		:andThen(function() --> if the check is successful proceed
 			local newAnimation = {
 				Type = "Collection",
 				Animations = {},
@@ -259,10 +262,7 @@ function Animator:AddCollection(collection: { [string]: number })
 			end
 
 			table.insert(self._AnimationData, newAnimation)
-
-			warn(newAnimation)
-		end
-	)
+		end)
 end
 
 --[=[
@@ -271,15 +271,15 @@ end
 	@private
 ]=]
 function Animator:_Render(animationData: Animations)
-	for _, object: ImageLabel | ImageButton in ipairs(self.Objects) do
+	for _, object: GuiBase2d & ImageLabel in ipairs(self.Objects) do
+		local frameData: any = animationData.Animations[self.CurrentAnimation][math.floor(self.Frame)]
+
 		-- If we're dealing with a Collection then we should not try and set the offset and size.
 		if animationData.Type == "Collection" then
 			-- Reset the offset and size if we previously used a spritesheet
 			object.ImageRectSize = Vector2.new(0, 0)
 			object.ImageRectOffset = Vector2.new(0, 0)
-			object.Image = ("rbxassetid://%d"):format(
-				animationData.Animations[self.CurrentAnimation][math.floor(self.Frame)]
-			)
+			object.Image = ("rbxassetid://%d"):format(frameData)
 
 			continue
 		end
@@ -291,8 +291,8 @@ function Animator:_Render(animationData: Animations)
 		end
 
 		-- Apply the current frame now that we set up the object to the
-		-- current size and image
-		object.ImageRectOffset = animationData.Animations[self.CurrentAnimation][math.floor(self.Frame)]
+		-- right size and image
+		object.ImageRectOffset = frameData
 	end
 end
 
@@ -312,36 +312,35 @@ end
 	Plays the selected animation infinitely.
 	The speed of the animation stays independant of the framerate of the player.
 
-	[!] Does not support collections.
-
 	```lua
-	local Animator = this.module
+	local Animator = require(Rethink)
+	local myAnimation = Animator.new()
 
-	Animation:AddSpritesheet("6928232464", Vector2.new(100, 100), {
+	myAnimation:AddSpritesheet("6928232464", Vector2.new(100, 100), {
 		["run"] = {
 			-- This should normally represent to 1st row but since there's an `r` key
-			-- `Animator` will offset it by that amiunt.
+			-- `Animator` will offset it by that amount.
 
 			-- In our case this will represent the 2nd row, instead of the 1st row.
 			{ 1, 1, 1, 1, 1 },
 		},
 	})
 
-	Animation:HookObject(path.to.your.object)
+	myAnimation:AttachObject(path.to.your.object)
 
-	Animation:Play()
+	myAnimation:Play()
 	```
 
-	@returns (Promise: Promise) - Used to make the code asynchronous but can be synchronous using :await()
+	@returns {Promise} Used to make the code asynchronous but can be synchronous using :await()
 ]=]
-function Animator:Play(): { Promise }
+function Animator:Play(): typeof(Promise.new())
 	return Promise.new(function(resolve, reject)
 		-- TODO: clean this up
 		-- currently this looks really messy but I'll clean it up eventaully
 		if not self.CurrentAnimation then
-			reject(ConsoleErrors.Play.NoAnimations)
+			reject(DebugStrings.Animator.NoAnimation)
 		elseif not self.Objects[1] then
-			reject(ConsoleErrors.NoObjectsHooked)
+			reject(DebugStrings.Animator.NoObjectsAttached)
 		end
 
 		resolve()
@@ -352,6 +351,14 @@ function Animator:Play(): { Promise }
 
 			self:_CancelRender()
 			self._RenderHandle = RunService.RenderStepped:Connect(function(deltaTime: number)
+				-- Check if the animation changed while playing a different animation
+				if animationData ~= self._AnimationPointer[self.CurrentAnimation] then
+					animationData = self._AnimationPointer[self.CurrentAnimation]
+				end
+
+				-- Check all attached objects that they still exist in the game
+				self:CleanupObjects()
+
 				-- This works I'm so happy :)
 				-- It's currently 1 AM and I'm still writing this but I'm just really happy
 				-- That the animation here is independant of the framerate
@@ -373,24 +380,23 @@ end
 --[=[
 	Stops the looping animation if previously `:Play` has been called.
 
-	This will stop playing after 5 seconds passed.
-
 	```lua
-	local Animator = this.module
+	local Animator = require(Rethink)
+	local myAnimation = Animator.new()
 
-	Animation:AddSpritesheet("6928232464", Vector2.new(100, 100), {
+	myAnimation:AddSpritesheet("6928232464", Vector2.new(100, 100), {
 		["run"] = {
 			{ 1, 1, 1, 1, 1 },
 		},
 	})
 
-	Animation:HookObject(path.to.your.object)
+	myAnimation:AttachObject(path.to.your.object)
 
-	Animation:Play()
+	myAnimation:Play()
 
 	task.wait(5)
 
-	Animation:Stop()
+	myAnimation:Stop()
 	```
 ]=]
 function Animator:Stop()
@@ -404,35 +410,34 @@ end
 --[=[
 	Sets the framerate of the animation to the desired amount.
 
-	This peace of code will set the framerate to 1 FPS after 5 seconds passed.
-
 	```lua
-	local Animator = this.module
+	local Animator = require(Rethink)
+	local myAnimation = Animator.new()
 
-	Animation:AddSpritesheet("6928232464", Vector2.new(100, 100), {
+	myAnimation:AddSpritesheet("6928232464", Vector2.new(100, 100), {
 		["run"] = {
 			-- This should normally represent to 1st row but since there's an `r` key
-			-- `Animator` will offset it by that amiunt.
+			-- `Animator` will offset it by that amount.
 
 			-- In our case this will represent the 2nd row, instead of the 1st row.
 			{ 1, 1, 1, 1, 1 },
 		},
 	})
 
-	Animation:HookObject(path.to.your.object)
+	myAnimation:AttachObject(path.to.your.object)
 
-	Animation:Play()
+	myAnimation:Play()
 
 	task.wait(1)
 
-	Animation:SetFramerate(1)
+	myAnimation:SetFramerate(1)
 	```
 
-	@param (framerate: number) - Speed which the animation will get played (common values are 60 or 30)
-	@default (framerate: number) - 60 FPS
+	@param {number} framerate - Speed which the animation will get played (common values are 60 or 30)
+	@default {framerate} 60 FPS
 ]=]
 function Animator:SetFramerate(framerate: number)
-	ValidateArguments("SetFramerate", { Value = framerate, Type = "number" }):andThen(function()
+	TypeCheck.IsWrongType(":SetFramerate", { Value = framerate, Type = "number" }):andThen(function()
 		self.Framerate = framerate
 	end)
 end
@@ -442,27 +447,33 @@ end
 	`:NextFrame` is useful if you want you animation to play a certain amount of times.
 
 	```lua
-	local Animator = this.module
+	local Animator = require(Rethink)
+	local myAnimation = Animator.new()
 
-	Animation:AddSpritesheet("6928232464", Vector2.new(100, 100), {
+	myAnimation:AddSpritesheet("6928232464", Vector2.new(100, 100), {
 		["run"] = {
 			-- This should normally represent to 1st row but since there's an `r` key
-			-- `Animator` will offset it by that amiunt.
+			-- `Animator` will offset it by that amount.
 
 			-- In our case this will represent the 2nd row, instead of the 1st row.
 			{ 1, 1, 1, 1, 1 },
 		},
 	})
 
-	Animation:HookObject(path.to.your.object)
+	myAnimation:AttachObject(path.to.your.object)
 
-	Animation:NextFrame()
+	myAnimation:NextFrame()
 	```
 ]=]
 function Animator:NextFrame()
 	if not self.Objects[1] then
-		return warn(ConsoleErrors.NoObjectsHooked)
+		return warn(DebugStrings.Animator.NoObjectsAttached)
+	elseif self.Running then
+		return warn((DebugStrings.Animator.AnimationRunning):format(":NextFrame()"))
 	end
+
+	-- Check all attached objects that they still exist in the game
+	self:CleanupObjects()
 
 	local animationData: Animations = self._AnimationPointer[self.CurrentAnimation]
 	-- Increment the Frame value and if it's more than the actual frames in the
@@ -474,6 +485,8 @@ function Animator:NextFrame()
 	end
 
 	self:_Render(animationData)
+
+	return
 end
 
 --[=[
@@ -481,27 +494,33 @@ end
 	`:PreviousFrame` is useful if you want you animation to play a certain amount of times but backwards.
 
 	```lua
-	local Animator = this.module
+	local Animator = require(Rethink)
+	local myAnimation = Animator.new()
 
-	Animation:AddSpritesheet("6928232464", Vector2.new(100, 100), {
+	myAnimation:AddSpritesheet("6928232464", Vector2.new(100, 100), {
 		["run"] = {
 			-- This should normally represent to 1st row but since there's an `r` key
-			-- `Animator` will offset it by that amiunt.
+			-- `Animator` will offset it by that amount.
 
 			-- In our case this will represent the 2nd row, instead of the 1st row.
 			{ 1, 1, 1, 1, 1 },
 		},
 	})
 
-	Animation:HookObject(path.to.your.object)
+	myAnimation:AttachObject(path.to.your.object)
 
-	Animation:PreviousFrame()
+	myAnimation:PreviousFrame()
 	```
 ]=]
 function Animator:PreviousFrame()
 	if not self.Objects[1] then
-		return warn(ConsoleErrors.NoObjectsHooked)
+		return warn(DebugStrings.Animator.NoObjectsAttached)
+	elseif self.Running then
+		return warn((DebugStrings.Animator.AnimationRunning):format(":PreviousFrame()"))
 	end
+
+	-- Check all attached objects that they still exist in the game
+	self:CleanupObjects()
 
 	local animationData: Animations = self._AnimationPointer[self.CurrentAnimation]
 	-- Increment the Frame value and if it's more than the actual frames in the
@@ -513,6 +532,8 @@ function Animator:PreviousFrame()
 	end
 
 	self:_Render(animationData)
+
+	return
 end
 
 --[=[
@@ -522,64 +543,119 @@ end
 	If no objects have been attached to the current `Animator handler` it will throw a warning!
 
 	```lua
-	local Animator = this.module
+	local Animator = require(Rethink)
+	local myAnimation = Animator.new()
 
-	Animation:AddSpritesheet("6928232464", Vector2.new(100, 100), {
+	myAnimation:AddSpritesheet("6928232464", Vector2.new(100, 100), {
 		["run"] = {
 			-- This should normally represent to 1st row but since there's an `r` key
-			-- `Animator` will offset it by that amiunt.
+			-- `Animator` will offset it by that amount.
 
 			-- In our case this will represent the 2nd row, instead of the 1st row.
 			{ 1, 1, 1, 1, 1 },
 		},
 	})
 
-	Animation:HookObject(path.to.your.object)
+	myAnimation:AttachObject(path.to.your.object)
 	```
 
-	@param (object: imagelabel | imagebutton) - Object(s) to update
+	@param {imagelabel | imagebutton} object - Object to apply the animation to
 ]=]
-function Animator:HookObject(object: ImageLabel | ImageButton)
+function Animator:AttachObject(object: ImageLabel | ImageButton)
 	if not CheckObjectIsValid(object) then
-		return warn("Error whilst calling :HookObject -> Expected ImageLabel or ImageButton!")
+		return warn((DebugStrings.Animator.NotValidObject):format(object.Name))
+	end
+	if table.find(self.Objects, object) then
+		return warn(DebugStrings.Animator.ObjectAlreadyAttached)
 	end
 
+	object.Destroying:Connect(function()
+		self:DetachObject(object)
+	end)
+
 	table.insert(self.Objects, object)
+
+	return
+end
+
+--[=[
+	Removes the given object from the Objects list, resulting in the animations not being
+	played on them anymore.
+
+	@param {imagelabel | imagebutton} object - Object to remove from the list
+]=]
+function Animator:DetachObject(object: ImageLabel | ImageButton)
+	if not CheckObjectIsValid(object) then
+		return warn((DebugStrings.Animator.NotValidObject):format(object.Name))
+	end
+
+	local isAttached = table.find(self.Objects, object)
+
+	if isAttached then
+		table.remove(self.Objects, isAttached)
+	end
+
+	return warn(DebugStrings.ObjectIsNotAttached)
+end
+
+--[=[
+	Cleans up all of the objects that had :Destroy() called.
+
+	This is required to prevent a memory leak. Because GC does not delete objects if they have been
+	referenced here.
+	
+	@private
+]=]
+function Animator:CleanupObjects()
+	for index, v: ImageLabel | ImageButton | Instance in ipairs(self.Objects) do
+		if not v:IsDescendantOf(game) then
+			table.remove(self.Objects, index)
+		end
+	end
 end
 
 --[=[
 	Changes the animation data to the set value.
 
 	```lua
-	local Animator = this.module
+	local Animator = require(Rethink)
+	local myAnimation = Animator.new()
 
-	Animation:AddSpritesheet("6928232464", Vector2.new(100, 100), {
+	myAnimation:AddSpritesheet("6928232464", Vector2.new(100, 100), {
 		["run"] = {
 			-- This should normally represent to 1st row but since there's an `r` key
-			-- `Animator` will offset it by that amiunt.
+			-- `Animator` will offset it by that amount.
 
 			-- In our case this will represent the 2nd row, instead of the 1st row.
 			{ 1, 1, 1, 1, 1 },
 		},
 	})
 
-	Animation:HookObject(path.to.your.object)
+	myAnimation:AttachObject(path.to.your.object)
 
-	Animation:Play() --> will throw an error
+	local s, err = pcall(function()
+		myAnimation:Play() --> will throw an error, because there is no animation was specified
+	end)
 
-	Animation:ChangeAnimation("run")
+	myAnimation:ChangeAnimation("run")
 
-	Animation:Play() --> this won't throw an error now since we specified which animation `Animator` should play
+	myAnimation:Play() --> this won't throw an error now since we specified which animation `Animator` should play
 
 	```
 
-	@param (animationName: string) - The name of the animation that was set in `:AddSpritesheet`
+	@param {string} animationName - Name of the animation to play
 ]=]
 function Animator:ChangeAnimation(animationName: string)
-	ValidateArguments("ChangeAnimation", { Value = animationName, Type = "string" }):andThen(function()
+	TypeCheck.IsWrongType(":ChangeAnimation", { Value = animationName, Type = "string" }):andThen(function()
 		if self._AnimationPointer[animationName] then
+			self:_CancelRender()
+
 			self.CurrentAnimation = animationName
 			self.MaxFrames = #self._AnimationPointer[animationName].Animations[self.CurrentAnimation]
+
+			if self.Running then
+				self:Play()
+			end
 		end
 	end)
 end
@@ -619,11 +695,14 @@ end
 ------------------------------------------
 
 --[=[
-	Destroys the current Animator handler.
+	Destroys the Animator class
+
+	@destructor Animator
 ]=]
 function Animator:Destroy()
 	self:_CancelRender()
 	self:ClearAnimationData()
+	table.clear(self.Objects)
 	table.clear(self)
 	setmetatable(self, nil)
 end
