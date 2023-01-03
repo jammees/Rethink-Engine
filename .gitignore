@@ -6,9 +6,7 @@
 *.lock
 
 # ignore files
-manual/Runner.client_disabled.lua
 mkdocs.yml
 
 # ignore some folders
-manual/Controllers
 docs
