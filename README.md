@@ -7,25 +7,20 @@
 
 <div align="center">
     <h3><strong>Versatile, easy-to-use 2D game engine</strong>.</h3>
-    InDev release
+    1.0.0-alpha release
 </div>
 
 <h3>Interested in using it? Here's some if it's features</h3>
 
 - Physics
 - Manage scenes with Scene
-- Disable 3D rendering (kind of)
+- Disable 3D rendering
 - Use Camera to explore your whole scene
 - Raycasts
 - Animations with spritesheets or a group of images
 - Collisions
-- Custom scene API with symbols
+- Robust scene creation with symbols
 - And more!
-
-<h3>Features that I plan to implement</h3>
-
-- Expand on the Input library
-- Support Fusion and Roact for Scene
 
 <h3>RePreview</h3>
 
@@ -39,9 +34,9 @@ Progress: 90% done
 
 - jaipack17 (GitHub) for Nature2D / GuiCollisionService / RayCast2
 - evaera (GitHub) for Promise
-- Validark and HowManySmall for Janitor
+- HowManySmall (GitHub) for Janitor
 - Brownsage for helping with Camera
-- nidorx (GitHub) for dat.GUI
+- nidorx (GitHub) for dat.GUI to test Rethink
 
 <h3>Contribution</h3>
 
