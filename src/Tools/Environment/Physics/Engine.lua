@@ -73,7 +73,6 @@ function Engine.init(screengui: Instance)
 		ObjectAdded = Signal.new(),
 		ObjectRemoved = Signal.new(),
 		Updated = Signal.new(),
-		Camera = nil,
 	}, Engine)
 
 	local janitor = Janitor.new()
@@ -123,21 +122,6 @@ function Engine:Start()
 				accumulator -= fixedDeltaTime
 				PhysicsRunner.Update(self, deltaTime)
 				PhysicsRunner.Render(self)
-
-				-- camera update
-				-- should make a hook
-				-- for _, v in ipairs(self.bodies) do
-				-- 	v:SetPosition(v.frame.Position.X.Offset, v.frame.Position.Y.Offset - 5)
-				-- end
-
-				if self.Camera then
-					for _, v in ipairs(self.bodies) do
-						local deltaPos: Vector2 = self.Camera:_FromBuffer(v.frame)
-						local rigidPos: UDim2 = v.frame.Position
-
-						v:SetPosition(rigidPos.X.Offset + deltaPos.X, rigidPos.Y.Offset + deltaPos.Y)
-					end
-				end
 			end
 
 			if accumulator >= -epsilon then
