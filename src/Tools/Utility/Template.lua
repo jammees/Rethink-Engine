@@ -6,14 +6,14 @@
 
     API:
 
-    Template.New(ui element) -> parent element to nil
-    Template:Fetch() -> returns a clone of the ui
-    Template:Update(any)
+    Template.new(object) -> any element
+    Template:Fetch() -> returns the object, if possible clone it
+    Template:Update(object)
     Template:Destroy()
 
+	Template.NewGlobal()
 	Template.FetchGlobal()
 	Template.UpdateGlobal()
-	Template.NewGlobal()
     
 ]]
 
@@ -60,7 +60,13 @@ end
 function Template.FetchGlobal(target: string)
 	assert(type(target) == "string", "Expected string, got; " .. typeof(target) .. " instead!")
 
-	return globalTemplate[target].Element
+	local registry = globalTemplate[target]
+
+	if registry ~= nil then
+		return globalTemplate[target].Element
+	end
+
+	return warn("Failed to find " .. target)
 end
 
 --[=[
@@ -98,7 +104,7 @@ function Template.UpdateGlobal(target: string, element: any)
 		return
 	end
 
-	warn(("Global (%S) is locked!"):format(target))
+	return warn(("Global (%s) is locked!"):format(target))
 end
 
 --[=[
@@ -115,7 +121,7 @@ end
 	end)
 	```
 ]=]
-function Template.New(element: any, isLocked: boolean)
+function Template.new(element: any, isLocked: boolean)
 	if typeof(element) == "Instance" then
 		element.Parent = nil
 	end
