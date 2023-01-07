@@ -1,3 +1,5 @@
+type PromiseClass = { [any]: any }
+
 type ArgumentData = {
 	Value: any,
 	Type: string?,
@@ -7,8 +9,6 @@ local components = script:FindFirstAncestor("Components")
 
 local Promise = require(components.Library.Promise)
 local DebugStrings = require(script.Parent.Strings)
-
-type PromiseClass = typeof(Promise)
 
 local TypeCheck = {}
 
@@ -23,7 +23,9 @@ function TypeCheck.IsWrongType(methodName: string, ...): PromiseClass
 	return Promise.new(function(resolve, reject)
 		for _, argumentData: ArgumentData in ipairs(checks) do
 			if typeof(argumentData.Value) ~= argumentData.Type then
-				reject((DebugStrings.IsWrongType):format(methodName, typeof(argumentData.Type), typeof(argumentData.Value)))
+				reject(
+					(DebugStrings.IsWrongType):format(methodName, typeof(argumentData.Type), typeof(argumentData.Value))
+				)
 			end
 
 			passes += 1
