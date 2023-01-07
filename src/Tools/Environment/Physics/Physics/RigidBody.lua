@@ -245,7 +245,6 @@ function RigidBody.new(
 	self._janitor:Add(self.CanvasEdgeTouched, "Destroy")
 
 	if not self.custom then
-		-- Curently I'm skipping this
 		local UiPool = Template.FetchGlobal("__Rethink_Pool")
 
 		self._janitor:Add(function()
