@@ -3,20 +3,22 @@
     Scene
 	Last updated: 28/05/2022
 
+	Scene currently does not support custom rigidbodies.
+
 ]]
 
-type SceneObject = {
-	Object: Instance | { any },
-	ShouldFlush: boolean,
+type CompiledObject = {
+	Object: any,
+	Symbols: any,
 }
 
 type Tag = { [number]: string } | string?
+
 type SceneConfig = { Name: string }
 
 local CollectionService = game:GetService("CollectionService")
-local HttpService = game:GetService("HttpService")
 
-local package = script:FindFirstAncestor("Tools").Parent
+local package = script.Parent.Parent.Parent
 local components = package.Components
 local library = components.Library
 local tools = package.Tools
@@ -29,22 +31,17 @@ local Compiler = require(script.Compiler)
 local Symbols = require(script.Symbols)
 local TypeCheck = require(components.Debug.TypeCheck)
 local UiPool = Template.FetchGlobal("__Rethink_Pool")
+local TaskDistributor = require(components.Library.TaskDistributor).new()
+local Janitor = require(components.Library.Janitor)
+local Types = require(script.Types)
 
 local PhysicsEngine = Template.FetchGlobal("__Rethink_Physics")
 
 local sceneObjects = {}
 
-local function AddTag(object: Instance, tags: { [number]: string } | string?)
-	if typeof(tags) == "table" then
-		for _, tag in ipairs(tags) do
-			CollectionService:AddTag(object, tag)
-		end
-	else
-		CollectionService:AddTag(object, tags)
-	end
-end
-
 local Scene = {}
+
+Scene.TEST_MODE = false
 
 -- public properties
 Scene.Symbols = Symbols.Types
@@ -102,7 +99,7 @@ Scene.Events = {
 	Symbols **must** be wrapped with `[]`
 
 	```lua
-	local Rethink = require(game:GetService("ReplicatedStorage").RethinkEngine)
+	local Rethink = require(game:GetService("ReplicatedStorage").Rethink)
 	local Scene = Rethink.Scene
 
 	local Type = Scene.Symbols.Type
@@ -137,12 +134,13 @@ Scene.Events = {
 	```
 
 	@param {dictionary} sceneConfig
-	@return {dictionary} sceneTable
+	@param {dictionary} sceneData
+	@return {promise} sceneTable
 	@async
 	@fires LoadStarted
 	@fires LoadFinished
 ]=]
-function Scene.Load(sceneConfig: SceneConfig, sceneData: { any })
+function Scene.Load(sceneConfig: SceneConfig, sceneData: { any }): { any }
 	assert(typeof(sceneConfig) == "table", string.format(DebugStrings.Expected, "table", typeof(sceneConfig), "1"))
 	assert(typeof(sceneData) == "table", string.format(DebugStrings.Expected, "table", typeof(sceneConfig), "2"))
 
@@ -150,29 +148,33 @@ function Scene.Load(sceneConfig: SceneConfig, sceneData: { any })
 
 	-- Returns a promise to allow the function to yield
 	-- In this Promise:
-		-- Reassign SceneName to the specified one in the sceneConfig
-		-- Loop over the objects that the Compiler returned and add them to the scene
-		-- After all fire the .LoadFinished event
-	return Compiler.Compile(sceneData):andThen(function(compiledObjects)
-		Scene.SceneName = sceneConfig.Name or "Unnamed scene"
+	-- Reassign SceneName to the specified one in the sceneConfig
+	-- Loop over the objects that the Compiler returned and add them to the scene
+	-- After all fire the .LoadFinished event
+	return Compiler.Compile(sceneData)
+		:andThen(function(compiledObjects)
+			Scene.SceneName = sceneConfig.Name or "Unnamed scene"
 
-		for _, v in ipairs(compiledObjects) do
-			Scene.Add(v)
-		end
+			for _, object: CompiledObject in ipairs(compiledObjects) do
+				-- Attach symbols
+				--Scene.prototype_v1_Add(object.Object)
+				--Symbols.AttachToInstance(Scene.prototype_v1_Add(object.Object), object.Source.SymbolsAttached)
+				Scene.Add(object.Object, object.Symbols)
+			end
 
-		Scene.Events.LoadFinished:Fire()
-	end):catch(warn)
+			Scene.Events.LoadFinished:Fire()
+		end)
+		:catch(warn)
 end
 
 --[=[
 	Can be used to add an instance into the scene, after it has been compiled.
 
-	Tags can be added to the instance.
 	If ShouldFlush is false it will prevent the `:Flush` method to clean that object up.
-	Does not support adding symbols to the object.
+	Supports adding symbols to the object.
 
 	```lua
-	local Rethink = require(game:GetService("ReplicatedStorage").RethinkEngine)
+	local Rethink = require(game:GetService("ReplicatedStorage").Rethink)
 	local Scene = Rethink.Scene
 
 	local frame = Instance.new("Frame")
@@ -186,36 +188,65 @@ end
 	@param {boolean} destroyAfterFlush - Whether the object will get deleted after .Flush() was called
 	@fires ObjectAdded
 ]=]
-function Scene.Add(object: any, tags: Tag?, shouldFlush: boolean?)
+function Scene.Add(object: any, symbols: { [Types.Symbol]: any }?)
 	TypeCheck.Assert(DebugStrings.ExpectedNoArg, object, "Instance", "table")
-	TypeCheck.Assert(DebugStrings.ExpectedNoArg, tags, "table", "string", "nil")
-	TypeCheck.Assert(DebugStrings.ExpectedNoArg, shouldFlush, "boolean", "nil")
+	TypeCheck.Assert(DebugStrings.ExpectedNoArg, symbols, "table")
 
-	if tags then
-		if Scene.IsRigidbody(object) then
-			AddTag(object:GetFrame(), tags)
-		else
-			AddTag(object, tags)
+	local ObjectReference = {
+		Object = object,
+		ObjectJanitor = Janitor.new(),
+		Index = 0,
+	}
+
+	-- Handle cleanup of the object
+	ObjectReference.ObjectJanitor:Add(function()
+		local cachedObject = object
+		local isRigidbody = Scene.IsRigidbody(cachedObject)
+
+		UiPool:Return(isRigidbody and cachedObject:GetFrame() or cachedObject)
+
+		if isRigidbody then
+			cachedObject:Destroy()
 		end
+	end)
+
+	-- If the symbols table is a table, then try to attach symbols to that object
+	if typeof(symbols) == "table" then
+		local attachedSymbols = {}
+
+		-- Pack symbols
+		for symbol, value in pairs(symbols) do
+			if typeof(attachedSymbols[symbol.Name]) == "nil" then
+				attachedSymbols[symbol.Name] = {}
+			end
+
+			symbol.SymbolData.Attached = value
+
+			table.insert(attachedSymbols[symbol.Name], symbol)
+		end
+
+		Symbols.AttachToInstance(ObjectReference, attachedSymbols)
 	end
 
-	table.insert(sceneObjects, {
-		Object = object,
-		ShouldFlush = shouldFlush,
-	})
+	local reservedPosition = #sceneObjects + 1
+
+	ObjectReference.Index = reservedPosition
+
+	sceneObjects[reservedPosition] = ObjectReference
 
 	Scene.Events.ObjectAdded:Fire(object)
 end
 
 --[=[
-	Removes the given object from the `scene dictionary` and from the janitor.
-	If the object does not exist in the `scnene dictionary` it won't throw an error.
+	Removes the given object from the `scene dictionary`.
+	If the object does not exist in the `scnene dictionary` it will throw a warning instead
+	of an error.
 
 	**Warning:** It does not delete the object!
 
 	**Example:**
 	```lua
-	local Rethink = require(game:GetService("ReplicatedStorage").RethinkEngine)
+	local Rethink = require(game:GetService("ReplicatedStorage").Rethink)
 	local Scene = Rethink.Scene
 
 	local frame = Instance.new("Frame")
@@ -230,19 +261,21 @@ end
 	@fires ObjectRemoved
 ]=]
 function Scene.Remove(object: Instance)
-	assert(typeof(object) == "Instance", string.format(DebugStrings.ExpectedNoArg, "Instance", typeof(object)))
+	TypeCheck.Assert(DebugStrings.ExpectedNoArg, object, "Instance", "table")
 
 	-- remove it from the scene dictionary
-	for index, sceneObject: SceneObject in ipairs(sceneObjects) do
+	for index, sceneObject: Types.SceneObject in ipairs(sceneObjects) do
 		if sceneObject.Object == object then
 			-- Return it to the pool
 			UiPool:Return(object)
+
+			sceneObject.ObjectJanitor:DestroyNoCleanup()
 
 			table.remove(sceneObject, index)
 
 			Scene.Events.ObjectRemoved:Fire(object)
 
-			return
+			return true
 		end
 	end
 
@@ -250,21 +283,21 @@ function Scene.Remove(object: Instance)
 end
 
 --[=[
-	Cleans up the janitor and removes every index from the `scene dictionary` if `delete after flush` is
-	`false` or `nil`.
+	Cleans up the janitor and removes every index from the `scene dictionary` if `ShouldFlush` is
+	a falsy value (nil or false).
 
 	**Notes:**
-	- If the scene is empty, it will throw a warning instead.
+	- If the scene is empty, it will throw a warning.
 	- Will ignore objects that have their `ShouldFlush` set to false
 
 	**Example:**
 	```lua
-	local Rethink = require(game:GetService("ReplicatedStorage").RethinkEngine)
+	local Rethink = require(game:GetService("ReplicatedStorage").Rethink)
 	local Scene = Rethink.Scene
 
 	local Type = Scene.Symbols.Type
 
-	Scene.Load({Name = "My scene", CompileMode = "Standard"}, {
+	Scene.Load({Name = "My scene"}, {
 		My_Container = {
 			[Type] = "Rigidbody",
 			
@@ -293,43 +326,39 @@ function Scene.Flush()
 	Scene.Events.FlushStarted:Fire()
 
 	Compiler.CompilerDistributor:Cancel()
+
 	Scene.SceneName = nil
 
-	-- remove the left references to the deleted objects from sceneObjects
-	for index, sceneObject in ipairs(sceneObjects) do
-		if sceneObject ~= false then
-			local isRigidbody = Scene.IsRigidbody(sceneObject.Object)
-
-			UiPool:Return(isRigidbody and sceneObject.Object:GetFrame() or sceneObject.Object)
-
-			if isRigidbody then
-				sceneObject.Object:Destroy()
-			end
-
-			sceneObjects[index] = nil
+	-- Remove the left references to the deleted objects from sceneObjects
+	TaskDistributor:Distribute(TaskDistributor.GenerateChunk(sceneObjects, 100), function(object: Types.SceneObject)
+		if object.ShouldFlush == false then
+			return
 		end
-	end
+
+		-- Destroy the object's Janitor
+		-- This will result in having all of the events disconnected, Rigidbody being destroyed
+		-- and the UI element getting returned to the Pool for later use
+		object.ObjectJanitor:Destroy()
+
+		sceneObjects[object.Index] = nil
+	end):await()
 
 	Scene.Events.FlushFinished:Fire()
-
-	return
 end
 
 --[=[
-	Gets a collection of rigidbody(s) from a tag, that can be assigned with the `Tag` symbol.
-
-	If only one rigidbody is found it will return only that, else will will return a table with the
-	other rigidbodies
+	Gets a collection of rigidbodies from a tag, that can be assigned with the `Tag` symbol in
+	a scene file, or by using `Scene.Add`.
 
 	**Example:**
 	```lua
-	local Rethink = require(game:GetService("ReplicatedStorage").RethinkEngine)
+	local Rethink = require(game:GetService("ReplicatedStorage").Rethink)
 	local Scene = Rethink.Scene
 
 	local Type = Scene.Symbols.Type
 	local Tag = Scene.Symbols.Tag
 
-	Scene.Load({Name = "My scene", CompileMode = "Standard"}, {
+	Scene.Load({Name = "My scene"}, {
 		My_Container = {
 			[Type] = "Rigidbody",
 			
@@ -355,13 +384,13 @@ end
 	@public
 	@returns {array} Collection of all rigidbodies with the given tag
 ]=]
-function Scene.GetBodyFromTag(tag: string): { [number]: { any } } | { any }
+function Scene.GetBodyFromTag(tag: string): { [number]: { any } }
 	assert(typeof(tag) == "string", string.format(DebugStrings.ExpectedNoArg, "string", typeof(tag)))
 
 	local results = {}
 
 	for _, object in ipairs(CollectionService:GetTagged(tag)) do --> fetch instances tagged with "tag argument"
-		for _, rigid in ipairs(PhysicsEngine:GetBodies()) do --> loop trough all of the rigidbodies (i'll try to optimize it somehow)
+		for _, rigid in ipairs(PhysicsEngine:GetBodies()) do --> loop trough all of the rigidbodies (i'll try to optimize it somehow) -> UPDATE: won't
 			if rigid.frame == object then
 				table.insert(results, {
 					Object = object,
@@ -403,11 +432,11 @@ end
 
 	**Example"**
 	```lua
-	local Rethink = require(game:GetService("ReplicatedStorage").RethinkEngine)
+	local Rethink = require(game:GetService("ReplicatedStorage").Rethink)
 	local Scene = Rethink.Scene
 
 	Scene.GetSignal("LoadStarted"):Connect(function()
-		print("Finished loading in scene, called.. " .. Scene.SceneName)
+		print("Finished loading in scene; " .. Scene.SceneName)
 	end)
 	```
 
@@ -423,6 +452,7 @@ function Scene.GetSignal(signalName: string): { any }?
 	end
 
 	warn(string.format(DebugStrings.SignalNotFound, tostring(signalName)))
+
 	return
 end
 
