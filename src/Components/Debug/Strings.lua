@@ -34,6 +34,6 @@ return {
 	},
 
 	TaskDistributor = {
-		AlreadyProcessing = "Error whilst trying to call :Distribute(), already processing a chunk!"
-	}
+		AlreadyProcessing = "Error whilst trying to call :Distribute(), already processing a chunk!",
+	},
 }
