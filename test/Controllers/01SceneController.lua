@@ -1,9 +1,9 @@
 type DatGuiType = {
-	addFolder: ( string ) -> ( any )?
+	addFolder: (string) -> (any)?,
 }
 
 type DatGuiClass = {
-	add: ( () -> (), string, any ) -> ()
+	add: (() -> (), string, any) -> (),
 }
 
 local scenesFolder = script.Parent.Parent.Scenes
@@ -26,8 +26,8 @@ local SceneController = {}
 SceneController.SelectedScene = "Test"
 
 function SceneController.Init(DatGui: DatGuiType)
-    -- Add all of the connections
-    local datGui: DatGuiClass = DatGui.addFolder("Scene")
+	-- Add all of the connections
+	local datGui: DatGuiClass = DatGui.addFolder("Scene")
 
 	datGui.add(SceneController, "SelectedScene", GenerateSceneTable())
 	datGui.add(SceneController, "Load")
@@ -35,7 +35,7 @@ function SceneController.Init(DatGui: DatGuiType)
 end
 
 function SceneController.Load()
-    Rethink.Scene.Load(table.unpack(require(scenesFolder[SceneController.SelectedScene])))
+	Rethink.Scene.Load(table.unpack(require(scenesFolder[SceneController.SelectedScene])))
 end
 
 return SceneController
