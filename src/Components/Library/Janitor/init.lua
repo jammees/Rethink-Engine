@@ -490,6 +490,11 @@ function Janitor:Destroy()
 	setmetatable(self, nil)
 end
 
+function Janitor:DestroyNoCleanup()
+	table.clear(self)
+	setmetatable(self, nil)
+end
+
 Janitor.__call = Janitor.Cleanup
 
 --[=[
