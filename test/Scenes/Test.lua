@@ -28,7 +28,8 @@ return {
 					[Symbols.Tag] = "Box",
 					[Symbols.Event("MouseButton1Click")] = function(object: ImageButton)
 						print("Box has been clicked!")
-						object.ImageColor3 = Color3.fromRGB(math.random(0, 255), math.random(0, 255), math.random(0, 255))
+						object.ImageColor3 =
+							Color3.fromRGB(math.random(0, 255), math.random(0, 255), math.random(0, 255))
 					end,
 				},
 
@@ -73,6 +74,9 @@ return {
 					Size = UDim2.fromOffset(101, 101),
 
 					[Symbols.Tag] = "MyRigidbody",
+					[Symbols.Event("MouseButton1Click")] = function(object)
+						object:Destroy()
+					end,
 					[Symbols.Rigidbody] = {
 						KeepInCanvas = true,
 					},
