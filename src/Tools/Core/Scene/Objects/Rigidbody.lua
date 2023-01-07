@@ -27,7 +27,7 @@ type CompileType = {
 	Class: string?,
 	Index: string | number | { any },
 	Data: {
-		Class: string?
+		Class: string?,
 	},
 }
 
@@ -36,37 +36,52 @@ local package = script:FindFirstAncestor("Tools").Parent
 local Template = require(package.Tools.Utility.Template)
 local Symbols = require(package.Tools.Core.Scene.Symbols)
 local UiBase = require(script.Parent.UiBase)
+local Promise = require(package.Components.Library.Promise)
+local UiPool = Template.FetchGlobal("__Rethink_Pool")
 
 local Physics = Template.FetchGlobal("__Rethink_Physics")
 
 local function AddProperties(target: { [string]: any }, values: { any })
+	if typeof(values) ~= "table" then
+		return
+	end
+
 	for propertyName, propertyValue in pairs(values) do
 		target[propertyName] = propertyValue
 	end
 end
 
 local function CompileDynamic(objectProperties: CompileType, groupData: any, savedProperties: CompileType)
+	debug.profilebegin("Get UI object")
 	local rigidbodyData = {
 		Object = UiBase(objectProperties, groupData, savedProperties),
 	}
+	debug.profileend()
 
-	-- Check saved properties for a Rigidbody symbol
-	Symbols.FindSymbol(savedProperties, "Rigidbody", function(value: { any })
-		AddProperties(rigidbodyData, value)
+	debug.profilebegin("Add properties")
+	AddProperties(rigidbodyData, select(2, Symbols.FindSymbol(savedProperties, "Rigidbody")))
+	AddProperties(rigidbodyData, select(2, Symbols.FindSymbol(Symbols.FindSymbol(groupData, "Property"), "Rigidbody")))
+	AddProperties(rigidbodyData, select(2, Symbols.FindSymbol(objectProperties.Data, "Rigidbody")))
+	debug.profileend()
+
+	local object = nil
+
+	debug.profilebegin("Create Rigidbody")
+	Promise.new(function(resolve)
+		object = Physics:Create("RigidBody", rigidbodyData)
+
+		resolve()
 	end)
+		:catch(function(errorMessage: string)
+			warn(errorMessage)
 
-	-- Check for properties symbol and inside attempt to find a Rigidbody symbol
-	Symbols.FindSymbol(groupData, "Property", function(value: any)
-		Symbols.FindSymbol(value, "Rigidbody", function(subValue: { any })
-			AddProperties(rigidbodyData, subValue)
+			UiPool:Return(rigidbodyData.Object)
+			table.clear(rigidbodyData)
 		end)
-	end)
+		:await()
+	debug.profileend()
 
-	Symbols.FindSymbol(objectProperties.Data, "Rigidbody", function(subValue: { any })
-		AddProperties(rigidbodyData, subValue)
-	end)
-
-	return Physics:Create("RigidBody", rigidbodyData)
+	return object
 end
 
 return CompileDynamic

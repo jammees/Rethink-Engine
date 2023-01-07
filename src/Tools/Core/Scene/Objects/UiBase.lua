@@ -9,7 +9,7 @@ type CompileType = {
 	Class: string?,
 	Index: string | number | { any }?,
 	Data: {
-		Class: string?
+		Class: string?,
 	},
 }
 
@@ -40,12 +40,16 @@ local function AddTag(object: Instance, tags: { [number]: string } | string?)
 		for _, tag in ipairs(tags) do
 			CollectionService:AddTag(object, tag)
 		end
-	else
+	elseif typeof(tags) == "string" then
 		CollectionService:AddTag(object, tags)
 	end
 end
 
 function ApplyProperties(object: Instance, properties: { [string]: any }): Instance
+	if typeof(properties) ~= "table" then
+		return
+	end
+
 	for propertyKey, propertyValue in pairs(properties) do
 		Promise.try(function()
 			-- Check if the key is a symbol
@@ -82,9 +86,11 @@ local function CompileStatic(objectProperties: CompileType, groupData: any, save
 
 	-- apply default properties if they're not present
 	for i, v in pairs(DefaultProperties[object.ClassName]) do
-		if objectProperties.Data[i] == nil and groupData[i] == nil then
-			object[i] = v
+		if objectProperties.Data[i] ~= nil and groupData[i] ~= nil then
+			continue
 		end
+
+		object[i] = v
 	end
 
 	-- apply properties
@@ -92,19 +98,9 @@ local function CompileStatic(objectProperties: CompileType, groupData: any, save
 		ApplyProperties(object, savedProperties)
 	end
 
-	-- check for symbols in group and in layer data, also this looks much cleaner in my opinion than using if statements
-	-- and assigning a value the the result
-	Symbols.FindSymbol(groupData, "Property", function(result)
-		ApplyProperties(object, result)
-	end)
-
-	Symbols.FindSymbol(groupData, "Tag", function(result)
-		AddTag(object, result)
-	end)
-
-	Symbols.FindSymbol(objectProperties.Data, "Tag", function(result)
-		AddTag(object, result)
-	end)
+	ApplyProperties(object, select(2, Symbols.FindSymbol(groupData, "Property")))
+	AddTag(object, select(2, Symbols.FindSymbol(groupData, "Tag")))
+	AddTag(object, select(2, Symbols.FindSymbol(objectProperties.Data, "Tag")))
 
 	object.Parent = objectParent
 
