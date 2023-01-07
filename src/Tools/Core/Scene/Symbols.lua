@@ -1,58 +1,119 @@
-export type Symbol = {
-	Type: string,
-	Name: string,
-	Data: { any }?
+type AvailableSymbols = {
+	Property: any,
+	Type: any,
+	Tag: any,
+	Rigidbody: any,
+	Event: any,
 }
 
-type PackedSymbol = {
-	Symbol: Symbol,
-	Value: any
+-- 0 : default
+-- 1 : function
+local AVAILABLE_SYMBOLS = {
+	Property = 0,
+	Type = 0,
+	Tag = 0,
+	Rigidbody = 0,
+	Event = 1,
 }
 
-local IGNORED_SYMBOLS = {
-	"Property",
-	"Rigidbody",
-}
+local CollectionService = game:GetService("CollectionService")
 
-local package = script.Parent.Parent.Parent
-
-local Rigidbody = require(package.Environment.Physics.Physics.RigidBody)
-
-local function CreateSymbol(symbolName: string, additionalData: any): Symbol
-	return {
-		Type = "Symbol",
-		Name = symbolName,
-		Data = additionalData
-	}
-end
+local Rigidbody = require(script.Parent.Parent.Parent.Environment.Physics.Physics.RigidBody)
+local Types = require(script.Parent.Types)
 
 local function IsRigidbody(object: any): boolean
 	return getmetatable(typeof(object) == "table" and object or nil) == Rigidbody
 end
 
+local function CreateSymbol(symbolName: string, symbolData: any?): Types.Symbol
+	return {
+		Type = "Symbol",
+		Name = symbolName,
+		SymbolData = {
+			Symbol = symbolData,
+			Attached = "Not assigned",
+		},
+
+		-- This exists only to make each symbol unique
+		__identifier = game:GetService("HttpService"):GenerateGUID(false),
+	}
+end
+
+local function IsSymbol(tableIndex: any): boolean
+	if typeof(tableIndex) == "table" and tableIndex.Name ~= nil then
+		return true
+	end
+
+	return false
+end
+
 local Symbols = {}
 
-Symbols.Types = {
-	Property = CreateSymbol("Property"),
-	Type = CreateSymbol("Type"),
-	Children = CreateSymbol("Children"), -- UNUSED: Will get implemented hopefully in 1.1.0
-	Tag = CreateSymbol("Tag"),
-	Rigidbody = CreateSymbol("Rigidbody"),
-	Event = function(property: string)
-		return CreateSymbol("Event", property)
-	end
-}
+-- New system for handling symbols,
+-- previously the problem was that the symbols were created once and because of
+-- that lua overwrote symbols that were technically the same.
+-- This fixed the problem by creating a symbol if it was called like Symbols.Types.Event
+local TypesHandle: AvailableSymbols = setmetatable({}, {
+	__index = function(_, symbolName)
+		if AVAILABLE_SYMBOLS[symbolName] == nil then
+			error("Attempt to index non-existing symbol!", 2)
+		end
 
+		-- If it should be a function
+		if AVAILABLE_SYMBOLS[symbolName] == 1 then
+			return function(property: string)
+				return CreateSymbol(symbolName, property)
+			end
+		end
+
+		return CreateSymbol(symbolName)
+	end,
+})
+
+Symbols.Types = TypesHandle
+
+--[[
+	Attachable symbols are symbols that attach some functionality to an object.
+	Such as Tags, Events.
+]]
 Symbols.AttachableSymbols = {
-	Event = function(object: Instance | { any }, visualObject: Instance, packedSymbol: PackedSymbol)
-		visualObject[packedSymbol.Symbol.Data]:Connect(function()
-			packedSymbol.Value(object)
-		end)
-	end
+	Event = function(object: Types.SceneObject, symbol: Types.Symbol)
+		local visualObject = IsRigidbody(object.Object) and object.Object:GetFrame() or object.Object
+
+		object.ObjectJanitor:Add(visualObject[symbol.SymbolData.Symbol]:Connect(function()
+			symbol.SymbolData.Attached(object.Object)
+		end))
+	end,
+
+	Tag = function(object: Types.SceneObject, symbol: Types.Symbol)
+		local visualObject = IsRigidbody(object.Object) and object.Object:GetFrame() or object.Object
+
+		if typeof(symbol.SymbolData.Attached) == "table" then
+			for _, tag in ipairs(symbol.SymbolData.Attached) do
+				CollectionService:AddTag(visualObject, tag)
+			end
+		else
+			CollectionService:AddTag(visualObject, symbol.SymbolData.Attached)
+		end
+	end,
+
+	-- For some reason the last Property entry gets processed.
+	-- Most likely I won't fix this behaviour, because why would you do such thing? (Hopefully not because to try to break everything :) )
+	Property = function(object: Types.SceneObject, symbol: Types.Symbol)
+		local visualObject = IsRigidbody(object.Object) and object.Object:GetFrame() or object.Object
+
+		for propertyName, propertyValue in pairs(symbol.SymbolData.Attached) do
+			if IsSymbol(propertyName) == true or typeof(visualObject[propertyName]) == "nil" then
+				continue
+			end
+
+			visualObject[propertyName] = propertyValue
+		end
+	end,
 }
 
 -- If callback is not provided, it will return the symbol and it's value
-function Symbols.FindSymbol(array: { any }, targetSymbol: string, callback: ( any ) -> ( any )?)
+function Symbols.FindSymbol(array: { any }, targetSymbol: string)
 	if typeof(array) ~= "table" then
 		return
 	end
@@ -60,10 +121,6 @@ function Symbols.FindSymbol(array: { any }, targetSymbol: string, callback: ( an
 	for index, value in pairs(array) do
 		if typeof(index) == "table" and index.Type == "Symbol" then
 			if index.Name == targetSymbol then
-				if typeof(callback) == "function" then
-					return callback(value)
-				end
-
 				return index, value
 			end
 		end
@@ -72,32 +129,14 @@ function Symbols.FindSymbol(array: { any }, targetSymbol: string, callback: ( an
 	return nil
 end
 
--- Attaches symbols to an object
--- This is currently a hard coded implementation
--- This means that if you would like to add a new symbol that can be attached
--- You have to expand the if stateement to account for that
-function Symbols.AttachToInstance(object, packedSymbols: { [number]: PackedSymbol })
-	for symbolName: string, packedSymbol: PackedSymbol in pairs(packedSymbols) do
-		local visualObject = IsRigidbody(object) and object:getFrame() or object
-
-		if Symbols.AttachableSymbols[symbolName] then
-			Symbols.AttachableSymbols[symbolName](object, visualObject, packedSymbol)
+function Symbols.AttachToInstance(object: Types.SceneObject, symbols: { [string]: { [number]: Types.Symbol } })
+	-- There is no need to check if it exists in the AttachableSymbols,
+	-- because it already loops over this table and checks for each of the symbols
+	for symbolName: string, collectedSymbols: { [number]: Types.Symbol } in pairs(symbols) do
+		for _, symbol: Types.Symbol in ipairs(collectedSymbols) do
+			Symbols.AttachableSymbols[symbolName](object, symbol)
 		end
 	end
-end
-
-function Symbols.IndexIsValid(index: Symbol, value: string, targetValue: string)
-	if index.Type == "Symbol" then
-		if table.find(IGNORED_SYMBOLS, index.Name) then
-			return false
-		end
-
-		if string.lower(value) == string.lower(targetValue) then
-			return true
-		end
-	end
-
-	return false
 end
 
 return Symbols
