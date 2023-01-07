@@ -1,19 +1,18 @@
 --[[
-    Distribute the load into different threads to speed up processed
-    that would take too long to process or would make the program
-    end up freezing
+    TaskDistributor is a module created for handling tasks in a large scale using
+	Promises.
 ]]
 
+type PromiseClass = { [any]: any }
+
 type CachedChunk = {
-    Chunk: { [ number ]: { [ number ]: any } },
-    DataSize: number,
+	Chunk: { [number]: { [number]: any } },
+	DataSize: number,
 }
 
 local Promise = require(script.Parent.Promise)
 local DebugStrings = require(script.Parent.Parent.Debug.Strings)
 local TypeCheck = require(script.Parent.Parent.Debug.TypeCheck)
-
-type PromiseClass = typeof(Promise.new())
 
 local TaskDistributor = {}
 TaskDistributor.__index = TaskDistributor
@@ -22,13 +21,13 @@ TaskDistributor.__index = TaskDistributor
     Constructs a new TaskDistributor class
 ]=]
 function TaskDistributor.new()
-    return setmetatable({
-        ProcessingChunks = false,
-        Processed = 0,
-        ProcessedMax = 0,
+	return setmetatable({
+		ProcessingChunks = false,
+		Processed = 0,
+		ProcessedMax = 0,
 
-        _Distributors = {},
-    }, TaskDistributor)
+		_Distributors = {},
+	}, TaskDistributor)
 end
 
 --[=[
@@ -42,25 +41,25 @@ end
     @yields
 ]=]
 function TaskDistributor.GenerateChunk(data: { [number]: any }, chunkSize: number): CachedChunk
-    TypeCheck.Is("data", data, "table")
-    TypeCheck.Is("chunkSize", chunkSize, "number")
+	TypeCheck.Is("data", data, "table")
+	TypeCheck.Is("chunkSize", chunkSize, "number")
 
-    local dataChunk = {}
+	local dataChunk = {}
 
-    for chunksIndex = 1, #data, chunkSize do
-        local chunk = {}
+	for chunksIndex = 1, #data, chunkSize do
+		local chunk = {}
 
-        for objectIndex = chunksIndex, math.min(chunksIndex + chunkSize - 1, #data) do
-            chunk[#chunk + 1] = data[objectIndex]
-        end
+		for objectIndex = chunksIndex, math.min(chunksIndex + chunkSize - 1, #data) do
+			chunk[#chunk + 1] = data[objectIndex]
+		end
 
-        dataChunk[#dataChunk + 1] = chunk
-    end
+		dataChunk[#dataChunk + 1] = chunk
+	end
 
-    return {
-        Chunk = dataChunk,
-        DataSize = #data
-    }
+	return {
+		Chunk = dataChunk,
+		DataSize = #data,
+	}
 end
 
 --[=[
@@ -100,41 +99,46 @@ end
     @yields
     @returns {Promise}
 ]=]
-function TaskDistributor:Distribute(chunkData: CachedChunk, processor: ( any ) -> nil): PromiseClass
-    if self.ProcessingChunks == true then
-        return warn(DebugStrings.TaskDistributor.AlreadyProcessing)
-    end
+function TaskDistributor:Distribute(chunkData: CachedChunk, processor: (any) -> nil): PromiseClass
+	if self.ProcessingChunks == true then
+		return warn(DebugStrings.TaskDistributor.AlreadyProcessing)
+	end
 
-    TypeCheck.Is("chunkData", chunkData, "table")
-    TypeCheck.Is("processor", processor, "function")
+	TypeCheck.Is("chunkData", chunkData, "table")
+	TypeCheck.Is("processor", processor, "function")
 
-    -- Distribute the work of compiling objects into asynchronous functions
-    local cachedChunk: CachedChunk = chunkData
-    self.ProcessingChunks = true
-    self.Processed = 0
-    self.ProcessedMax = cachedChunk.DataSize
-    self._Distributors = {}
+	-- Distribute the work of compiling objects into asynchronous functions
+	local cachedChunk: CachedChunk = chunkData
+	self.ProcessingChunks = true
+	self.Processed = 0
+	self.ProcessedMax = cachedChunk.DataSize
+	self._Distributors = {}
 
-    for _, chunk in ipairs(cachedChunk.Chunk) do
-        -- Create a new Promise and immediately insert it into the Distributors table
-        table.insert(self._Distributors, Promise.defer(function(resolve)
-            for _, chunkObject: any in ipairs(chunk) do
-                -- Call the processor function that takes in a chunk object as an argument
-                processor(chunkObject)
+	for _, chunk in ipairs(cachedChunk.Chunk) do
+		-- Create a new Promise and immediately insert it into the Distributors table
+		table.insert(
+			self._Distributors,
+			Promise.new(function(resolve)
+				for _, chunkObject: any in ipairs(chunk) do
+					-- Call the processor function that takes in a chunk object as an argument
+					processor(chunkObject)
 
-                self.Processed += 1
-                
-                task.wait()
-            end
+					self.Processed += 1
 
-            resolve()
-        end):catch(warn))
-    end
+					task.wait()
+				end
 
-    return Promise.all(self._Distributors):andThen(function()
-        -- After all of the Promises successfully resolved, set the ProcessingChunks to false
-        self.ProcessingChunks = false
-    end):catch(warn)
+				resolve()
+			end):catch(warn)
+		)
+	end
+
+	return Promise.all(self._Distributors)
+		:andThen(function()
+			-- After all of the Promises successfully resolved, set the ProcessingChunks to false
+			self.ProcessingChunks = false
+		end)
+		:catch(warn)
 end
 
 --[=[
@@ -173,22 +177,22 @@ end
     ```
 ]=]
 function TaskDistributor:Cancel()
-    -- Make sure we don't try to loop over an emtpty table
-    for _, promise: PromiseClass in ipairs(self._Distributors) do
-        promise:cancel()
-    end
-     
-    table.clear(self._Distributors)
+	-- Make sure we don't try to loop over an empty table
+	for _, promise: PromiseClass in ipairs(self._Distributors) do
+		promise:cancel()
+	end
 
-    self.ProcessingChunks = false
-    self.Processed = 0
-    self.ProcessedMax = 0
+	table.clear(self._Distributors)
+
+	self.ProcessingChunks = false
+	self.Processed = 0
+	self.ProcessedMax = 0
 end
 
 function TaskDistributor:Destroy()
-    self:Cancel()
-    table.clear(self)
-    setmetatable(self, nil)
+	self:Cancel()
+	table.clear(self)
+	setmetatable(self, nil)
 end
 
 return TaskDistributor
