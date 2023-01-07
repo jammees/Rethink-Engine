@@ -15,21 +15,21 @@ return function()
         end)
     end)
 
-    describe("TaskDistributor:GenerateChunk()", function()
+    describe("TaskDistributor.GenerateChunk()", function()
         it("should throw if `data` is not a table", function()
             expect(function()
-                TaskDistributorClass:GenerateChunk(nil, 5)
+                TaskDistributorClass.GenerateChunk(nil, 5)
             end).to.throw()
         end)
 
         it("should throw if `chunkSize` is not a number", function()
             expect(function()
-                TaskDistributorClass:GenerateChunk({}, nil)
+                TaskDistributorClass.GenerateChunk({}, nil)
             end).to.throw()
         end)
 
         it("should return a table with `Chunk` and `DataSize`", function()
-            local result = TaskDistributorClass:GenerateChunk(table.create(100, 1), 5)
+            local result = TaskDistributorClass.GenerateChunk(table.create(100, 1), 5)
             expect(result).to.be.ok()
             expect(result).to.be.a("table")
             expect(result.Chunk).to.be.ok()
@@ -41,7 +41,7 @@ return function()
         it("should contain as many chunks as dividng the data by the `chunkSize`", function()
             local data = table.create(100, 1)
             local chunkSize = 5
-            local result = TaskDistributorClass:GenerateChunk(data, chunkSize).Chunk
+            local result = TaskDistributorClass.GenerateChunk(data, chunkSize).Chunk
             expect(#result).to.equal(#data / chunkSize)
         end)
     end)
@@ -65,7 +65,7 @@ return function()
 
         it("should throw if `ProcessingChunks` is true", function()
             local accumulator = 0
-            local chunk = TaskDistributorClass:GenerateChunk(table.create(100, 1), 5)
+            local chunk = TaskDistributorClass.GenerateChunk(table.create(100, 1), 5)
             
             TaskDistributorClass.ProcessingChunks = true
             TaskDistributorClass:Distribute(chunk, function()
@@ -78,7 +78,7 @@ return function()
         it("should call processor", function()
             local calledProcessor = false
 
-            local chunk = TaskDistributorClass:GenerateChunk(table.create(100, 1), 5)
+            local chunk = TaskDistributorClass.GenerateChunk(table.create(100, 1), 5)
 
             TaskDistributorClass:Distribute(chunk, function()
                 calledProcessor = true
@@ -89,7 +89,7 @@ return function()
 
         it("should increment the .Processed counter", function()
             local accumulator = 0
-            local chunk = TaskDistributorClass:GenerateChunk(table.create(100, 1), 5)
+            local chunk = TaskDistributorClass.GenerateChunk(table.create(100, 1), 5)
 
             TaskDistributorClass:Distribute(chunk, function()
                 accumulator += 1
@@ -100,7 +100,7 @@ return function()
 
         it("should increment the .ProcessedMax counter", function()
             local accumulator = 0
-            local chunk = TaskDistributorClass:GenerateChunk(table.create(100, 1), 5)
+            local chunk = TaskDistributorClass.GenerateChunk(table.create(100, 1), 5)
 
             TaskDistributorClass:Distribute(chunk, function()
                 accumulator += 1
@@ -112,7 +112,7 @@ return function()
         it("should give a chunkObject in the processor function", function()
             local lastObject = false
 
-            local chunk = TaskDistributorClass:GenerateChunk(table.create(100, 1), 5)
+            local chunk = TaskDistributorClass.GenerateChunk(table.create(100, 1), 5)
 
             TaskDistributorClass:Distribute(chunk, function(object)
                 lastObject = object
