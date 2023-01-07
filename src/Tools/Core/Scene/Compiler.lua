@@ -3,9 +3,7 @@ type SceneConfig = {
 	CompileMode: string?,
 }
 
-type AttachedSymbolsHolder = {
-	Event: () -> nil?
-}
+type AttachedSymbolsHolder = { any: () -> nil? }
 
 type ChunkObject = {
 	ObjectIdentifier: string?,
@@ -16,21 +14,12 @@ type ChunkObject = {
 	SymbolsAttached: AttachedSymbolsHolder,
 }
 
-type PackedSymbol = {
-	Symbol: {
-		Type: string,
-		Name: string,
-		Data: { any }?
-	},
-	Value: any
-}
-
 local ALIAS_OBJECTS_NAMES = {
 	Layer = "UiBase",
 	Static = "UiBase",
 	Dynamic = "Rigidbody",
 
-	-- Base 
+	-- Base
 	Rigidbody = "Rigidbody",
 	UiBase = "UiBase",
 }
@@ -50,18 +39,8 @@ local CompilerObjects = {
 }
 
 local Compiler = {}
+
 Compiler.CompilerDistributor = TaskDistributor
-
-local function PackSymbol(symbol, value)
-	if typeof(symbol) == "nil" then
-		return nil
-	end
-
-	return {
-		Symbol = symbol,
-		Value = value
-	}
-end
 
 local function IsSymbol(tableIndex: any): boolean
 	if typeof(tableIndex) == "table" and tableIndex.Name ~= nil then
@@ -71,55 +50,15 @@ local function IsSymbol(tableIndex: any): boolean
 	return false
 end
 
-local function BACKUP_MergeSceneData(sceneData: { [ number ]: any }): { [number]: ChunkObject }
-	local mappedData = {}
-	local savedProperties = {}
-	local objectType = nil
-
-	for _, sceneCategory in pairs(sceneData) do
-		-- Check if we can find a table with a [property] symbol attacjed
-		-- As well as find the type of the category
-		savedProperties = select(2, Symbols.FindSymbol(sceneCategory, "Property"))
-		objectType = select(2, Symbols.FindSymbol(sceneCategory, "Type"))
-
-		for groupKey, groupData in pairs(sceneCategory) do
-			if typeof(groupData) ~= "table" or typeof(groupKey) == "table" and Symbols.Types[groupKey.Name] ~= nil then
-				continue
-			end
-
-			for objectKey, objectData in pairs(groupData) do
-				if typeof(objectKey) == "table" and Symbols.Types[objectKey.Name] ~= nil then
-					continue
-				end
-
-				-- Handle symbols
-				local SymbolsAttached: AttachedSymbolsHolder = {}
-
-				-- Loop over the attachable symbols
-				-- This is here to automate this process, so every time I would add a new attachable symbol
-				-- I would not have to go here and edit this
-				for symbolName, _ in pairs(Symbols.AttachableSymbols) do
-					SymbolsAttached[symbolName] = PackSymbol(Symbols.FindSymbol(objectData, "Event"))
-				end
-
-				-- Save every necessary informations into a single table
-				-- So TaskDistributor has access to every piece of data that is required to construct an object
-				table.insert(mappedData, {
-					ObjectIdentifier = objectKey,
-					ObjectData = objectData,
-					GroupData = groupData,
-					SavedProperties = savedProperties,
-					ObjectType = objectType,
-					SymbolsAttached = SymbolsAttached
-				})
-			end
-		end
+local function AddSymbol(container: { any }, symbol, attachedValue)
+	if IsSymbol(symbol) == false then
+		return
 	end
 
-	return mappedData
+	container[symbol] = attachedValue
 end
 
-local function MergeSceneData(sceneData: { [ number ]: any }): { [number]: ChunkObject }
+local function MergeSceneData(sceneData: { [number]: any }): { [number]: ChunkObject }
 	local mappedData = {}
 	local savedProperties = {}
 	local objectType = nil
@@ -147,7 +86,10 @@ local function MergeSceneData(sceneData: { [ number ]: any }): { [number]: Chunk
 				-- This is here to automate this process, so every time I would add a new attachable symbol
 				-- I would not have to go here and edit this
 				for symbolName, _ in pairs(Symbols.AttachableSymbols) do
-					SymbolsAttached[symbolName] = PackSymbol(Symbols.FindSymbol(objectData, "Event"))
+					-- Check in three locations for an attachable symbol
+					AddSymbol(SymbolsAttached, Symbols.FindSymbol(savedProperties, symbolName))
+					AddSymbol(SymbolsAttached, Symbols.FindSymbol(groupData, symbolName))
+					AddSymbol(SymbolsAttached, Symbols.FindSymbol(objectData, symbolName))
 				end
 
 				-- Save every necessary informations into a single table
@@ -158,8 +100,11 @@ local function MergeSceneData(sceneData: { [ number ]: any }): { [number]: Chunk
 					GroupData = groupData,
 					SavedProperties = savedProperties,
 					ObjectType = objectType,
-					SymbolsAttached = SymbolsAttached
+
+					SymbolsAttached = SymbolsAttached,
 				})
+
+				debug.profileend()
 			end
 		end
 	end
@@ -175,20 +120,21 @@ function Compiler.Compile(sceneData: { any }): { [number]: Instance }
 	-- that is great for processing large amounts of data by utilizing Promises
 	-- this is kind of like using task.synchronize I think
 	return Promise.new(function(resolve)
-		TaskDistributor:Distribute(TaskDistributor.GenerateChunk(MergeSceneData(sceneData), Settings.CompilerChunkSize), function(object: ChunkObject)
-			-- Compile the object			
-			local compiledObject = CompilerObjects[ALIAS_OBJECTS_NAMES[object.ObjectType]]({ 
-				Index = object.ObjectIdentifier,
-				Data = object.ObjectData,
-			}, object.GroupData, object.SavedProperties)
+		TaskDistributor:Distribute(
+			TaskDistributor.GenerateChunk(MergeSceneData(sceneData), Settings.CompilerChunkSize),
+			function(object: ChunkObject)
+				-- Compile the object
+				local compiledObject = CompilerObjects[ALIAS_OBJECTS_NAMES[object.ObjectType]]({
+					Index = object.ObjectIdentifier,
+					Data = object.ObjectData,
+				}, object.GroupData, object.SavedProperties)
 
-			-- Try to attach symbols defined in the `object.SymbolsAttached` table
-			-- This needs to happen in this time, because when these actually get groupped together,
-			-- the object does not exist yet
-			Symbols.AttachToInstance(compiledObject, object.SymbolsAttached)
-
-			table.insert(compiledObjects, compiledObject)
-		end):await()
+				table.insert(compiledObjects, {
+					Object = compiledObject,
+					Symbols = object.SymbolsAttached,
+				})
+			end
+		):await()
 
 		resolve(compiledObjects)
 	end):catch(warn)
