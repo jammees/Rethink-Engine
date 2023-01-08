@@ -16,7 +16,8 @@ local LIGHTING_PROPERTIES = {
 	GeographicLatitude = 0,
 	Brightness = 0,
 	GlobalShadows = false,
-	ClockTime = 4,
+	ClockTime = 0,
+	FogEnd = 0,
 }
 
 local Lighting = game:GetService("Lighting")
