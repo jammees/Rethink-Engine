@@ -1,6 +1,8 @@
 local player = game:GetService("Players").LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
+local Settings = require(script.Parent.Parent.Parent.Settings)
+
 local isGenerated = false
 
 local function CreateFrame(name: string, parent: Instance)
@@ -24,8 +26,8 @@ local function setup()
 	end
 
 	isGenerated = true
-
 	local gameFrame = Instance.new("ScreenGui")
+
 	gameFrame.Name = "GameFrame"
 	gameFrame.IgnoreGuiInset = true
 	gameFrame.ResetOnSpawn = false
@@ -34,6 +36,10 @@ local function setup()
 	local renderFrame = CreateFrame("Render Frame", gameFrame)
 	local viewport = CreateFrame("Viewport", renderFrame)
 	local userInterface = CreateFrame("User Interface", renderFrame)
+
+	-- Make the RenderFrame have a Transparency of 0
+	renderFrame.Transparency = 0
+	renderFrame.BackgroundColor3 = Settings.ViewportColor
 
 	return {
 		GameFrame = gameFrame,
