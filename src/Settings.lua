@@ -27,7 +27,7 @@ return {
 		CullGuiElements = false, -- Culls out every object that is out of the screen or is obstructed prototype V1 // finished but laggy and unefficient
 		Prototype_GuiCulling_v2 = false, -- Culls out every object that is out of the screen or is obstructed prototype V2
 	},
-	
+
 	-- Here are all of the settings that are related to the pool
 	-- Pool is a module that pre-creates objects for scene for example
 	-- This is another optimization becase creating and destroying objects are really inefficient
@@ -44,11 +44,12 @@ return {
 			Frame = 100,
 		},
 
-		ExtensionSize = 10 -- How many objects should be created to refill the pool if there are no available ones
+		ExtensionSize = 10, -- How many objects should be created to refill the pool if there are no available ones
 	},
 
 	CompilerChunkSize = 100,
-	
+	ViewportColor = Color3.fromRGB(35, 68, 139),
+
 	-- Here are all of the settings related to the physics engine
 	-- The physics engine is Nature2D by jaipack17
 	Physics = {
