@@ -52,21 +52,16 @@ local function AddProperties(target: { [string]: any }, values: { any })
 end
 
 local function CompileDynamic(objectProperties: CompileType, groupData: any, savedProperties: CompileType)
-	debug.profilebegin("Get UI object")
 	local rigidbodyData = {
 		Object = UiBase(objectProperties, groupData, savedProperties),
 	}
-	debug.profileend()
 
-	debug.profilebegin("Add properties")
 	AddProperties(rigidbodyData, select(2, Symbols.FindSymbol(savedProperties, "Rigidbody")))
 	AddProperties(rigidbodyData, select(2, Symbols.FindSymbol(Symbols.FindSymbol(groupData, "Property"), "Rigidbody")))
 	AddProperties(rigidbodyData, select(2, Symbols.FindSymbol(objectProperties.Data, "Rigidbody")))
-	debug.profileend()
 
 	local object = nil
 
-	debug.profilebegin("Create Rigidbody")
 	Promise.new(function(resolve)
 		object = Physics:Create("RigidBody", rigidbodyData)
 
@@ -79,7 +74,6 @@ local function CompileDynamic(objectProperties: CompileType, groupData: any, sav
 			table.clear(rigidbodyData)
 		end)
 		:await()
-	debug.profileend()
 
 	return object
 end
