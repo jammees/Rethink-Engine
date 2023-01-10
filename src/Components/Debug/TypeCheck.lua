@@ -55,7 +55,7 @@ end
 	Better alternative to .IsWrontType
 	More cleaner, takes less space and easier to detect with TestEZ
 
-	@since 1.0.0
+	@since 1.0.0-alpha
 ]=]
 function TypeCheck.Is(variableName: string, variable: any, expectedType: string)
 	if typeof(variable) ~= expectedType then
