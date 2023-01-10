@@ -58,7 +58,7 @@ local function AddSymbol(container: { any }, symbol, attachedValue)
 	container[symbol] = attachedValue
 end
 
-local function MergeSceneData(sceneData: { [number]: any }): { [number]: ChunkObject }
+local function MapSceneData(sceneData: { [number]: any }): { [number]: ChunkObject }
 	local mappedData = {}
 	local savedProperties = {}
 	local objectType = nil
@@ -103,8 +103,6 @@ local function MergeSceneData(sceneData: { [number]: any }): { [number]: ChunkOb
 
 					SymbolsAttached = SymbolsAttached,
 				})
-
-				debug.profileend()
 			end
 		end
 	end
@@ -121,7 +119,7 @@ function Compiler.Compile(sceneData: { any }): { [number]: Instance }
 	-- this is kind of like using task.synchronize I think
 	return Promise.new(function(resolve)
 		TaskDistributor:Distribute(
-			TaskDistributor.GenerateChunk(MergeSceneData(sceneData), Settings.CompilerChunkSize),
+			TaskDistributor.GenerateChunk(MapSceneData(sceneData), Settings.CompilerChunkSize),
 			function(object: ChunkObject)
 				-- Compile the object
 				local compiledObject = CompilerObjects[ALIAS_OBJECTS_NAMES[object.ObjectType]]({
