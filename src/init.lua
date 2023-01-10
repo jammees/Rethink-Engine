@@ -26,29 +26,29 @@ if not engineStarted then
 
 	-- setup core game ui
 	engineUi = require(components.Bootstrap.GenerateGUI)()
-	
+
 	-- Initiate some globals that other components/tools can have access to
 	-- These are mainly exists for the sole purpose of quality of life benefits
 	Template.NewGlobal("__Rethink_Settings", Settings, true)
 	Template.NewGlobal("__Rethink_Ui", engineUi, true)
 	Template.NewGlobal("__Rethink_Pool", require(components.Library.ObjectPool).new(Settings.Pool.InitialCache), true)
-	
+
 	-- initiate Nature2D
 	physicsClass = Physics.init(engineUi.GameFrame)
-	
+
 	-- Apply settings
 	-- More in-depth explanation can be found in the Settings module
 	physicsClass:UseQuadtrees(Settings.Physics.QuadTreesEnabled)
 	physicsClass:SetCollisionIterations(Settings.Physics.CollisionIteration)
 	physicsClass:SetConstraintIterations(Settings.Physics.ConstraintIteration)
-	
+
 	-- Initiate a canvas
 	-- This is basically unnecessary if KeepInCanvas is always false
 	physicsClass:CreateCanvas(Vector2.new(0, 0), workspace.CurrentCamera.ViewportSize, engineUi.Canvas)
-	
+
 	-- Create a new global to get access to the now initialized Nature2D class
 	Template.NewGlobal("__Rethink_Physics", physicsClass, true)
-	
+
 	-- Apply engine settings and optimizations
 	-- After everything has been initialized
 	require(components.Bootstrap.EngineSettings)
