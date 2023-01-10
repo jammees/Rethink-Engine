@@ -31,6 +31,7 @@ return {
 		NotValidObject = "Error whilst trying to call :AttachObject(), expected an ImageLabel or ImageButton got; %q!",
 		AnimationRunning = "Error whilst trying to call %s, Animator is running! Please use :Stop() before this method!",
 		ObjectAlreadyAttached = "Error whilst trying to call :AttachObject(), object already attached!",
+		AnimationNotExist = "Error whilst trying to call :ChangeAnimation(), specified animation does not exist!",
 	},
 
 	TaskDistributor = {
