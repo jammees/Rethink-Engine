@@ -6,11 +6,10 @@
 ]]
 
 type CompileType = {
-	Class: string?,
 	Index: string | number | { any }?,
 	Data: {
 		Class: string?,
-	},
+	}?,
 }
 
 local IGNORED_KEYS = {
@@ -32,7 +31,23 @@ local Settings = Template.FetchGlobal("__Rethink_Settings")
 local objectParent = Template.FetchGlobal("__Rethink_Ui").Viewport
 
 local function GetFromPool(className: string, properties: { [string]: any }): Instance
-	return ApplyProperties(UiPool:Get(className or "Frame"), properties)
+	return ApplyProperties(UiPool:Get(className), properties)
+end
+
+local function ReturnClass(
+	objectProperties: CompileType,
+	groupProperties: { any },
+	savedProperties: CompileType
+): string
+	if typeof(objectProperties.Data.Class) == "string" then
+		return objectProperties.Data.Class
+	elseif typeof(groupProperties.Class) == "string" then
+		return groupProperties.Class
+	elseif typeof(savedProperties.Class) == "string" then
+		return savedProperties.Class
+	end
+
+	return "Frame"
 end
 
 local function AddTag(object: Instance, tags: { [number]: string } | string?)
@@ -81,7 +96,7 @@ end
     Creates an object by the given arguments, then returns it
 ]]
 local function CompileStatic(objectProperties: CompileType, groupData: any, savedProperties: CompileType)
-	local object = GetFromPool(savedProperties.Class or objectProperties.Data.Class, objectProperties.Data)
+	local object = GetFromPool(ReturnClass(objectProperties, groupData, savedProperties), objectProperties.Data)
 	object.Name = objectProperties.Index
 
 	-- apply default properties if they're not present
