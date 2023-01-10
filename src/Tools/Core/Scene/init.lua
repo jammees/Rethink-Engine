@@ -69,8 +69,8 @@ Scene.Events = {
 	Compiles a scene from a given data dictionary. Returns a `Promise`
 	
 	**Notes:**
-
 	Additional `scene config` can also be passed as an argument.
+
 	Custom `protocols` can be used to tell the compiler how to build up your object.
 
 	**Symbols**:
@@ -79,8 +79,7 @@ Scene.Events = {
 	|--------------------------------------------------------------
 	| Tag				| Gives the given object a `tag(s)` fetch it with `CollectionService` or `Scene:GetRigidbodyFromTag`
 	| Property			| Applies `properties` or `symbols` to objects in the `group` or the `container`
-	| Type				| How the compiler handles the object `UiBase` and `Rigidbody`
-	| Children			| Add objects that are parented to the given object
+	| Type				| How the compiler handles the object `UiBase` and `Rigidbody` or it's aliases
 	| Event				| Hook events to the given object
 	| ShouldFlush		| Determines if the object will get deleted on `.Flush()` (Delete After Flush)
 	| Rigidbody			| Add rigidbody properties that later get fed into the Physics engine
