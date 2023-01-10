@@ -6,10 +6,12 @@
 	 / ___ \  | | | | | | | | | | | | | (_| | | |_  | (_) | | |
 	/_/   \_\ |_| |_| |_| |_| |_| |_|  \__,_|  \__|  \___/  |_|
 
-	Rethink version 0.1.0
+	Rethink version 0.2.0
 	james_mc98
 
 ]]
+
+type Promise = { any }
 
 type ArgumentData = {
 	Value: any,
@@ -29,7 +31,6 @@ local package = script.Parent.Parent.Parent
 local components = package.Components
 
 local TypeCheck = require(components.Debug.TypeCheck)
-local Promise = require(components.Library.Promise)
 local DebugStrings = require(components.Debug.Strings)
 
 -- This function calculates and returns a table with all of the offsets.
@@ -69,6 +70,85 @@ local Animator = {}
 Animator.__index = Animator
 
 --[=[
+	Very small but handy utility functions for mapping animations.
+]=]
+Animator.Tools = {
+	--[=[
+		Used to fill an entire row with ones meaning that in that specific animation all of those
+		frames will be displayed.
+
+		```lua
+		local Animator = Rethink.Animator
+
+		-- This will create a table with 5 indexes and their value set to 1
+		print(Animator.Tools.PopulateRow(5))
+		```
+
+		How it looks like:
+		```lua
+		{1, 1, 1, 1, 1}
+		```
+
+		@param {number} iterations - How many 1 should be in a single table
+		@return {array}
+	]=]
+	["PopulateRow"] = function(iterations: number): { [number]: number }
+		local array = {}
+
+		for i = 1, iterations do
+			array[i] = 1
+		end
+
+		return array
+	end,
+
+	--[=[
+		Used to fill entire columns and rows with ones meaning that in that specific animation all of those
+		frames will be displayed.
+
+		Shorthand for using `Animator.Tools.PopulateRow()`.
+
+		```lua
+		local Animator = Rethink.Animator
+
+		-- This will create 5 tables with 5 indexes and their value set to 1
+		print(table.pack(Animator.Tools.PopulateColumn(5, 5)))
+		```
+
+		How it looks like:
+		```lua
+		{
+			{1, 1, 1, 1, 1},
+			{1, 1, 1, 1, 1},
+			{1, 1, 1, 1, 1},
+			{1, 1, 1, 1, 1},
+			{1, 1, 1, 1, 1},
+		}
+		```
+
+		@param {number} columns
+		@param {number} rows
+		@param {number} bonus - Additional, in case spritesheet has left over cells
+		@return {array}
+	]=]
+	["PopulateColumn"] = function(
+		columns: number,
+		rows: number,
+		bonus: number?
+	): { { [number]: { [number]: number } } }
+		local arrayContainer = {}
+
+		for i = 1, columns do
+			arrayContainer[i] = Animator.Tools.PopulateRow(rows)
+		end
+
+		arrayContainer[#arrayContainer + 1] = Animator.Tools.PopulateRow(bonus or 0)
+
+		return table.unpack(arrayContainer)
+	end,
+}
+
+--[=[
 	Constructs a new animator.
 
 	```lua
@@ -78,9 +158,9 @@ Animator.__index = Animator
 
 	@param {array} Objects - List of initial objects to apply animations to
 	@constructs Animator
-	@returns {animator}
+	@return {animator}
 ]=]
-function Animator.new(objects: { [number]: ImageLabel | ImageButton }?): typeof(Animator)
+function Animator.new(objects: { [number]: ImageLabel | ImageButton }?): Animator
 	local self = setmetatable({}, Animator)
 
 	self._AnimationData = {}
@@ -94,71 +174,6 @@ function Animator.new(objects: { [number]: ImageLabel | ImageButton }?): typeof(
 	self.CurrentAnimation = nil
 	self.Running = false
 	self.Objects = type(objects) == "table" and objects or {}
-
-	--[=[
-		Very small but handy utility functions for mapping animations.
-	]=]
-	self.Tools = {
-		--[=[
-			Used to fill an entire row with ones meaning that in that specific animation all of those
-			frames will be displayed.
-
-			```lua
-			local Animator = Rethink.Animator
-
-			-- This will create a table with 5 indexes and their value set to 1
-			print(Animator.Tools.PopulateRow(5))
-			```
-
-			How it looks like:
-			```lua
-			{1, 1, 1, 1, 1}
-			```
-		]=]
-		["PopulateRow"] = function(iterations: number): { [number]: number }
-			local array = {}
-
-			for i = 1, iterations do
-				array[i] = 1
-			end
-
-			return array
-		end,
-
-		--[=[
-			Used to fill entire columns and rows with ones meaning that in that specific animation all of those
-			frames will be displayed.
-
-			Shorthand for using `Animator.Tools.PopulateRow()`.
-
-			```lua
-			local Animator = Rethink.Animator
-
-			-- This will create 5 tables with 5 indexes and their value set to 1
-			print(table.pack(Animator.Tools.PopulateColumn(5, 5)))
-			```
-
-			How it looks like:
-			```lua
-			{
-				{1, 1, 1, 1, 1},
-				{1, 1, 1, 1, 1},
-				{1, 1, 1, 1, 1},
-				{1, 1, 1, 1, 1},
-				{1, 1, 1, 1, 1},
-			}
-			```
-		]=]
-		["PopulateColumn"] = function(columns: number, rows: number): { { [number]: { [number]: number } } }
-			local arrayContainer = {}
-
-			for i = 1, columns do
-				arrayContainer[i] = self.Tools.PopulateRow(rows)
-			end
-
-			return table.unpack(arrayContainer)
-		end,
-	}
 
 	return self
 end
@@ -198,33 +213,32 @@ end
 	
 	@param (string) imageId - Spritesheet's id as a string
 	@param (vector2) size - Size of one frame in the spritesheet
-	@param (dictionary) animationFrames - Split up the spritesheet into animations by mappping it's frames
+	@param (dictionary) animations - Split up the spritesheet into animations by mappping it's frames
 ]=]
-function Animator:AddSpritesheet(imageId: string, size: Vector2, animationFrames: { [string]: { [number]: number } })
-	-- Simple and easy-to-use argument validator
-	TypeCheck.IsWrongType(
-		":AddSpritesheet",
-		{ Value = imageId, Type = "string" },
-		{ Value = size, Type = "Vector2" },
-		{ Value = animationFrames, Type = "table" }
-	):andThen(function() --> if the check is successful proceed
-		local newAnimation = {
-			ImageId = imageId,
-			Size = size,
-			Animations = {},
-		}
+function Animator:AddSpritesheet(
+	imageId: string | number,
+	size: Vector2,
+	animations: { [string]: { [number]: number } }
+)
+	-- Check arguments
+	TypeCheck.Assert(DebugStrings.ExpectedNoArg, imageId, "string", "number")
+	TypeCheck.Assert(DebugStrings.ExpectedNoArg, size, "Vector2")
+	TypeCheck.Assert(DebugStrings.ExpectedNoArg, animations, "table")
 
-		-- loop trough the animationFrames table
-		-- get animation name and data
-		for animationName, animationData in pairs(animationFrames) do
-			local AnimationOffsets = CalculateAnimationOffsets(animationData, size)
+	local newAnimation = {
+		ImageId = imageId,
+		Size = size,
+		Animations = {},
+	}
 
-			newAnimation.Animations[animationName] = AnimationOffsets
-			self._AnimationPointer[animationName] = newAnimation
-		end
+	-- loop trough the animationFrames table
+	-- get animation name and data
+	for animationName, animationData in pairs(animations) do
+		newAnimation.Animations[animationName] = CalculateAnimationOffsets(animationData, size)
+		self._AnimationPointer[animationName] = newAnimation
+	end
 
-		table.insert(self._AnimationData, newAnimation)
-	end)
+	table.insert(self._AnimationData, newAnimation)
 end
 
 --[=[
@@ -246,23 +260,21 @@ end
 	@param {dictionary} collection - List of all the animations' frames
 ]=]
 function Animator:AddCollection(collection: { [string]: number })
-	-- Simple and easy-to-use argument validator
-	TypeCheck.IsWrongType(":AddCollection", { Value = collection, Type = "table" })
-		:andThen(function() --> if the check is successful proceed
-			local newAnimation = {
-				Type = "Collection",
-				Animations = {},
-			}
+	TypeCheck.Assert(DebugStrings.ExpectedNoArg, collection, "table")
 
-			-- loop trough the map table 3 times
-			-- get animation name and data
-			for animationName, animationData in pairs(collection) do
-				newAnimation.Animations[animationName] = animationData
-				self._AnimationPointer[animationName] = newAnimation
-			end
+	local newAnimation = {
+		Type = "Collection",
+		Animations = {},
+	}
 
-			table.insert(self._AnimationData, newAnimation)
-		end)
+	-- loop trough the map table 3 times
+	-- get animation name and data
+	for animationName, animationData in pairs(collection) do
+		newAnimation.Animations[animationName] = animationData
+		self._AnimationPointer[animationName] = newAnimation
+	end
+
+	table.insert(self._AnimationData, newAnimation)
 end
 
 --[=[
@@ -286,7 +298,7 @@ function Animator:_Render(animationData: Animations)
 
 		-- Set ImageId and Size to the animation's values
 		if object.Image ~= "rbxassetid://" .. animationData.ImageId then
-			object.Image = "rbxassetid://" .. animationData.ImageId
+			object.Image = "rbxassetid://" .. tostring(animationData.ImageId)
 			object.ImageRectSize = animationData.Size
 		end
 
@@ -331,50 +343,45 @@ end
 	myAnimation:Play()
 	```
 
-	@returns {Promise} Used to make the code asynchronous but can be synchronous using :await()
+	@return {Promise} Used to make the code asynchronous but can be synchronous using :await()
 ]=]
-function Animator:Play(): typeof(Promise.new())
-	return Promise.new(function(resolve, reject)
-		-- TODO: clean this up
-		-- currently this looks really messy but I'll clean it up eventaully
-		if not self.CurrentAnimation then
-			reject(DebugStrings.Animator.NoAnimation)
-		elseif not self.Objects[1] then
-			reject(DebugStrings.Animator.NoObjectsAttached)
+function Animator:Play(): Promise
+	if not self.CurrentAnimation then
+		return warn(DebugStrings.Animator.NoAnimation)
+	end
+
+	if not self.Objects[1] then
+		return warn(DebugStrings.Animator.NoObjectsAttached)
+	end
+
+	self.Running = true
+
+	local animationData: Animations = self._AnimationPointer[self.CurrentAnimation]
+
+	self:_CancelRender()
+	self._RenderHandle = RunService.RenderStepped:Connect(function(deltaTime: number)
+		-- Check if the animation changed while playing a different animation
+		if animationData ~= self._AnimationPointer[self.CurrentAnimation] then
+			animationData = self._AnimationPointer[self.CurrentAnimation]
 		end
 
-		resolve()
+		-- Check all attached objects that they still exist in the game
+		self:CleanupObjects()
+
+		-- This works I'm so happy :)
+		-- It's currently 1 AM and I'm still writing this but I'm just really happy
+		-- That the animation here is independant of the framerate
+		self.Frame += self.Framerate * deltaTime
+
+		-- Fixed the last frame getting skipped
+		-- Reset the Frame Counter if it's above the size of the Animation Data
+		-- Also it's important to remove 1 from it
+		if self.Frame - 1 > #animationData.Animations[self.CurrentAnimation] then
+			self.Frame = 1
+		end
+
+		self:_Render(animationData)
 	end)
-		:andThen(function()
-			self.Running = true
-			local animationData: Animations = self._AnimationPointer[self.CurrentAnimation]
-
-			self:_CancelRender()
-			self._RenderHandle = RunService.RenderStepped:Connect(function(deltaTime: number)
-				-- Check if the animation changed while playing a different animation
-				if animationData ~= self._AnimationPointer[self.CurrentAnimation] then
-					animationData = self._AnimationPointer[self.CurrentAnimation]
-				end
-
-				-- Check all attached objects that they still exist in the game
-				self:CleanupObjects()
-
-				-- This works I'm so happy :)
-				-- It's currently 1 AM and I'm still writing this but I'm just really happy
-				-- That the animation here is independant of the framerate
-				self.Frame += self.Framerate * deltaTime
-
-				-- Fixed the last frame getting skipped
-				-- Reset the Frame Counter if it's above the size of the Animation Data
-				-- Also it's important to remove 1 from it
-				if self.Frame - 1 > #animationData.Animations[self.CurrentAnimation] then
-					self.Frame = 1
-				end
-
-				self:_Render(animationData)
-			end)
-		end)
-		:catch(warn)
 end
 
 --[=[
@@ -437,9 +444,9 @@ end
 	@default {framerate} 60 FPS
 ]=]
 function Animator:SetFramerate(framerate: number)
-	TypeCheck.IsWrongType(":SetFramerate", { Value = framerate, Type = "number" }):andThen(function()
-		self.Framerate = framerate
-	end)
+	TypeCheck.Assert(DebugStrings.ExpectedNoArg, framerate, "number")
+
+	self.Framerate = framerate
 end
 
 --[=[
@@ -468,7 +475,9 @@ end
 function Animator:NextFrame()
 	if not self.Objects[1] then
 		return warn(DebugStrings.Animator.NoObjectsAttached)
-	elseif self.Running then
+	end
+
+	if self.Running then
 		return warn((DebugStrings.Animator.AnimationRunning):format(":NextFrame()"))
 	end
 
@@ -476,6 +485,7 @@ function Animator:NextFrame()
 	self:CleanupObjects()
 
 	local animationData: Animations = self._AnimationPointer[self.CurrentAnimation]
+
 	-- Increment the Frame value and if it's more than the actual frames in the
 	-- animation then reset it to 1
 	self.Frame += 1
@@ -515,7 +525,8 @@ end
 function Animator:PreviousFrame()
 	if not self.Objects[1] then
 		return warn(DebugStrings.Animator.NoObjectsAttached)
-	elseif self.Running then
+	end
+	if self.Running then
 		return warn((DebugStrings.Animator.AnimationRunning):format(":PreviousFrame()"))
 	end
 
@@ -523,6 +534,7 @@ function Animator:PreviousFrame()
 	self:CleanupObjects()
 
 	local animationData: Animations = self._AnimationPointer[self.CurrentAnimation]
+
 	-- Increment the Frame value and if it's more than the actual frames in the
 	-- animation then reset it to 1
 	self.Frame -= 1
@@ -565,13 +577,10 @@ function Animator:AttachObject(object: ImageLabel | ImageButton)
 	if not CheckObjectIsValid(object) then
 		return warn((DebugStrings.Animator.NotValidObject):format(object.Name))
 	end
+
 	if table.find(self.Objects, object) then
 		return warn(DebugStrings.Animator.ObjectAlreadyAttached)
 	end
-
-	object.Destroying:Connect(function()
-		self:DetachObject(object)
-	end)
 
 	table.insert(self.Objects, object)
 
@@ -593,6 +602,8 @@ function Animator:DetachObject(object: ImageLabel | ImageButton)
 
 	if isAttached then
 		table.remove(self.Objects, isAttached)
+
+		return true
 	end
 
 	return warn(DebugStrings.ObjectIsNotAttached)
@@ -646,18 +657,20 @@ end
 	@param {string} animationName - Name of the animation to play
 ]=]
 function Animator:ChangeAnimation(animationName: string)
-	TypeCheck.IsWrongType(":ChangeAnimation", { Value = animationName, Type = "string" }):andThen(function()
-		if self._AnimationPointer[animationName] then
-			self:_CancelRender()
+	TypeCheck.Assert(DebugStrings.ExpectedNoArg, animationName, "string")
 
-			self.CurrentAnimation = animationName
-			self.MaxFrames = #self._AnimationPointer[animationName].Animations[self.CurrentAnimation]
+	if self._AnimationPointer[animationName] == nil then
+		return warn(DebugStrings.Animator.AnimationNotExist)
+	end
 
-			if self.Running then
-				self:Play()
-			end
-		end
-	end)
+	self:_CancelRender()
+
+	self.CurrentAnimation = animationName
+	self.MaxFrames = #self._AnimationPointer[animationName].Animations[self.CurrentAnimation]
+
+	if self.Running then
+		self:Play()
+	end
 end
 
 --[=[
