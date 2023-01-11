@@ -1,13 +1,7 @@
-<div style="display: flex; align-items: center; justify-content: space-between;">
-  <div style="float: left;">
-    <img widht=400 height=100 src="./assets/short_dark.png#gh-light-mode-only">
-    <img widht=400 height=100 src="./assets/short_light.png#gh-dark-mode-only">
-  </div>
-  <div style="float: right;">
-    <h3><strong>Versatile, easy-to-use 2D game engine</strong>.</h3>
-    1.0.0-alpha release
-  </div>
-</div>
+<img align="left" widht=400 height=100 src="./assets/short_dark.png#gh-light-mode-only">
+<img align="left" widht=400 height=100 src="./assets/short_light.png#gh-dark-mode-only">
+<h3><strong>Versatile, easy-to-use 2D game engine</strong>.</h3>
+1.0.0-alpha release
 
 <hr>
 
