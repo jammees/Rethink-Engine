@@ -3,7 +3,7 @@
 <h3><strong>Versatile, easy-to-use 2D game engine</strong>.</h3>
 1.0.0-alpha release
 
-<hr>
+<br>
 
 <h3>Interested in using it? Here's some if it's features</h3>
 
