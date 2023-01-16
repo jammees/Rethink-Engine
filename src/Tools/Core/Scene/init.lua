@@ -1,9 +1,9 @@
 --[[
 
     Scene
-	Last updated: 28/05/2022
+	Last updated: 13/01/2023
 
-	Scene currently does not support custom rigidbodies.
+	Scene does not support custom rigidbodies.
 
 ]]
 
@@ -40,8 +40,6 @@ local PhysicsEngine = Template.FetchGlobal("__Rethink_Physics")
 local sceneObjects = {}
 
 local Scene = {}
-
-Scene.TEST_MODE = false
 
 -- public properties
 Scene.Symbols = Symbols.Types
@@ -156,8 +154,6 @@ function Scene.Load(sceneConfig: SceneConfig, sceneData: { any }): { any }
 
 			for _, object: CompiledObject in ipairs(compiledObjects) do
 				-- Attach symbols
-				--Scene.prototype_v1_Add(object.Object)
-				--Symbols.AttachToInstance(Scene.prototype_v1_Add(object.Object), object.Source.SymbolsAttached)
 				Scene.Add(object.Object, object.Symbols)
 			end
 
@@ -230,7 +226,6 @@ function Scene.Add(object: any, symbols: { [Types.Symbol]: any }?)
 	local reservedPosition = #sceneObjects + 1
 
 	ObjectReference.Index = reservedPosition
-
 	sceneObjects[reservedPosition] = ObjectReference
 
 	Scene.Events.ObjectAdded:Fire(object)
@@ -322,9 +317,10 @@ function Scene.Flush()
 		return warn((DebugStrings.MethodFailNoScene):format("flush"))
 	end
 
-	Scene.Events.FlushStarted:Fire()
+	-- TODO:
+	-- Before trying to flush the scene, we should wait for the Compiler to finish
 
-	Compiler.CompilerDistributor:Cancel()
+	Scene.Events.FlushStarted:Fire()
 
 	Scene.SceneName = nil
 
