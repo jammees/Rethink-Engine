@@ -1,7 +1,7 @@
 --[=[
 	Simple object pool implementation.
 
-	This implementation supports multiple objects being in the pool, by indexing the pool by it's classname.
+	Supports multiple objects being in the pool, by indexing the pool by it's classname.
 ]=]
 
 local HttpService = game:GetService("HttpService")
@@ -38,12 +38,25 @@ end
 local ObjectPool = {}
 ObjectPool.__index = ObjectPool
 
-function ObjectPool.new(objectList)
+--[=[
+	If it is not possible to set the cleanupFunction when creating the class.
+	It is possible to add the cleanupFunction later.
+
+	```lua
+	local myPool = ObjectPool.new(objectList)
+
+	myPool.CleanupFunction = function(object: Instance)
+		print(`Cleaning up {object} after use!`)
+	end)
+	```
+]=]
+function ObjectPool.new(objectList, cleanupFunction: (Instance) -> nil?)
 	local self = setmetatable({}, ObjectPool)
 
 	self.ObjectContainer = CreateContainer()
 	self.Objects = PopulatePool(self, objectList)
 	self.BusyObjects = {}
+	self.CleanupFunction = cleanupFunction
 
 	self.ObjectReturned = Signal.new()
 
@@ -73,13 +86,17 @@ end
 function ObjectPool:Return(object)
 	-- Return the object to the pool
 	local objectIndex = table.find(self.BusyObjects, object)
-	
+
 	if objectIndex then
 		object.Parent = self.ObjectContainer
-		
+
 		table.remove(self.BusyObjects, objectIndex)
 		self.Objects[object.ClassName][#self.Objects[object.ClassName] + 1] = object
-		
+
+		if self.ResetFunction then
+			self.ResetFunction(object)
+		end
+
 		self.ObjectReturned:Fire(object)
 	end
 end
