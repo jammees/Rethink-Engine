@@ -18,12 +18,6 @@
 - Robust scene creation with symbols
 - And more!
 
-<h3>RePreview</h3>
-
-RePreview is a small plugin that will help you create scenes from code by visualizing it in a widget.
-
-Download not available at the moment.
-
 <h3>Credits</h3>
 
 - jaipack17 (GitHub) for Nature2D / GuiCollisionService / RayCast2
