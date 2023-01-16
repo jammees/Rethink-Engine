@@ -44,6 +44,17 @@ return {
 			Frame = 100,
 		},
 
+		TEST_InitialCache = {
+			ImageLabel = 1,
+			TextLabel = 1,
+			TextButton = 1,
+			ImageButton = 1,
+			TextBox = 1,
+			ScrollingFrame = 1,
+			ViewportFrame = 1,
+			Frame = 1,
+		},
+
 		ExtensionSize = 10, -- How many objects should be created to refill the pool if there are no available ones
 	},
 
