@@ -38,10 +38,6 @@ local CompilerObjects = {
 	UiBase = require(objects.UiBase),
 }
 
-local Compiler = {}
-
-Compiler.CompilerDistributor = TaskDistributor
-
 local function IsSymbol(tableIndex: any): boolean
 	if typeof(tableIndex) == "table" and tableIndex.Name ~= nil then
 		return true
@@ -58,8 +54,28 @@ local function AddSymbol(container: { any }, symbol, attachedValue)
 	container[symbol] = attachedValue
 end
 
-local function MapSceneData(sceneData: { [number]: any }): { [number]: ChunkObject }
-	local mappedData = {}
+local function GetSymbols(objectData, groupData, savedProperties): AttachedSymbolsHolder
+	local symbolsAttached = {}
+
+	-- Loop over the attachable symbols
+	-- This is here to automate this process, so every time I would add a new attachable symbol
+	-- I would not have to go here and edit this
+	for symbolName, _ in pairs(Symbols.AttachableSymbols) do
+		-- Check in three locations for an attachable symbol
+		AddSymbol(symbolsAttached, Symbols.FindSymbol(savedProperties, symbolName))
+		AddSymbol(symbolsAttached, Symbols.FindSymbol(groupData, symbolName))
+		AddSymbol(symbolsAttached, Symbols.FindSymbol(objectData, symbolName))
+	end
+
+	return symbolsAttached
+end
+
+local Compiler = {}
+
+Compiler.CompilerDistributor = TaskDistributor
+
+function Compiler.MapSceneData(sceneData: { [number]: any }): { [number]: ChunkObject }
+	local chunkObjects = {}
 	local savedProperties = {}
 	local objectType = nil
 
@@ -79,35 +95,22 @@ local function MapSceneData(sceneData: { [number]: any }): { [number]: ChunkObje
 					continue
 				end
 
-				-- Handle symbols
-				local SymbolsAttached: AttachedSymbolsHolder = {}
-
-				-- Loop over the attachable symbols
-				-- This is here to automate this process, so every time I would add a new attachable symbol
-				-- I would not have to go here and edit this
-				for symbolName, _ in pairs(Symbols.AttachableSymbols) do
-					-- Check in three locations for an attachable symbol
-					AddSymbol(SymbolsAttached, Symbols.FindSymbol(savedProperties, symbolName))
-					AddSymbol(SymbolsAttached, Symbols.FindSymbol(groupData, symbolName))
-					AddSymbol(SymbolsAttached, Symbols.FindSymbol(objectData, symbolName))
-				end
-
 				-- Save every necessary informations into a single table
 				-- So TaskDistributor has access to every piece of data that is required to construct an object
-				table.insert(mappedData, {
+				chunkObjects[#chunkObjects + 1] = {
 					ObjectIdentifier = objectKey,
 					ObjectData = objectData,
 					GroupData = groupData,
 					SavedProperties = savedProperties,
 					ObjectType = objectType,
 
-					SymbolsAttached = SymbolsAttached,
-				})
+					SymbolsAttached = GetSymbols(objectData, groupData, savedProperties),
+				}
 			end
 		end
 	end
 
-	return mappedData
+	return chunkObjects
 end
 
 function Compiler.Compile(sceneData: { any }): { [number]: Instance }
@@ -119,21 +122,20 @@ function Compiler.Compile(sceneData: { any }): { [number]: Instance }
 	-- this is kind of like using task.synchronize I think
 	return Promise.new(function(resolve)
 		TaskDistributor:Distribute(
-			TaskDistributor.GenerateChunk(MapSceneData(sceneData), Settings.CompilerChunkSize),
+			TaskDistributor.GenerateChunk(Compiler.MapSceneData(sceneData), Settings.CompilerChunkSize),
 			function(object: ChunkObject)
 				-- Compile the object
-				local compiledObject = CompilerObjects[ALIAS_OBJECTS_NAMES[object.ObjectType]]({
-					Index = object.ObjectIdentifier,
-					Data = object.ObjectData,
-				}, object.GroupData, object.SavedProperties)
-
-				table.insert(compiledObjects, {
-					Object = compiledObject,
+				compiledObjects[#compiledObjects + 1] = {
 					Symbols = object.SymbolsAttached,
-				})
+					Object = CompilerObjects[ALIAS_OBJECTS_NAMES[object.ObjectType]]({
+						Index = object.ObjectIdentifier,
+						Data = object.ObjectData,
+					}, object.GroupData, object.SavedProperties),
+				}
 			end
 		):await()
 
+		warn("Finished scene with:", compiledObjects)
 		resolve(compiledObjects)
 	end):catch(warn)
 end
