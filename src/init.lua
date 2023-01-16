@@ -14,6 +14,7 @@ local DebugStrings = require(components.Debug.Strings)
 local Physics = require(environment.Physics)
 local Template = require(utility.Template)
 local Settings = require(script.Settings)
+local ObjectPool = require(components.Library.ObjectPool)
 
 -- These are values that will get exported with the rest of the modules after
 -- The engine was fully intitialized
@@ -31,7 +32,9 @@ if not engineStarted then
 	-- These are mainly exists for the sole purpose of quality of life benefits
 	Template.NewGlobal("__Rethink_Settings", Settings, true)
 	Template.NewGlobal("__Rethink_Ui", engineUi, true)
-	Template.NewGlobal("__Rethink_Pool", require(components.Library.ObjectPool).new(Settings.Pool.InitialCache), true)
+
+	-- Setting up UI pool for Scene
+	Template.NewGlobal("__Rethink_Pool", ObjectPool.new(Settings.Pool.InitialCache), true)
 
 	-- initiate Nature2D
 	physicsClass = Physics.init(engineUi.GameFrame)
