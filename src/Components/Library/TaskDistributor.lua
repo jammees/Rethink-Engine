@@ -116,21 +116,18 @@ function TaskDistributor:Distribute(chunkData: CachedChunk, processor: (any) -> 
 
 	for _, chunk in ipairs(cachedChunk.Chunk) do
 		-- Create a new Promise and immediately insert it into the Distributors table
-		table.insert(
-			self._Distributors,
-			Promise.new(function(resolve)
-				for _, chunkObject: any in ipairs(chunk) do
-					-- Call the processor function that takes in a chunk object as an argument
-					processor(chunkObject)
+		self._Distributors[#self._Distributors + 1] = Promise.new(function(resolve)
+			for _, chunkObject: any in ipairs(chunk) do
+				-- Call the processor function that takes in a chunk object as an argument
+				processor(chunkObject)
 
-					self.Processed += 1
+				self.Processed += 1
 
-					task.wait()
-				end
+				task.wait()
+			end
 
-				resolve()
-			end):catch(warn)
-		)
+			resolve()
+		end):catch(warn)
 	end
 
 	return Promise.all(self._Distributors)
