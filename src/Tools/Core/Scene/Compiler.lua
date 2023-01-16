@@ -135,7 +135,6 @@ function Compiler.Compile(sceneData: { any }): { [number]: Instance }
 			end
 		):await()
 
-		warn("Finished scene with:", compiledObjects)
 		resolve(compiledObjects)
 	end):catch(warn)
 end
