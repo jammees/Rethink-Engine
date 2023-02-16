@@ -36,10 +36,8 @@ local TaskDistributor = require(components.Library.TaskDistributor).new()
 local Settings = require(package.Settings)
 
 local CompilerObjects = {
-	--Rigidbody = require(objects.Rigidbody),
-	--UiBase = require(objects.UiBase),
-	UiBase = require(objects.PUiBase),
-	Rigidbody = require(objects.PRigidbody),
+	Rigidbody = require(objects.Rigidbody),
+	UiBase = require(objects.UiBase),
 }
 
 local sceneCaches = {}
