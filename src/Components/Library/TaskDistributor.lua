@@ -64,10 +64,8 @@ end
 
 --[=[
     Loops trough the `chunkData` to assign each chunk it's own `Promise` for asynchronous behaviour.
+	Using the `processor` callback, tasks can be done efficiently and asynchronously.
 
-    Instead it's of it's cache counterpart `:Distribute()` takes in an additional argument, that
-    corresponds to the chunks that need to be processed.
-    
     ```lua
     local Rethink = require(game:GetService("ReplicatedStorage").RethinkEngine)
     local TaskDistributor = require(Rethink.Components.Library.TaskDistributor)
@@ -86,7 +84,7 @@ end
         return folders
     end
 
-    local folderChunks = folderDistributor.GenerateChunk(CreateFolders(1000), 50)
+    local folderChunks = TaskDistributor.GenerateChunk(CreateFolders(1000), 50)
 
     folderDistributor:Distribute(folderChunks, function(object)
         object.Name = "Hello, world!"
