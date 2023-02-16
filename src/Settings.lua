@@ -44,17 +44,6 @@ return {
 			Frame = 100,
 		},
 
-		TEST_InitialCache = {
-			ImageLabel = 1,
-			TextLabel = 1,
-			TextButton = 1,
-			ImageButton = 1,
-			TextBox = 1,
-			ScrollingFrame = 1,
-			ViewportFrame = 1,
-			Frame = 1,
-		},
-
 		ExtensionSize = 10, -- How many objects should be created to refill the pool if there are no available ones
 	},
 
@@ -74,6 +63,8 @@ return {
 		-- Value can be between 1 to 10
 		-- Higher value results in better responding constraints but at the cost of framerate
 		ConstraintIteration = 3,
+
+		-- TODO: add setting to toggle dynamic Iteration based on the number of rigidbodies
 	},
 
 	-- Here are all of the settings related to the console
@@ -82,4 +73,9 @@ return {
 		LogHeader = true, -- Print the big header to the console that states that you are using Rethink
 		LogOnPropertyFail = true, -- Warn if a property can not be applied to an object
 	},
+
+	-- Enables a prototype behaviour, where Rethink hooks into Nature2D and updates the rigidbodies
+	-- after done rendering the camera
+	-- Unsure if it should be kept in
+	prototype_EnablePhysicsCameraLoop = true,
 }
