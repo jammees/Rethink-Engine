@@ -1,6 +1,6 @@
 --[[
 
-	    _              _                       _                  
+	    _              _                       _
 	   / \     _ __   (_)  _ __ ___     __ _  | |_    ___    _ __
 	  / _ \   | '_ \  | | | '_ ` _ \   / _` | | __|  / _ \  | '__|
 	 / ___ \  | | | | | | | | | | | | | (_| | | |_  | (_) | | |
@@ -526,6 +526,7 @@ function Animator:PreviousFrame()
 	if not self.Objects[1] then
 		return warn(DebugStrings.Animator.NoObjectsAttached)
 	end
+
 	if self.Running then
 		return warn((DebugStrings.Animator.AnimationRunning):format(":PreviousFrame()"))
 	end
