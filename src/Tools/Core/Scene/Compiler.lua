@@ -1,3 +1,5 @@
+local Types = require(script.Parent.Types)
+
 type SceneConfig = {
 	Name: string?,
 	CompileMode: string?,
@@ -34,9 +36,14 @@ local TaskDistributor = require(components.Library.TaskDistributor).new()
 local Settings = require(package.Settings)
 
 local CompilerObjects = {
-	Rigidbody = require(objects.Rigidbody),
-	UiBase = require(objects.UiBase),
+	--Rigidbody = require(objects.Rigidbody),
+	--UiBase = require(objects.UiBase),
+	UiBase = require(objects.PUiBase),
+	Rigidbody = require(objects.PRigidbody),
 }
+
+local sceneCaches = {}
+local scenePointers = {}
 
 local function IsSymbol(tableIndex: any): boolean
 	if typeof(tableIndex) == "table" and tableIndex.Name ~= nil then
@@ -46,41 +53,55 @@ local function IsSymbol(tableIndex: any): boolean
 	return false
 end
 
-local function AddSymbol(container: { any }, symbol, attachedValue)
-	if IsSymbol(symbol) == false then
-		return
-	end
-
-	container[symbol] = attachedValue
-end
-
-local function GetSymbols(objectData, groupData, savedProperties): AttachedSymbolsHolder
-	local symbolsAttached = {}
-
-	-- Loop over the attachable symbols
-	-- This is here to automate this process, so every time I would add a new attachable symbol
-	-- I would not have to go here and edit this
-	for symbolName, _ in pairs(Symbols.AttachableSymbols) do
-		-- Check in three locations for an attachable symbol
-		AddSymbol(symbolsAttached, Symbols.FindSymbol(savedProperties, symbolName))
-		AddSymbol(symbolsAttached, Symbols.FindSymbol(groupData, symbolName))
-		AddSymbol(symbolsAttached, Symbols.FindSymbol(objectData, symbolName))
-	end
-
-	return symbolsAttached
-end
-
 local Compiler = {}
 
 Compiler.CompilerDistributor = TaskDistributor
 
-function Compiler.MapSceneData(sceneData: { [number]: any }): { [number]: ChunkObject }
+function Compiler.Prototype_MapSceneData(sceneData: { [number]: any }): { [number]: ChunkObject }
 	local chunkObjects = {}
 	local savedProperties = {}
 	local objectType = nil
 
+	local function ProcessAndMerge(object, group, saved, type): { [number]: Types.Prototype_ChunkObject }
+		local objectData = {
+			Properties = {},
+			Symbols = {},
+			ObjectType = type,
+		}
+
+		local function Process(propertyTable: { [string]: any })
+			if propertyTable then
+				for propertyName, value in pairs(propertyTable) do
+					if IsSymbol(propertyName) then
+						objectData.Symbols[propertyName] = value
+
+						continue
+					end
+
+					objectData.Properties[propertyName] = value
+				end
+			end
+		end
+
+		-- Order is very important
+		-- This order prioritises object's properties more than the ones declared in either the saved or the group properties
+		Process(saved)
+		Process(select(2, Symbols.FindSymbol(group, "Property")))
+		Process(object)
+
+		if objectData.Properties.Class == nil then
+			objectData.Properties.Class = "Frame"
+		end
+
+		return objectData
+	end
+
 	for _, sceneCategory in pairs(sceneData) do
-		-- Check if we can find a table with a [property] symbol attacjed
+		if typeof(sceneCategory) ~= "table" then
+			continue
+		end
+
+		-- Check if we can find a table with a [property] symbol attached
 		-- As well as find the type of the category
 		savedProperties = select(2, Symbols.FindSymbol(sceneCategory, "Property"))
 		objectType = select(2, Symbols.FindSymbol(sceneCategory, "Type"))
@@ -95,17 +116,7 @@ function Compiler.MapSceneData(sceneData: { [number]: any }): { [number]: ChunkO
 					continue
 				end
 
-				-- Save every necessary informations into a single table
-				-- So TaskDistributor has access to every piece of data that is required to construct an object
-				chunkObjects[#chunkObjects + 1] = {
-					ObjectIdentifier = objectKey,
-					ObjectData = objectData,
-					GroupData = groupData,
-					SavedProperties = savedProperties,
-					ObjectType = objectType,
-
-					SymbolsAttached = GetSymbols(objectData, groupData, savedProperties),
-				}
+				table.insert(chunkObjects, ProcessAndMerge(objectData, groupData, savedProperties, objectType))
 			end
 		end
 	end
@@ -113,27 +124,40 @@ function Compiler.MapSceneData(sceneData: { [number]: any }): { [number]: ChunkO
 	return chunkObjects
 end
 
-function Compiler.Compile(sceneData: { any }): { [number]: Instance }
+function Compiler.CacheScene(sceneData: { [string]: any })
+	local sceneChunk =
+		TaskDistributor.GenerateChunk(Compiler.Prototype_MapSceneData(sceneData), Settings.CompilerChunkSize)
+
+	local reservedId = #sceneCaches + 1
+	sceneCaches[reservedId] = sceneChunk
+	scenePointers[sceneData.Name] = reservedId
+
+	return sceneChunk
+end
+
+-- Used to get a scene's data
+-- If it does not exist, it gets cached for later to skip
+-- having to iterate all over the data again
+function Compiler.GetScene(sceneData: { [string]: any })
+	if scenePointers[sceneData.Name] == nil then
+		return Compiler.CacheScene(sceneData)
+	end
+
+	return sceneCaches[scenePointers[sceneData.Name]]
+end
+
+-- TODO: Add function to compile an object by itself
+function Compiler.Prototype_Compile(sceneData: { [string]: any }): { [number]: Instance }
 	local compiledObjects = {}
 
-	-- New and improved compiling method
-	-- In this method TaskDistributor is being used, that is a simple utility module
-	-- that is great for processing large amounts of data by utilizing Promises
-	-- this is kind of like using task.synchronize I think
+	-- Simplified the data
 	return Promise.new(function(resolve)
-		TaskDistributor:Distribute(
-			TaskDistributor.GenerateChunk(Compiler.MapSceneData(sceneData), Settings.CompilerChunkSize),
-			function(object: ChunkObject)
-				-- Compile the object
-				compiledObjects[#compiledObjects + 1] = {
-					Symbols = object.SymbolsAttached,
-					Object = CompilerObjects[ALIAS_OBJECTS_NAMES[object.ObjectType]]({
-						Index = object.ObjectIdentifier,
-						Data = object.ObjectData,
-					}, object.GroupData, object.SavedProperties),
-				}
-			end
-		):await()
+		TaskDistributor:Distribute(Compiler.GetScene(sceneData), function(object: Types.Prototype_ChunkObject)
+			table.insert(compiledObjects, {
+				Symbols = object.Symbols,
+				Object = CompilerObjects[ALIAS_OBJECTS_NAMES[object.ObjectType]](object),
+			})
+		end):await()
 
 		resolve(compiledObjects)
 	end):catch(warn)
