@@ -22,7 +22,6 @@ https://devforum.roblox.com/t/benchmarker-plugin-compare-function-speeds-with-gr
 local scenes = game.Players.LocalPlayer.PlayerScripts.Tests.Scenes
 
 local Rethink = require(game:GetService("ReplicatedStorage").Rethink)
-local ProfilerWrapper = require(Rethink.Components.Debug.ProfilerWrapper)
 
 Rethink.Scene.TEST_MODE = true
 
@@ -36,12 +35,6 @@ return {
 			-- Profiler.Begin('UNIQUE_LABEL_NAME') ... Profiler.End() around portions of your code
 			-- to break your function into labels that are viewable under the results
 			-- histogram graph to see what parts of your function take the most time.
-
-			Profiler.Begin("Attach Profiler")
-
-			ProfilerWrapper.AttachProfiler(Profiler, Rethink.Scene.TEST_MODE)
-
-			Profiler.End()
 
 			-- Your code here
 

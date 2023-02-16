@@ -15,8 +15,8 @@ https://devforum.roblox.com/t/benchmarker-plugin-compare-function-speeds-with-gr
 --------------------------------------------------------------------]]
 
 local Rethink = require(game:GetService("ReplicatedStorage").Rethink)
-local ObjectPoolUnmodifed = require(Rethink.Components.Library.ObjectPool)
-local ObjectPool = require(game:GetService("ReplicatedStorage").Benchmarks.Bench.ObjectPool)
+local ObjectPool = require(Rethink.Components.Library.ObjectPool)
+local ObjectPoolUnmodifed = require(script.Parent.old_ObjectPool)
 
 return {
 
