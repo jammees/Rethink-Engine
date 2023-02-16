@@ -90,10 +90,12 @@ return {
 
 	-- This is an attempt to optimize gui elements by hiding them if they are obstructed or
 	-- out of the screen.
-	--[[
+
 	CullGuiElements = function(value: boolean)
 		if value then
-			--local JanitorCullGuiElements = Janitor.new()
+			local JanitorCullGuiElements = require(script.Parent.Parent.Parent.Library.Janitor).new()
+			local Promise = require(script.Parent.Parent.Parent.Library.Promise)
+			local Collision = require(script.Parent.Parent.Parent.Parent.Tools.Environment.Collision)
 
 			local function IsOutOfBounds(object: GuiBase2d)
 				local viewportSize = workspace.CurrentCamera.ViewportSize
@@ -207,7 +209,7 @@ return {
 					:catch(warn)
 			end
 
-			-- Hanle the connections
+			-- Handle the connections
 			Scene.Events.ObjectAdded:Connect(function(object)
 				local isRigidbody = Scene.IsRigidbody(object)
 				local visualObject: Instance = (isRigidbody and object:GetFrame()) or object
@@ -224,7 +226,7 @@ return {
 
 			Scene.Events.ObjectRemoved:Connect(function() end)
 		end
-	end,]]
+	end,
 
 	Prototype_GuiCulling_v2 = function(value: boolean)
 		if value then
