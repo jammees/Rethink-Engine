@@ -1,8 +1,16 @@
 --[[
-	Version: 1.0.0-alpha
-    @james_mc98
-	Under MIT license
+	Rethink
+	Versatile, easy-to-use 2D game engine.
+
+	@james_mc98
+	Version: 0.6.0
+
+	MIT license
 ]]
+
+-- TODO: Get a new fresh copy of Nature2D and edit it again
+
+local RunService = game:GetService("RunService")
 
 local components = script.Components
 local tools = script.Tools
@@ -56,6 +64,18 @@ if not engineStarted then
 	-- After everything has been initialized
 	require(components.Bootstrap.EngineSettings)
 
+	-- Test
+	if Settings.prototype_EnablePhysicsCameraLoop == true then
+		task.spawn(function()
+			local Camera = require(core.Camera)
+
+			RunService.RenderStepped:Connect(function(deltaTime)
+				Camera.Render(deltaTime)
+				physicsClass:Update(deltaTime)
+			end)
+		end)
+	end
+
 	-- Print header into the console if the LogHeader flag is enabled
 	if Settings.Console.LogHeader == true then
 		warn(DebugStrings.ConsoleHero)
@@ -68,8 +88,8 @@ return {
 	Animation = require(core.Animation),
 	Outline = require(utility.Outline),
 	Scene = require(core.Scene),
-	Template = Template,
 	Physics = physicsClass,
+	Template = Template,
 	Ui = engineUi,
 
 	-- Expose the paths for easier access
