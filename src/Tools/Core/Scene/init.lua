@@ -7,8 +7,10 @@
 
 ]]
 
+local Types = require(script.Types)
+
 type CompiledObject = {
-	Object: any,
+	Object: GuiBase2d | Types.Rigidbody,
 	Symbols: any,
 }
 
@@ -33,44 +35,14 @@ local TypeCheck = require(components.Debug.TypeCheck)
 local UiPool = Template.FetchGlobal("__Rethink_Pool")
 local TaskDistributor = require(components.Library.TaskDistributor).new()
 local Janitor = require(components.Library.Janitor)
-local Types = require(script.Types)
-
 local PhysicsEngine = Template.FetchGlobal("__Rethink_Physics")
 
+-- TODO: Create a hash table to store the position of each object's index
 local sceneObjects = {}
 
 local Scene = {}
 
--- public properties
-Scene.Symbols = Symbols.Types
-Scene.SceneName = nil
-Scene.Events = {
-	--	Fires before the scene gets loaded.
-	LoadStarted = Signal.new(),
-	--	Fires after the scene finished loading.
-	LoadFinished = Signal.new(),
-	--	Fires before the scene gets flushed.
-	FlushStarted = Signal.new(),
-	--	Fires after the scene got flushed.
-	FlushFinished = Signal.new(),
-	--	Fires after an object got added to the scene.
-	--	@returns {Object} Can be a rigidbody class or a gui element
-	ObjectAdded = Signal.new(),
-	--	Fires after an object got removed from the scene.
-	--	@returns {Object} Can be a rigidbody class or a gui element
-	ObjectRemoved = Signal.new(),
-}
-
--- public methods
-
 --[=[
-	Compiles a scene from a given data dictionary. Returns a `Promise`
-	
-	**Notes:**
-	Additional `scene config` can also be passed as an argument.
-
-	Custom `protocols` can be used to tell the compiler how to build up your object.
-
 	**Symbols**:
 
 	| Name:				| Description:
@@ -92,8 +64,61 @@ Scene.Events = {
 	| Layer 			| UiBase
 	| Static 			| UiBase
 	| Dynamic 			| Rigidbody
+]=]
+Scene.Symbols = table.freeze(Symbols.Types)
 
-	Symbols **must** be wrapped with `[]`
+-- Is the compiler still loading a scene in
+Scene.IsLoading = false
+
+-- Events that are useful to tell the state of Scene
+Scene.Events = table.freeze({
+	--	Fires before the scene gets loaded.
+	LoadStarted = Signal.new(),
+	--	Fires after the scene finished loading.
+	LoadFinished = Signal.new(),
+	--	Fires before the scene gets flushed.
+	FlushStarted = Signal.new(),
+	--	Fires after the scene got flushed.
+	FlushFinished = Signal.new(),
+	--	Fires after an object got added to the scene.
+	--	@returns {Object} Can be a rigidbody class or a gui element
+	ObjectAdded = Signal.new(),
+	--	Fires after an object got removed from the scene.
+	--	@returns {Object} Can be a rigidbody class or a gui element
+	ObjectRemoved = Signal.new(),
+})
+
+--[=[
+	Compiles a scene from a given data dictionary. Returns a `Promise`
+	
+	**Notes:**
+	Additional `scene config` can also be passed as an argument.
+
+	**Symbols**:
+
+	| Name:				| Description:
+	|--------------------------------------------------------------
+	| Tag				| Gives the given object a `tag(s)` fetch it with `CollectionService` or `Scene:GetRigidbodyFromTag`
+	| Property			| Applies `properties` or `symbols` to objects in the `group` or the `container`
+	| Type				| How the compiler handles the object `UiBase` and `Rigidbody` or it's aliases
+	| Event				| Hook events to the given object
+	| ShouldFlush		| Determines if the object will get deleted on `.Flush()` (Delete After Flush)
+	| Rigidbody			| Add rigidbody properties that later get fed into the Physics engine
+
+	**Aliases with TYPE**
+
+	There are a couple of aliases that are available to make
+	indentifying the type easier.
+	Additionally `UiBase` and `Rigidbody` can be used as well!
+	
+	| Alias:			| Base type:
+	|--------------------------------------------------------------
+	| Layer 			| UiBase
+	| Static 			| UiBase
+	| Dynamic 			| Rigidbody
+
+	Symbols **must** be wrapped with `[]`. This is the reason
+	that `Symbol`s are simple tables that hold data.
 
 	```lua
 	local Rethink = require(game:GetService("ReplicatedStorage").Rethink)
@@ -103,7 +128,9 @@ Scene.Events = {
 	local Property = Scene.Symbols.Property
 	local Tag = Scene.Symbols.Tag
 
-	Scene.Load({Name = "My scene"}, {
+	Scene.Load({
+		Name = "My scene",
+
 		My_Container = {
 			[Type] = "Layer",
 			[Property] = {
@@ -130,32 +157,39 @@ Scene.Events = {
 	})
 	```
 
-	@param {dictionary} sceneConfig
 	@param {dictionary} sceneData
-	@return {promise} sceneTable
+	@returns {promise} sceneTable
 	@async
 	@fires LoadStarted
 	@fires LoadFinished
 ]=]
-function Scene.Load(sceneConfig: SceneConfig, sceneData: { any }): { any }
-	assert(typeof(sceneConfig) == "table", string.format(DebugStrings.Expected, "table", typeof(sceneConfig), "1"))
-	assert(typeof(sceneData) == "table", string.format(DebugStrings.Expected, "table", typeof(sceneConfig), "2"))
+function Scene.Load(sceneData: { any }): { any }
+	if Scene.IsLoading then
+		return warn("[Scene] Already loading in a scene!")
+	end
+
+	assert(typeof(sceneData) == "table", string.format(DebugStrings.Expected, "table", typeof(sceneData), "2"))
 
 	Scene.Events.LoadStarted:Fire()
 
-	-- Returns a promise to allow the function to yield
+	Scene.IsLoading = true
+
+	if sceneData.Name == nil then
+		sceneData.Name = "Unnamed scene"
+	end
+
+	-- Returns a promise to allow the function to
 	-- In this Promise:
-	-- Reassign SceneName to the specified one in the sceneConfig
 	-- Loop over the objects that the Compiler returned and add them to the scene
 	-- After all fire the .LoadFinished event
-	return Compiler.Compile(sceneData)
+	return Compiler.Prototype_Compile(sceneData)
 		:andThen(function(compiledObjects)
-			Scene.SceneName = sceneConfig.Name or "Unnamed scene"
-
 			for _, object: CompiledObject in ipairs(compiledObjects) do
 				-- Attach symbols
 				Scene.Add(object.Object, object.Symbols)
 			end
+
+			Scene.IsLoading = false
 
 			Scene.Events.LoadFinished:Fire()
 		end)
@@ -183,52 +217,78 @@ end
 	@param {boolean} destroyAfterFlush - Whether the object will get deleted after .Flush() was called
 	@fires ObjectAdded
 ]=]
-function Scene.Add(object: any, symbols: { [Types.Symbol]: any }?)
+
+function Scene.Add(object: GuiBase2d | Types.Rigidbody, symbols: { [Types.Symbol]: any }?)
 	TypeCheck.Assert(DebugStrings.ExpectedNoArg, object, "Instance", "table")
 	TypeCheck.Assert(DebugStrings.ExpectedNoArg, symbols, "table")
 
-	local ObjectReference = {
+	-- Define SceneObject
+	local ObjectReference: Types.SceneObject = {
 		Object = object,
 		ObjectJanitor = Janitor.new(),
 		Index = 0,
 	}
 
-	-- Handle cleanup of the object
+	-- Allocate object
+	local reservedPosition = #sceneObjects + 1
+	ObjectReference.Index = reservedPosition
+	table.insert(sceneObjects, ObjectReference)
+
+	-- Add cleanup function
 	ObjectReference.ObjectJanitor:Add(function()
-		local cachedObject = object
-		local isRigidbody = Scene.IsRigidbody(cachedObject)
+		local cachedReference = ObjectReference
+		local isRigidbody = Scene.IsRigidbody(cachedReference.Object)
 
-		UiPool:Return(isRigidbody and cachedObject:GetFrame() or cachedObject)
+		UiPool:Return(isRigidbody and cachedReference.Object.frame or cachedReference.Object)
 
-		if isRigidbody then
-			cachedObject:Destroy()
+		if isRigidbody == true then
+			cachedReference.Object:Destroy()
 		end
+
+		table.remove(sceneObjects, cachedReference.Index)
+
+		-- Reassign indexes
+		for position, sceneObject: Types.SceneObject in pairs(sceneObjects) do
+			sceneObject.Index = position
+		end
+
+		cachedReference = nil
 	end)
 
-	-- If the symbols table is a table, then try to attach symbols to that object
-	if typeof(symbols) == "table" then
-		local attachedSymbols = {}
-
-		-- Pack symbols
-		for symbol, value in pairs(symbols) do
-			if typeof(attachedSymbols[symbol.Name]) == "nil" then
-				attachedSymbols[symbol.Name] = {}
-			end
-
-			symbol.SymbolData.Attached = value
-
-			table.insert(attachedSymbols[symbol.Name], symbol)
-		end
-
-		Symbols.AttachToInstance(ObjectReference, attachedSymbols)
-	end
-
-	local reservedPosition = #sceneObjects + 1
-
-	ObjectReference.Index = reservedPosition
-	sceneObjects[reservedPosition] = ObjectReference
+	Scene.AddSymbols(object, symbols)
 
 	Scene.Events.ObjectAdded:Fire(object)
+end
+
+--[=[
+	Attaches symbols specified in `symbols` table to the specified `object`.
+	Useful to create a custom compiler.
+
+	@param {GuiBase2D | Rigidbody} object
+	@param {dictionary} symbols
+]=]
+function Scene.AddSymbols(object: GuiBase2d | Types.Rigidbody, symbols: { [Types.Symbol]: any }?)
+	if symbols == nil then
+		return
+	end
+
+	TypeCheck.Assert(DebugStrings.ExpectedNoArg, object, "Instance", "table")
+	TypeCheck.Assert(DebugStrings.ExpectedNoArg, symbols, "table")
+
+	local attachedSymbols = {}
+
+	-- Pack symbols
+	for symbol, value in pairs(symbols) do
+		if typeof(attachedSymbols[symbol.Name]) == "nil" then
+			attachedSymbols[symbol.Name] = {}
+		end
+
+		symbol.SymbolData.Attached = value
+
+		table.insert(attachedSymbols[symbol.Name], symbol)
+	end
+
+	Symbols.AttachToInstance(Scene.GetObjectReference(object), attachedSymbols)
 end
 
 --[=[
@@ -246,15 +306,16 @@ end
 	local frame = Instance.new("Frame")
 	frame.Size = Udim2.new(0, 100, 0, 100)
 
-	Scene.Add(frame, {"Test1", "Test2"}, false)
+	Scene.Add(frame)
 
 	Scene.Remove(frame)
 	```
 
 	@param {instance} object - The object to get removed from the scene dictionary
+	@yields
 	@fires ObjectRemoved
 ]=]
-function Scene.Remove(object: Instance)
+function Scene.Remove(object: GuiBase2d | Types.Rigidbody)
 	TypeCheck.Assert(DebugStrings.ExpectedNoArg, object, "Instance", "table")
 
 	-- remove it from the scene dictionary
@@ -273,7 +334,7 @@ function Scene.Remove(object: Instance)
 		end
 	end
 
-	warn(string.format(DebugStrings.RemoveErrorNoObject, object.Name, typeof(object)))
+	return error(string.format(DebugStrings.RemoveErrorNoObject, object.Name, typeof(object)))
 end
 
 --[=[
@@ -309,34 +370,33 @@ end
 	Scene.Flush()
 	```
 
+	@param {boolean} ignoreShouldFlush 
+	@yields
 	@fires Flush#FlushStarted
 	@fires Flush#FlushFinished
 ]=]
-function Scene.Flush()
-	if Scene.SceneName == nil then
+function Scene.Flush(ignoreShouldFlush: boolean)
+	if #sceneObjects == 0 then
 		return warn((DebugStrings.MethodFailNoScene):format("flush"))
 	end
 
-	-- TODO:
-	-- Before trying to flush the scene, we should wait for the Compiler to finish
-
 	Scene.Events.FlushStarted:Fire()
 
-	Scene.SceneName = nil
-
 	-- Remove the left references to the deleted objects from sceneObjects
-	TaskDistributor:Distribute(TaskDistributor.GenerateChunk(sceneObjects, 100), function(object: Types.SceneObject)
-		if object.ShouldFlush == false then
-			return
-		end
+	TaskDistributor
+		:Distribute(TaskDistributor.GenerateChunk(sceneObjects, 100), function(object: Types.SceneObject)
+			if object.ShouldFlush == false and ignoreShouldFlush == false or ignoreShouldFlush == nil then
+				return
+			end
 
-		-- Destroy the object's Janitor
-		-- This will result in having all of the events disconnected, Rigidbody being destroyed
-		-- and the UI element getting returned to the Pool for later use
-		object.ObjectJanitor:Destroy()
+			Scene.Events.ObjectRemoved:Fire(object.Object)
 
-		sceneObjects[object.Index] = nil
-	end):await()
+			-- Destroy the object's Janitor
+			-- This will result in having all of the events disconnected, Rigidbody being destroyed
+			-- and the UI element getting returned to the Pool for later use
+			object.ObjectJanitor:Destroy()
+		end)
+		:await()
 
 	Scene.Events.FlushFinished:Fire()
 end
@@ -379,23 +439,25 @@ end
 	@public
 	@returns {array} Collection of all rigidbodies with the given tag
 ]=]
-function Scene.GetBodyFromTag(tag: string): { [number]: { any } }
+function Scene.GetBodyFromTag(tag: string): { [number]: { Types.Rigidbody } }
 	assert(typeof(tag) == "string", string.format(DebugStrings.ExpectedNoArg, "string", typeof(tag)))
 
-	local results = {}
+	local rigidbodies = PhysicsEngine:GetBodies()
+	local foundBodies = {}
 
 	for _, object in ipairs(CollectionService:GetTagged(tag)) do --> fetch instances tagged with "tag argument"
-		for _, rigid in ipairs(PhysicsEngine:GetBodies()) do --> loop trough all of the rigidbodies (i'll try to optimize it somehow) -> UPDATE: won't
-			if rigid.frame == object then
-				table.insert(results, {
-					Object = object,
-					Class = rigid,
-				})
+		for _, rigidbody in ipairs(rigidbodies) do --> loop trough all of the rigidbodies (i'll try to optimize it somehow) -> UPDATE: won't -> UPDATE: will
+			if rigidbody.frame == object then
+				table.insert(foundBodies, rigidbody)
 			end
 		end
 	end
 
-	return results
+	return foundBodies
+end
+
+function Scene.GetFromTag(tag: string): { [number]: GuiBase2d | Types.Rigidbody }
+	return 0
 end
 
 --[=[
@@ -406,71 +468,43 @@ end
 	@public
 	@returns {boolean}
 ]=]
-function Scene.IsRigidbody(object: any): boolean
+function Scene.IsRigidbody(object: GuiBase2d | Types.Rigidbody): boolean
 	return getmetatable(typeof(object) == "table" and object or nil) == RigidBody
 end
 
--- Some getter functions
-
 --[=[
-	Returns a signal class if already exists, if not it will create a new signal.
+	Returns the object's data that is tracked in `Scene`.
 
-	**Available signals:**
-	- `LoadStarted`: fired before attempting to start compiling the scene from a dictionary
-	- `LoadFinished`: fired after the scene has been compiled successfully
-	- `FlushStarted`: fired before starting to flush the scene
-	- `FlushFinished`: fired after finished flushing the scene
-	- `ObjectAdded`: fired after an object has been added to the scene
-	- `ObjectRemoved`: fired after an object has been removed from the scene
+	Useful to add custom events or logic to the object and making it sure
+	that, that event/logic gets disconnected upon destroying it.
 
-	Alternative way of getting a signal: `Scene.Events`
-
-	**Example"**
-	```lua
-	local Rethink = require(game:GetService("ReplicatedStorage").Rethink)
-	local Scene = Rethink.Scene
-
-	Scene.GetSignal("LoadStarted"):Connect(function()
-		print("Finished loading in scene; " .. Scene.SceneName)
-	end)
-	```
-
-	@param {string} signalName
+	@param {GuiBase2d | Types.Rigidbody} object
 	@yields
-	@public
-	@alias Scene.Events
-	@returns {signal} Returns a signal object
+	@returns SceneObject
 ]=]
-function Scene.GetSignal(signalName: string): { any }?
-	if Scene.Events[signalName] then
-		return Scene.Events[signalName]
+function Scene.GetObjectReference(object: GuiBase2d | Types.Rigidbody): Types.SceneObject
+	for _, objectReference: Types.SceneObject in ipairs(sceneObjects) do
+		if objectReference.Object ~= object then
+			continue
+		end
+
+		return objectReference
 	end
 
-	warn(string.format(DebugStrings.SignalNotFound, tostring(signalName)))
-
-	return
-end
-
---[=[
-	Can be used to retrieve the currently compiled scene's name, specified in the sceneTable.
-
-	@yields
-	@public
-	@returns {string} Returns the loaded scene's name
-]]
-]=]
-function Scene.GetName(): string
-	return Scene.SceneName
+	return error(`Unable to find {object} in the sceneObjects list!`)
 end
 
 --[=[
 	Can be used to retrieve all of the scene objects, that make the currently compiled scene.
+	
+	Contains the Janitor used to clean that specific objec up, the object reference, ShouldFlush
+	flag as well as the position in the sceneObjects.
 
 	@yields
 	@public
 	@returns {array} Returns all of the trakced objects
 ]=]
-function Scene.GetObjects(): { [number]: any }
+function Scene.GetObjects(): { [number]: Types.SceneObject }
 	return sceneObjects
 end
 
