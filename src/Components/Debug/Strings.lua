@@ -9,7 +9,8 @@ return {
                                                      |___/              
 
     Versatile, easy-to-use 2D game engine.
-    Version: 1.0.0-alpha
+    Version: 0.6.0
+
     ]],
 
 	Expected = "Expected to get %q; got %q (arg num %d)!",
@@ -38,4 +39,6 @@ return {
 	TaskDistributor = {
 		AlreadyProcessing = "Error whilst trying to call :Distribute(), already processing a chunk!",
 	},
+
+	Symbol_NotFound = "Failed to find and recognize %s as an attachable symbol!",
 }
