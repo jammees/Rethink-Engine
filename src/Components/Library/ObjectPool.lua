@@ -1,26 +1,46 @@
 --[=[
-	Simple object pool implementation.
+	Simple object pool implementation for Rethink.
+	This means that this module is not viable anywhere else without some editing.
 
-	Supports multiple objects being in the pool, by indexing the pool by it's classname.
+	This implementation supports multiple objects being in the pool, by indexing the pool by it's classname.
 ]=]
 
-local HttpService = game:GetService("HttpService")
+type PoolObject = {
+	Object: any,
+	BusyRegistry: number,
+}
 
-local package = script.Parent.Parent.Parent
-local Settings = require(package.Settings)
+local Rethink = script.Parent.Parent.Parent
+
+local DefaultSettings = require(Rethink.Tools.Core.Scene.DefaultProperties)
 local Signal = require(script.Parent.Signal)
 
-local function PopulatePool(self, objectList)
+local function ResetProperties(object: Instance)
+	for propertyName, propertyValue in pairs(DefaultSettings[object.ClassName]) do
+		object[propertyName] = propertyValue
+	end
+
+	return object
+end
+
+local function CreateInstance(self: { [string]: any }, objectType: string)
+	local poolObject = ResetProperties(Instance.new(objectType))
+	poolObject.Parent = self.ObjectContainer
+
+	return {
+		Object = poolObject,
+		BusyRegistry = 0,
+	}
+end
+
+local function PopulatePool(self: { [string]: any }, objectList: { [string]: number }): { PoolObject }
 	local objects = {}
 
 	for objectType, amount in pairs(objectList) do
 		objects[objectType] = {}
 
 		for _ = 1, amount do
-			local poolObject = Instance.new(objectType)
-			poolObject.Parent = self.ObjectContainer
-
-			table.insert(objects[objectType], poolObject)
+			objects[objectType][#objects[objectType] + 1] = CreateInstance(self, objectType)
 		end
 	end
 
@@ -29,8 +49,8 @@ end
 
 local function CreateContainer()
 	local folder = Instance.new("Folder")
-	folder.Name = HttpService:GenerateGUID(false)
-	folder.Parent = script
+	folder.Name = "ObjectPool-ObjectContainer"
+	folder.Parent = game:GetService("RunService"):IsStudio() and workspace or nil
 
 	return folder
 end
@@ -38,67 +58,70 @@ end
 local ObjectPool = {}
 ObjectPool.__index = ObjectPool
 
---[=[
-	If it is not possible to set the cleanupFunction when creating the class.
-	It is possible to add the cleanupFunction later.
-
-	```lua
-	local myPool = ObjectPool.new(objectList)
-
-	myPool.CleanupFunction = function(object: Instance)
-		print(`Cleaning up {object} after use!`)
-	end)
-	```
-]=]
-function ObjectPool.new(objectList, cleanupFunction: (Instance) -> nil?)
+function ObjectPool.new(objectList)
 	local self = setmetatable({}, ObjectPool)
 
 	self.ObjectContainer = CreateContainer()
 	self.Objects = PopulatePool(self, objectList)
+	self.ObjectLookup = {}
+	self.AvailableObjects = self.Objects
 	self.BusyObjects = {}
-	self.CleanupFunction = cleanupFunction
 
+	-- Events
 	self.ObjectReturned = Signal.new()
+
+	-- Populate object lookup
+	for _, objectType: { [number]: PoolObject } in pairs(self.Objects) do
+		for _, object in ipairs(objectType) do
+			self.ObjectLookup[object.Object] = object.BusyRegistry
+		end
+	end
 
 	return self
 end
 
 function ObjectPool:Get(type: string)
-	-- Check if there is an available object in the pool
-	local object = self.Objects[type][1]
+	local object: PoolObject = self.AvailableObjects[type][#self.AvailableObjects[type]]
 
 	if object then
-		-- Remove the object from the pool
-		table.remove(self.Objects[type], 1)
-		self.BusyObjects[#self.BusyObjects + 1] = object
+		object.BusyRegistry = #self.BusyObjects + 1
 
-		return object
-	else
-		-- Create a new object if the pool is empty
-		for _ = 1, Settings.Pool.ExtensionSize do
-			table.insert(self.Objects[type], Instance.new(type))
-		end
+		self.AvailableObjects[type][#self.AvailableObjects[type]] = nil
+		self.BusyObjects[object.BusyRegistry] = object
 
-		return self:Get(type)
+		return object.Object
 	end
+
+	for _ = 1, 10 do
+		local newObject = CreateInstance(self, type)
+
+		self.Objects[type][#self.Objects[type] + 1] = newObject
+		self.ObjectLookup[newObject.Object] = newObject.BusyRegistry
+	end
+
+	return self:Get(type)
 end
 
 function ObjectPool:Return(object)
 	-- Return the object to the pool
-	local objectIndex = table.find(self.BusyObjects, object)
+	local objectIndex = self.ObjectLookup[object]
 
 	if objectIndex then
 		object.Parent = self.ObjectContainer
 
-		table.remove(self.BusyObjects, objectIndex)
-		self.Objects[object.ClassName][#self.Objects[object.ClassName] + 1] = object
+		-- Reset the object's properties to default
+		ResetProperties(object)
 
-		if self.ResetFunction then
-			self.ResetFunction(object)
-		end
+		self.BusyObjects[objectIndex] = nil
+		self.AvailableObjects[object.ClassName][#self.AvailableObjects[object.ClassName] + 1] =
+			self.Objects[self.ObjectLookup[object]]
 
-		self.ObjectReturned:Fire(object)
+		self.ObjectReturned:Fire()
+
+		return
 	end
+
+	return error(`{object} is not a valid type that ObjectPool accepts!`)
 end
 
 function ObjectPool:Destroy()
@@ -109,6 +132,11 @@ function ObjectPool:Destroy()
 
 	-- Destroy the container, and every object with it
 	self.ObjectContainer:Destroy()
+
+	table.clear(self.AvailableObjects)
+	table.clear(self.BusyObjects)
+	table.clear(self.ObjectLookup)
+	setmetatable(self, nil)
 end
 
 return ObjectPool
