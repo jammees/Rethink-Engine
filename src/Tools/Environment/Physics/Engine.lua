@@ -143,6 +143,42 @@ function Engine:Start()
 	self._janitor:Add(self.connection, "Disconnect", "MainConnection")
 end
 
+-- Rethink:
+-- Test function to control when the engine updates
+function Engine:Update(deltaTime: string)
+	local fixedDeltaTime = 1 / 60
+	local epsilon = 1 / 1000
+	local accumulator = 0
+
+	if self.independent then
+		accumulator += deltaTime
+
+		while accumulator > 0 do
+			-- Rethink
+			-- Implement a fix for an edge case, if the viewport's size changes after the canvas has been
+			-- initialized.
+			HookUpdateCanvasSize(self)
+
+			accumulator -= fixedDeltaTime
+			PhysicsRunner.Update(self, deltaTime)
+			PhysicsRunner.Render(self)
+		end
+
+		if accumulator >= -epsilon then
+			accumulator = 0
+		end
+	else
+		-- Rethink
+		-- Implement a fix for an edge case, if the viewport's size changes after the canvas has been
+		-- initialized.
+		HookUpdateCanvasSize(self)
+
+		accumulator = 0
+		PhysicsRunner.Update(self, deltaTime)
+		PhysicsRunner.Render(self)
+	end
+end
+
 -- This method is used to stop simulating rigid bodies and constraints.
 function Engine:Stop()
 	-- Fire Engine.Stopped event
