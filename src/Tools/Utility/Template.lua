@@ -99,7 +99,7 @@ function Template.UpdateGlobal(target: string, element: any)
 
 	local globalTarget = globalTemplate[target]
 
-	if globalTarget.Locked == false then
+	if globalTarget.Locked == false or globalTarget.Locked == nil then
 		globalTarget.Element = element
 		return
 	end
