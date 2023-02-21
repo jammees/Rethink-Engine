@@ -96,6 +96,9 @@ function Compiler.Prototype_MapSceneData(sceneData: { [number]: any }): { [numbe
 		end
 
 		-- TODO: Use the `name` argument, attach it to the properties
+		if objectData.Properties.Name == nil then
+			objectData.Properties.Name = name
+		end
 
 		return objectData
 	end
