@@ -37,8 +37,6 @@ function Point.new(pos: Vector2, canvas: Types.Canvas, engine: Types.EngineConfi
 		color = nil,
 		radius = Globals.point.radius,
 
-		moveRelativeVector = Vector2.new(1, 1), --> CUSTOM
-
 		timed = {
 			start = nil,
 			t = nil,
@@ -71,11 +69,6 @@ function Point:ApplyForce(force: Vector2, t: number)
 		self.timed.t = t
 		self.timed.force = force
 	end
-end
-
-function Point:MoveRelative(x: number, y: number)
-	self.moveRelativeVector = Vector2.new(x, y)
-	warn(self.moveRelativeVector)
 end
 
 -- This method is used to apply external forces like gravity and is responsible for moving the point.
@@ -257,6 +250,10 @@ end
 -- Returns the velocity of the Point
 function Point:Velocity(): Vector2
 	return self.pos - self.oldPos
+end
+
+function Point:Velocity2(): Vector2
+	return self.pos - self.oldPos + self.forces
 end
 
 function Point:GetNetForce(): Vector2
