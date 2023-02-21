@@ -29,6 +29,7 @@ local ObjectPool = require(components.Library.ObjectPool)
 local engineStarted = false
 local engineUi = nil
 local physicsClass = nil
+local pool = nil
 
 if not engineStarted then
 	engineStarted = true
@@ -42,7 +43,8 @@ if not engineStarted then
 	Template.NewGlobal("__Rethink_Ui", engineUi, true)
 
 	-- Setting up UI pool for Scene
-	Template.NewGlobal("__Rethink_Pool", ObjectPool.new(Settings.Pool.InitialCache), true)
+	pool = ObjectPool.new(Settings.Pool.InitialCache)
+	Template.NewGlobal("__Rethink_Pool", pool, true)
 
 	-- initiate Nature2D
 	physicsClass = Physics.init(engineUi.GameFrame)
@@ -91,6 +93,7 @@ return {
 	Physics = physicsClass,
 	Template = Template,
 	Ui = engineUi,
+	Pool = pool,
 
 	-- Expose the paths for easier access
 	Components = components,
