@@ -30,4 +30,4 @@ Rethink.Scene.Add(f, {
 warn("Test Tag symbol(Hello world!):", game:GetService("CollectionService"):GetTagged("Hello world!")[1])
 warn("Test Tag symbol(world! Hello):", game:GetService("CollectionService"):GetTagged("world! Hello")[1])
 
-return { { Name = "Empty" }, {} }
+return { { Name = "Empty" } }

@@ -28,41 +28,40 @@ local function createObjects(amount: number)
 end
 
 return {
-	{ Name = "Stress test" },
-	{
-		Interactibles = {
-			[Symbols.Type] = "UiBase",
-			[Symbols.Property] = {
-				Class = "ImageButton",
-				BackgroundColor3 = Color3.fromRGB(255, 125, 25),
+	Name = "Stress test",
 
-				[Symbols.Tag] = "UniversalTag",
-			},
+	Interactibles = {
+		[Symbols.Type] = "UiBase",
+		[Symbols.Property] = {
+			Class = "ImageButton",
+			BackgroundColor3 = Color3.fromRGB(255, 125, 25),
 
-			createObjects(OBJECT_NUMBER / 2),
+			[Symbols.Tag] = "UniversalTag",
 		},
 
-		Rigidbodies = {
-			[Symbols.Type] = "Rigidbody",
-			[Symbols.Property] = {
-				Class = "ImageButton",
-				BackgroundColor3 = Color3.fromRGB(25, 190, 255),
+		createObjects(OBJECT_NUMBER / 2),
+	},
 
-				[Symbols.Tag] = "UniversalTag",
-				[Symbols.Rigidbody] = {
-					Collidable = true,
-					Anchored = false,
-					KeepInCanvas = false,
-					CanRotate = false,
-					LifeSpan = 5,
-					Gravity = Vector2.new(1, 1),
-					Friction = 1,
-					AirFriction = 1,
-					Mass = 5,
-				},
+	Rigidbodies = {
+		[Symbols.Type] = "Rigidbody",
+		[Symbols.Property] = {
+			Class = "ImageButton",
+			BackgroundColor3 = Color3.fromRGB(25, 190, 255),
+
+			[Symbols.Tag] = "UniversalTag",
+			[Symbols.Rigidbody] = {
+				Collidable = true,
+				Anchored = false,
+				KeepInCanvas = false,
+				CanRotate = false,
+				LifeSpan = 5,
+				Gravity = Vector2.new(1, 1),
+				Friction = 1,
+				AirFriction = 1,
+				Mass = 5,
 			},
-
-			createObjects(OBJECT_NUMBER / 2),
 		},
+
+		createObjects(OBJECT_NUMBER / 2),
 	},
 }
