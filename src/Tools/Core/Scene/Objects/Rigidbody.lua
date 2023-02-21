@@ -1,12 +1,4 @@
 --[[
-    Rigidbody protocol handler // Standard
-
-    Used to construct a rigidbody from a set of tables, while also assigning tags and properties
-
-    Notes:
-
-    Using wrapper to grant access to physicsHandler
-
 	Properties:
 
 	Collidable
@@ -19,7 +11,6 @@
 	Friction
 	AirFriction
 	Mass
-	
 ]]
 
 type Properties = { [string]: any }
@@ -31,34 +22,32 @@ type CompileType = {
 	},
 }
 
-local package = script:FindFirstAncestor("Tools").Parent
+local package = script.Parent.Parent.Parent.Parent.Parent
 
+local Types = require(script.Parent.Parent.Types)
 local Template = require(package.Tools.Utility.Template)
-local Symbols = require(package.Tools.Core.Scene.Symbols)
 local UiBase = require(script.Parent.UiBase)
 local Promise = require(package.Components.Library.Promise)
 local UiPool = Template.FetchGlobal("__Rethink_Pool")
 
 local Physics = Template.FetchGlobal("__Rethink_Physics")
 
-local function AddProperties(target: { [string]: any }, values: { any })
-	if typeof(values) ~= "table" then
-		return
-	end
-
-	for propertyName, propertyValue in pairs(values) do
-		target[propertyName] = propertyValue
-	end
-end
-
-local function CompileDynamic(objectProperties: CompileType, groupData: any, savedProperties: CompileType)
+local function CompileDynamic(data: Types.Prototype_ChunkObject)
 	local rigidbodyData = {
-		Object = UiBase(objectProperties, groupData, savedProperties),
+		Object = UiBase(data),
 	}
 
-	AddProperties(rigidbodyData, select(2, Symbols.FindSymbol(savedProperties, "Rigidbody")))
-	AddProperties(rigidbodyData, select(2, Symbols.FindSymbol(Symbols.FindSymbol(groupData, "Property"), "Rigidbody")))
-	AddProperties(rigidbodyData, select(2, Symbols.FindSymbol(objectProperties.Data, "Rigidbody")))
+	-- Add symbols related to rigidbodies
+	-- For now, this Object will handle the `Rigidbody` symbol, but in the future that
+	-- might change
+	for symbol, value in pairs(data.Symbols) do
+		-- It's a Rigidbody symbol add all of the properties
+		if symbol.Name == "Rigidbody" then
+			for propertyName, propertyValue in pairs(value) do
+				rigidbodyData[propertyName] = propertyValue
+			end
+		end
+	end
 
 	local object = nil
 
@@ -68,7 +57,7 @@ local function CompileDynamic(objectProperties: CompileType, groupData: any, sav
 		resolve()
 	end)
 		:catch(function(errorMessage: string)
-			warn(errorMessage)
+			warn("Encountered an error whilst trying to create a Rigidbody:\n\n" .. errorMessage)
 
 			UiPool:Return(rigidbodyData.Object)
 			table.clear(rigidbodyData)
