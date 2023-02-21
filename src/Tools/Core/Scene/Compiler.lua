@@ -55,16 +55,19 @@ local Compiler = {}
 
 Compiler.CompilerDistributor = TaskDistributor
 
+-- TODO: Dynamically scan how deep is the table
+-- TODO: Use infinite recursion to allow more customization and organization (?)
 function Compiler.Prototype_MapSceneData(sceneData: { [number]: any }): { [number]: ChunkObject }
 	local chunkObjects = {}
 	local savedProperties = {}
 	local objectType = nil
 
-	local function ProcessAndMerge(object, group, saved, type): { [number]: Types.Prototype_ChunkObject }
+	local function ProcessAndMerge(object, group, saved, type, name): { [number]: Types.Prototype_ChunkObject }
 		local objectData = {
 			Properties = {},
 			Symbols = {},
 			ObjectType = type,
+			ObjectClass = "Frame",
 		}
 
 		local function Process(propertyTable: { [string]: any })
@@ -87,9 +90,12 @@ function Compiler.Prototype_MapSceneData(sceneData: { [number]: any }): { [numbe
 		Process(select(2, Symbols.FindSymbol(group, "Property")))
 		Process(object)
 
-		if objectData.Properties.Class == nil then
-			objectData.Properties.Class = "Frame"
+		if objectData.Properties.Class then
+			objectData.ObjectClass = objectData.Properties.Class
+			objectData.Properties.Class = nil
 		end
+
+		-- TODO: Use the `name` argument, attach it to the properties
 
 		return objectData
 	end
@@ -104,17 +110,17 @@ function Compiler.Prototype_MapSceneData(sceneData: { [number]: any }): { [numbe
 		savedProperties = select(2, Symbols.FindSymbol(sceneCategory, "Property"))
 		objectType = select(2, Symbols.FindSymbol(sceneCategory, "Type"))
 
-		for groupKey, groupData in pairs(sceneCategory) do
-			if IsSymbol(groupKey) then
+		for gKey, group in pairs(sceneCategory) do
+			if IsSymbol(gKey) then
 				continue
 			end
 
-			for objectKey, objectData in pairs(groupData) do
-				if IsSymbol(objectKey) then
+			for oKey, object in pairs(group) do
+				if IsSymbol(oKey) then
 					continue
 				end
 
-				table.insert(chunkObjects, ProcessAndMerge(objectData, groupData, savedProperties, objectType))
+				table.insert(chunkObjects, ProcessAndMerge(object, group, savedProperties, objectType, oKey))
 			end
 		end
 	end
