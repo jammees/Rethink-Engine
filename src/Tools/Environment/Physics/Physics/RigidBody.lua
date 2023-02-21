@@ -590,6 +590,10 @@ function RigidBody:SetPosition(PositionX: number, PositionY: number)
 	return oldPosition, UDim2.fromOffset(PositionX, PositionY)
 end
 
+function RigidBody:Rethink_UpdateVertices()
+	UpdateVertices(self.frame, self.vertices, self.engine)
+end
+
 -- This method is used to set a new size of the RigidBody's UI element.
 function RigidBody:SetSize(SizeX: number, SizeY: number)
 	restrict(self.custom)
