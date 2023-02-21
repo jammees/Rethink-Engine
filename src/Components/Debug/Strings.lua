@@ -1,3 +1,4 @@
+-- TODO: Cleanup
 return {
 	ConsoleHero = [[
 		
@@ -39,6 +40,4 @@ return {
 	TaskDistributor = {
 		AlreadyProcessing = "Error whilst trying to call :Distribute(), already processing a chunk!",
 	},
-
-	Symbol_NotFound = "Failed to find and recognize %s as an attachable symbol!",
 }
