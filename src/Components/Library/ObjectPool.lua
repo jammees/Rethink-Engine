@@ -121,7 +121,8 @@ function ObjectPool:Return(object)
 		return
 	end
 
-	return error(`{object} is not a valid type that ObjectPool accepts!`)
+	-- TODO: Rephrase error, very confusing
+	return error(("%s is not a valid type that ObjectPool accepts!"):format(tostring(object)))
 end
 
 function ObjectPool:Destroy()
