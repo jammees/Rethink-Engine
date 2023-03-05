@@ -214,15 +214,11 @@ function Symbols.FindSymbol(array: { any }, targetSymbol: string)
 end
 
 function Symbols.AttachToInstance(object: Types.SceneObject, symbols: { [string]: { [number]: Types.Symbol } })
-	-- There is no need to check if it exists in the AttachableSymbols,
-	-- because it already loops over this table and checks for each of the symbols
 	for symbolName: string, collectedSymbols: { [number]: Types.Symbol } in pairs(symbols) do
 		for _, symbol: Types.Symbol in ipairs(collectedSymbols) do
 			local symbolProcessor = Symbols.AttachableSymbols[symbolName]
 
 			-- If it is not an attachable symbol just skip it and move to the next one
-			-- no need to notify the user of it being skipped, because it is very less likely
-			-- for someone to use a custom symbol outside of the `Symbols` module
 			if symbolProcessor == nil then
 				continue
 			end
