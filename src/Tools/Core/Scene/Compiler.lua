@@ -26,6 +26,8 @@ local ALIAS_OBJECTS_NAMES = {
 	UiBase = "UiBase",
 }
 
+local ContentProvider = game:GetService("ContentProvider")
+
 local package = script.Parent.Parent.Parent.Parent
 local objects = script.Parent.Objects
 local components = package.Components
@@ -90,12 +92,13 @@ function Compiler.Prototype_MapSceneData(sceneData: { [number]: any }): { [numbe
 		Process(select(2, Symbols.FindSymbol(group, "Property")))
 		Process(object)
 
+		-- Re-allocate the Class property
 		if objectData.Properties.Class then
 			objectData.ObjectClass = objectData.Properties.Class
 			objectData.Properties.Class = nil
 		end
 
-		-- TODO: Use the `name` argument, attach it to the properties
+		-- Apply index as name if it is not present in the properties table
 		if objectData.Properties.Name == nil then
 			objectData.Properties.Name = name
 		end
@@ -160,10 +163,25 @@ function Compiler.Prototype_Compile(sceneData: { [string]: any }): { [number]: I
 	-- Simplified the data
 	return Promise.new(function(resolve)
 		TaskDistributor:Distribute(Compiler.GetScene(sceneData), function(object: Types.Prototype_ChunkObject)
-			table.insert(compiledObjects, {
-				Symbols = object.Symbols,
-				Object = CompilerObjects[ALIAS_OBJECTS_NAMES[object.ObjectType]](object),
-			})
+			Promise.try(function()
+				-- Default to UiBase if it is not present
+				if object.ObjectType == nil then
+					object.ObjectType = "UiBase"
+					warn(`[Compiler] Nil ObjectClass, defaulted to UiBase for {object}!`)
+				end
+
+				return CompilerObjects[ALIAS_OBJECTS_NAMES[object.ObjectType]](object)
+			end)
+				:andThen(function(cObject: GuiBase2d | Types.Rigidbody)
+					ContentProvider:PreloadAsync({ typeof(cObject) == "table" and cObject.frame or cObject })
+
+					table.insert(compiledObjects, {
+						Symbols = object.Symbols,
+						Object = cObject,
+					})
+				end)
+				:catch(warn)
+				:await()
 		end):await()
 
 		resolve(compiledObjects)
