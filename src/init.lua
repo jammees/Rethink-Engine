@@ -10,8 +10,6 @@
 
 -- TODO: Get a new fresh copy of Nature2D and edit it again
 
-local RunService = game:GetService("RunService")
-
 local components = script.Components
 local tools = script.Tools
 local core = tools.Core
@@ -65,18 +63,6 @@ if not engineStarted then
 	-- Apply engine settings and optimizations
 	-- After everything has been initialized
 	require(components.Bootstrap.EngineSettings)
-
-	-- Test
-	if Settings.prototype_EnablePhysicsCameraLoop == true then
-		task.spawn(function()
-			local Camera = require(core.Camera)
-
-			RunService.RenderStepped:Connect(function(deltaTime)
-				Camera.Render(deltaTime)
-				physicsClass:Update(deltaTime)
-			end)
-		end)
-	end
 
 	-- Print header into the console if the LogHeader flag is enabled
 	if Settings.Console.LogHeader == true then
