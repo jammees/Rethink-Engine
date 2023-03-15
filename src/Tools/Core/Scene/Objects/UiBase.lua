@@ -3,6 +3,7 @@ local package = script.Parent.Parent.Parent.Parent.Parent
 local Types = require(script.Parent.Parent.Types)
 local Template = require(package.Tools.Utility.Template)
 local UiPool = Template.FetchGlobal("__Rethink_Pool")
+local Promise = require(package.Components.Library.Promise)
 
 local objectParent = Template.FetchGlobal("__Rethink_Ui").Viewport
 
@@ -18,13 +19,21 @@ end
 local function CompileStatic(data: Types.Prototype_ChunkObject)
 	local object = UiPool:Get(data.ObjectClass)
 
-	-- Apply all of the properties at once
-	ApplyProperties(object, data.Properties)
+	Promise.try(function()
+		-- Apply all of the properties at once
+		ApplyProperties(object, data.Properties)
 
-	-- Apply name if not specified
-	object.Name = typeof(data.Properties.Name) and data.Properties.Name or data.ObjectClass
+		-- Apply name if not specified
+		object.Name = typeof(data.Properties.Name) and data.Properties.Name or data.ObjectClass
 
-	object.Parent = objectParent
+		object.Parent = objectParent
+	end)
+		:catch(function(errorMessage: string)
+			warn("Encountered an error whilst trying to create an UiBase:\n\n" .. errorMessage)
+
+			UiPool:Return(object)
+		end)
+		:await()
 
 	return object
 end
