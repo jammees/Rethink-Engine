@@ -167,7 +167,7 @@ function Compiler.Prototype_Compile(sceneData: { [string]: any }): { [number]: I
 				-- Default to UiBase if it is not present
 				if object.ObjectType == nil then
 					object.ObjectType = "UiBase"
-					warn(`[Compiler] {object}.ObjectClass not found, defaulted to UiBase!`)
+					warn(`[Compiler] {object}.ObjectType not found, defaulted to UiBase!`)
 				end
 
 				return CompilerObjects[ALIAS_OBJECTS_NAMES[object.ObjectType]](object)
