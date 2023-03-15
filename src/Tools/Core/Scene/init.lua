@@ -456,8 +456,30 @@ function Scene.GetBodyFromTag(tag: string): { [number]: { Types.Rigidbody } }
 	return foundBodies
 end
 
+--[=[
+	Alternative to `Scene.GetBodyFromTag` where it get's every object that has that specific
+	tag no matter what type it is.
+
+	@param {string} tag
+	@yields
+	@public
+	@returns {array} All of the collected objects that were tagged
+]=]
 function Scene.GetFromTag(tag: string): { [number]: GuiBase2d | Types.Rigidbody }
-	return 0
+	assert(typeof(tag) == "string", string.format(DebugStrings.ExpectedNoArg, "string", typeof(tag)))
+
+	local taggedObjects = CollectionService:GetTagged(tag)
+	local foundObjects = {}
+
+	for _, sceneObject: Types.SceneObject in ipairs(sceneObjects) do
+		local object = Scene.IsRigidbody(sceneObject.Object) and sceneObject.Object:GetFrame() or sceneObject.Object
+
+		if table.find(taggedObjects, object) then
+			table.insert(foundObjects, sceneObject.Object)
+		end
+	end
+
+	return foundObjects
 end
 
 --[=[
