@@ -143,6 +143,7 @@ end
 -- Settings
 SceneController.SelectedScene = "Test"
 SceneController.ignoreShouldFlush = false
+SceneController.func_GetFromTag_ID = ""
 
 function SceneController.Init(DatGui: DatGuiType)
 	SceneController.Debug.Init()
@@ -155,11 +156,18 @@ function SceneController.Init(DatGui: DatGuiType)
 	datGui.add(SceneController, "Flush")
 	datGui.add(SceneController, "ignoreShouldFlush")
 
+	datGui.add(SceneController, "func_GetFromTag_ID")
+	datGui.add(SceneController, "func_GetFromTag")
+
 	Rethink.Scene.Events.FlushStarted:Connect(function()
 		for i, v in pairs(SceneController.Debug.Tracked) do
 			SceneController.Debug.Remove(i)
 		end
 	end)
+end
+
+function SceneController:func_GetFromTag()
+	warn(Rethink.Scene.GetFromTag(SceneController.func_GetFromTag_ID))
 end
 
 function SceneController.Load()
