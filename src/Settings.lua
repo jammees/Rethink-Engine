@@ -74,7 +74,6 @@ return {
 		LogOnPropertyFail = true, -- Warn if a property can not be applied to an object
 	},
 
-	-- Enables a prototype behaviour, where Rethink hooks into Nature2D and updates the rigidbodies
 	-- after done rendering the camera
 	-- Unsure if it should be kept in
 	prototype_EnablePhysicsCameraLoop = true,
