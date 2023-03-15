@@ -73,8 +73,4 @@ return {
 		LogHeader = true, -- Print the big header to the console that states that you are using Rethink
 		LogOnPropertyFail = true, -- Warn if a property can not be applied to an object
 	},
-
-	-- after done rendering the camera
-	-- Unsure if it should be kept in
-	prototype_EnablePhysicsCameraLoop = true,
 }
