@@ -12,7 +12,7 @@ return {
 	Rendering = {
 		Disable3DRendering = true, -- Minimizes the time ROBLOX takes rendering the 3D world
 		DisablePlayerCharacters = true, -- Deletes all players's characters
-		OptimizeLighting = true, -- Disables lighting as mush as possible and changes time to have a more pleasent natural background
+		OptimizeLighting = true, -- Disables lighting as mush as possible
 		EnableCoreGuis = {
 			EmotesMenu = false,
 			PlayerList = false,
