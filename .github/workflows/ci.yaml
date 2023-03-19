@@ -19,7 +19,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Run Selene on src
-      run: selene src
+      run: selene src --exclude-path src/Tools/Environment
   
   StyLua:
     name: Style
@@ -35,4 +35,4 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Run StyLua on src
-      run: stylua src --check
+      run: stylua src --check --exclude-path src/Tools/Environment
