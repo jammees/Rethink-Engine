@@ -27,6 +27,7 @@ local ALIAS_OBJECTS_NAMES = {
 }
 
 local ContentProvider = game:GetService("ContentProvider")
+local HttpService = game:GetService("HttpService")
 
 local package = script.Parent.Parent.Parent.Parent
 local objects = script.Parent.Objects
@@ -59,6 +60,7 @@ Compiler.CompilerDistributor = TaskDistributor
 
 -- TODO: Dynamically scan how deep is the table
 -- TODO: Use infinite recursion to allow more customization and organization (?)
+-- TODO: Reduce size by referencing properties multiple times for objects that have the same properties
 function Compiler.Prototype_MapSceneData(sceneData: { [number]: any }): { [number]: ChunkObject }
 	local chunkObjects = {}
 	local savedProperties = {}
@@ -137,6 +139,8 @@ end
 function Compiler.CacheScene(sceneData: { [string]: any })
 	local sceneChunk =
 		TaskDistributor.GenerateChunk(Compiler.Prototype_MapSceneData(sceneData), Settings.CompilerChunkSize)
+
+	print(`Estimated cache size for {sceneData.Name} is ~{math.floor(#HttpService:JSONEncode(sceneData) / 1024)}KB`)
 
 	local reservedId = #sceneCaches + 1
 	sceneCaches[reservedId] = sceneChunk
