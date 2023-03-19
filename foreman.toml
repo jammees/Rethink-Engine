@@ -1,0 +1,3 @@
+[tools]
+selene = {github = "Kampfkarren/selene", version = "0.20.0"}
+stylua = {github = "JohnnyMorganz/StyLua", version = "0.14.2"}
