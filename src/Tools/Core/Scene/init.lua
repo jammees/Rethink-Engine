@@ -3,7 +3,7 @@
     Scene
 	Last updated: 13/01/2023
 
-	Scene does not support custom rigidbodies.
+	Scene does not support custom rigidbodies yet.
 
 ]]
 
