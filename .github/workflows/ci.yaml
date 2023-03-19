@@ -2,11 +2,11 @@ name: CI
 
 on:
   push:
-    paths-ignore:
-      - '**/Environment/**'
+    branches:
+      - main
   pull_request:
-    paths-ignore:
-      - '**/Environment/**'
+    branches:
+      - main
 
 jobs:
   Selene:
