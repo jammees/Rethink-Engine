@@ -3,10 +3,10 @@ name: CI
 on:
   push:
     paths-ignore:
-      - 'src/Tools/Environment'
+      - '**/Environment/**'
   pull_request:
     paths-ignore:
-      - 'src/Tools/Environment'
+      - '**/Environment/**'
 
 jobs:
   Selene:
