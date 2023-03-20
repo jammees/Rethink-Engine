@@ -29,7 +29,7 @@ Rethink.Scene.Add(myObject, {
 	end,
 })
 
-warn("Test Tag symbol(Hello world!):", game:GetService("CollectionService"):GetTagged("Hello world!")[1])
-warn("Test Tag symbol(world! Hello):", game:GetService("CollectionService"):GetTagged("world! Hello")[1])
+warn("Test Tag symbol(Hello world!):", Rethink.Scene.GetFromTag("Hello world!"))
+warn("Test Tag symbol(world! Hello):", Rethink.Scene.GetFromTag("world! Hello"))
 
 return { Name = "AddBeforeLoad" }
