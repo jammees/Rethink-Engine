@@ -402,62 +402,7 @@ function Scene.Flush(ignoreShouldFlush: boolean)
 end
 
 --[=[
-	Gets a collection of rigidbodies from a tag, that can be assigned with the `Tag` symbol in
-	a scene file, or by using `Scene.Add`.
-
-	**Example:**
-	```lua
-	local Rethink = require(game:GetService("ReplicatedStorage").Rethink)
-	local Scene = Rethink.Scene
-
-	local Type = Scene.Symbols.Type
-	local Tag = Scene.Symbols.Tag
-
-	Scene.Load({Name = "My scene"}, {
-		My_Container = {
-			[Type] = "Rigidbody",
-			
-			My_group = {
-				Box = {
-					AnchorPoint = Vector2.new(0.5, 0.5),
-					Position = UDim2.fromScale(0.5, 0.5),
-					Size = UDim2.fromOffset(100, 100),
-					Image = "rbxassetid://30115084",
-
-					[Tag] = "Object!"
-				}
-			},
-		},
-	})
-
-	local myBox = Scene.GetBodyFromTag("Object!")
-	print(myBox)
-	```
-
-	@param {string} tag - Look for objects with the specified tag
-	@yields
-	@public
-	@returns {array} Collection of all rigidbodies with the given tag
-]=]
-function Scene.GetBodyFromTag(tag: string): { [number]: { Types.Rigidbody } }
-	assert(typeof(tag) == "string", string.format(DebugStrings.ExpectedNoArg, "string", typeof(tag)))
-
-	local rigidbodies = PhysicsEngine:GetBodies()
-	local foundBodies = {}
-
-	for _, object in ipairs(CollectionService:GetTagged(tag)) do --> fetch instances tagged with "tag argument"
-		for _, rigidbody in ipairs(rigidbodies) do --> loop trough all of the rigidbodies (i'll try to optimize it somehow) -> UPDATE: won't -> UPDATE: will
-			if rigidbody.frame == object then
-				table.insert(foundBodies, rigidbody)
-			end
-		end
-	end
-
-	return foundBodies
-end
-
---[=[
-	Alternative to `Scene.GetBodyFromTag` where it get's every object that has that specific
+	Get's every object that has that specific
 	tag no matter what type it is.
 
 	@param {string} tag
