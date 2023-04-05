@@ -40,7 +40,7 @@ end
     @param {number} chunkSize - amount of objects a chunk can have
     @yields
 ]=]
-function TaskDistributor.GenerateChunk(data: { [number]: any }, chunkSize: number): CachedChunk
+function TaskDistributor.GenerateChunk<T>(data: { T }, chunkSize: number): CachedChunk
 	TypeCheck.Is("data", data, "table")
 	TypeCheck.Is("chunkSize", chunkSize, "number")
 
@@ -97,7 +97,7 @@ end
     @yields
     @returns {Promise}
 ]=]
-function TaskDistributor:Distribute(chunkData: CachedChunk, processor: (any) -> nil): PromiseClass
+function TaskDistributor:Distribute<T>(chunkData: { T }, processor: (T) -> nil): PromiseClass
 	if self.ProcessingChunks == true then
 		return warn(DebugStrings.TaskDistributor.AlreadyProcessing)
 	end
