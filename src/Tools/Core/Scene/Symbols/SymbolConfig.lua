@@ -29,19 +29,19 @@ return {
 
 	SymbolHandlers = {
 		--[=[
-		Event
+			Event
 
-		A symbol used to run code when the specified event gets fired.
+			A symbol used to run code when the specified event gets fired.
 
-		```lua
-		-- Scene data
-		MyObject = {
-			[Symbols.Event("MouseButton1Click")] = function()
-				print("MyObject clicked!")
-			end
-		}
-		```
-	]=]
+			```lua
+			-- Scene data
+			MyObject = {
+				[Symbols.Event("MouseButton1Click")] = function()
+					print("MyObject clicked!")
+				end
+			}
+			```
+		]=]
 		Event = function(object: Types.SceneObject, symbol: Types.Symbol)
 			local visualObject = IsRigidbody(object.Object) and object.Object:GetFrame() or object.Object
 
@@ -51,28 +51,28 @@ return {
 		end,
 
 		--[=[
-		Tag
+			Tag
 
-		A symbol used to attach a tag to the given UI element, that can
-		be collected with `CollectionService`.
+			A symbol used to attach a tag to the given UI element, that can
+			be collected with `CollectionService`.
 
-		For rigidbodies `Scene.GetBodyFromTag` is recommended.
+			For rigidbodies `Scene.GetBodyFromTag` is recommended.
 
-		```lua
-		-- Scene data
-		MyObject = {
-			[Symbols.Tag] = "Hello world!"
-		}
+			```lua
+			-- Scene data
+			MyObject = {
+				[Symbols.Tag] = "Hello world!"
+			}
 
-		-- If it's not a rigidbody:
-		-- This will print the first object that is tagged with Hello world!
-		game:GetService("CollectionService"):GetTagged("Hello world!")[1]
+			-- If it's not a rigidbody:
+			-- This will print the first object that is tagged with Hello world!
+			game:GetService("CollectionService"):GetTagged("Hello world!")[1]
 
-		-- If it's a rigidbody:
-		-- This will print all of the rigidbodies that are tagged with `Hello world!`.
-		print(Rethink.Scene.GetBodyFromTag("Hello world!"))
-		```
-	]=]
+			-- If it's a rigidbody:
+			-- This will print all of the rigidbodies that are tagged with `Hello world!`.
+			print(Rethink.Scene.GetBodyFromTag("Hello world!"))
+			```
+		]=]
 		Tag = function(object: Types.SceneObject, symbol: Types.Symbol)
 			local visualObject = IsRigidbody(object.Object) and object.Object:GetFrame() or object.Object
 
@@ -86,22 +86,22 @@ return {
 		end,
 
 		--[=[
-		Property
+			Property
 
-		A symbol used to apply properties to an object.
+			A symbol used to apply properties to an object.
 
-		```lua
-		-- Scene data
-		MyObject = {
-			[Symbols.Property] = {
-				BackgroundColor3 =  Color3.fromRGB(36, 175, 180)
+			```lua
+			-- Scene data
+			MyObject = {
+				[Symbols.Property] = {
+					BackgroundColor3 =  Color3.fromRGB(36, 175, 180)
+				}
 			}
-		}
-		```
+			```
 
-		In this example, MyObject's background will become blue instead
-		of the default white.
-	]=]
+			In this example, MyObject's background will become blue instead
+			of the default white.
+		]=]
 		Property = function(object: Types.SceneObject, symbol: Types.Symbol)
 			local visualObject = IsRigidbody(object.Object) and object.Object:GetFrame() or object.Object
 
@@ -115,26 +115,26 @@ return {
 		end,
 
 		--[=[
-		ShouldFlush
+			ShouldFlush
 
-		A symbol used to prevent `Scene` from deleting the object(s).
-		
-		```lua
-		-- Scene data
-		MyObject = {
-			[Symbols.ShouldFlush] = false
-		}
-		```
-		
-		However if it is required to clear out everything, then when calling `Scene.Flush()`
-		include a `true` argument:
+			A symbol used to prevent `Scene` from deleting the object(s).
+			
+			```lua
+			-- Scene data
+			MyObject = {
+				[Symbols.ShouldFlush] = false
+			}
+			```
+			
+			However if it is required to clear out everything, then when calling `Scene.Flush()`
+			include a `true` argument:
 
-		```lua
-		-- This will result in Scene ignoring the ShouldFlush symbol and it's
-		-- value
-		Scene.Flush(true)
-		```
-	]=]
+			```lua
+			-- This will result in Scene ignoring the ShouldFlush symbol and it's
+			-- value
+			Scene.Flush(true)
+			```
+		]=]
 		ShouldFlush = function(object: Types.SceneObject, symbol: Types.Symbol)
 			object.ShouldFlush = symbol.SymbolData.Attached
 		end,
