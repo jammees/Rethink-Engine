@@ -163,7 +163,7 @@ Scene.Events = table.freeze({
 	@fires LoadStarted
 	@fires LoadFinished
 ]=]
-function Scene.Load(sceneData: { any }): { any }
+function Scene.Load(sceneData: { Name: string }): Types.Promise
 	if Scene.IsLoading then
 		return warn("[Scene] Already loading in a scene!")
 	end
@@ -223,7 +223,7 @@ function Scene.Add(object: GuiBase2d | Types.Rigidbody, symbols: { [Types.Symbol
 	TypeCheck.Assert(DebugStrings.ExpectedNoArg, symbols, "table")
 
 	-- Define SceneObject
-	local ObjectReference: Types.SceneObject = {
+	local ObjectReference: Types.ObjectReference = {
 		Object = object,
 		ObjectJanitor = Janitor.new(),
 		Index = 0,
@@ -248,7 +248,7 @@ function Scene.Add(object: GuiBase2d | Types.Rigidbody, symbols: { [Types.Symbol
 		table.remove(sceneObjects, cachedReference.Index)
 
 		-- Reassign indexes
-		for position, sceneObject: Types.SceneObject in pairs(sceneObjects) do
+		for position, sceneObject: Types.ObjectReference in pairs(sceneObjects) do
 			sceneObject.Index = position
 		end
 
@@ -319,7 +319,7 @@ function Scene.Remove(object: GuiBase2d | Types.Rigidbody)
 	TypeCheck.Assert(DebugStrings.ExpectedNoArg, object, "Instance", "table")
 
 	-- remove it from the scene dictionary
-	for index, sceneObject: Types.SceneObject in ipairs(sceneObjects) do
+	for index, sceneObject: Types.ObjectReference in ipairs(sceneObjects) do
 		if sceneObject.Object == object then
 			-- Return it to the pool
 			UiPool:Return(object)
@@ -384,7 +384,7 @@ function Scene.Flush(ignoreShouldFlush: boolean)
 
 	-- Remove the left references to the deleted objects from sceneObjects
 	TaskDistributor
-		:Distribute(TaskDistributor.GenerateChunk(sceneObjects, 100), function(object: Types.SceneObject)
+		:Distribute(TaskDistributor.GenerateChunk(sceneObjects, 100), function(object: Types.ObjectReference)
 			if object.ShouldFlush == false and ignoreShouldFlush == false or ignoreShouldFlush == nil then
 				return
 			end
@@ -416,7 +416,7 @@ function Scene.GetFromTag(tag: string): { [number]: GuiBase2d | Types.Rigidbody 
 	local taggedObjects = CollectionService:GetTagged(tag)
 	local foundObjects = {}
 
-	for _, sceneObject: Types.SceneObject in ipairs(sceneObjects) do
+	for _, sceneObject: Types.ObjectReference in ipairs(sceneObjects) do
 		local object = Scene.IsRigidbody(sceneObject.Object) and sceneObject.Object:GetFrame() or sceneObject.Object
 
 		if table.find(taggedObjects, object) then
@@ -449,8 +449,8 @@ end
 	@yields
 	@returns SceneObject
 ]=]
-function Scene.GetObjectReference(object: GuiBase2d | Types.Rigidbody): Types.SceneObject
-	for _, objectReference: Types.SceneObject in ipairs(sceneObjects) do
+function Scene.GetObjectReference(object: GuiBase2d | Types.Rigidbody): Types.ObjectReference
+	for _, objectReference: Types.ObjectReference in ipairs(sceneObjects) do
 		if objectReference.Object ~= object then
 			continue
 		end
@@ -471,7 +471,7 @@ end
 	@public
 	@returns {array} Returns all of the trakced objects
 ]=]
-function Scene.GetObjects(): { [number]: Types.SceneObject }
+function Scene.GetObjects(): { Types.ObjectReference }
 	return sceneObjects
 end
 
