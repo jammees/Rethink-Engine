@@ -1,9 +1,12 @@
 local Janitor = require(script.Parent.Parent.Parent.Parent.Components.Library.Janitor)
 local Rigidbody = require(script.Parent.Parent.Parent.Environment.Physics.Physics.RigidBody)
+local Promise = require(script.Parent.Parent.Parent.Parent.Components.Library.Promise)
 
 export type Janitor = typeof(Janitor.new())
 
 export type Rigidbody = typeof(Rigidbody.new())
+
+export type Promise = typeof(Promise.new())
 
 export type Symbol = {
 	Type: string,
@@ -16,7 +19,7 @@ export type Symbol = {
 	__identifier: string,
 }
 
-export type SceneObject = {
+export type ObjectReference = {
 	Object: Instance | Rigidbody,
 	ObjectJanitor: Janitor,
 	Index: number, -- TODO: Remove index
