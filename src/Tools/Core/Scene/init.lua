@@ -35,7 +35,6 @@ local TypeCheck = require(components.Debug.TypeCheck)
 local UiPool = Template.FetchGlobal("__Rethink_Pool")
 local TaskDistributor = require(components.Library.TaskDistributor).new()
 local Janitor = require(components.Library.Janitor)
-local PhysicsEngine = Template.FetchGlobal("__Rethink_Physics")
 
 -- TODO: Create a hash table to store the position of each object's index
 local sceneObjects = {}
