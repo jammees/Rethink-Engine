@@ -88,5 +88,6 @@ return {
 	-- Unfinsished, unstable tools
 	Prototypes = {
 		Camera = require(core.Camera),
+		PCamera = require(core.Prototype_Camera),
 	},
 }
