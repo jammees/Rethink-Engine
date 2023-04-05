@@ -14,6 +14,7 @@ local Rethink = script.Parent.Parent.Parent
 
 local DefaultSettings = require(Rethink.Tools.Core.Scene.DefaultProperties)
 local Signal = require(script.Parent.Signal)
+local DebugStrings = require(Rethink.Components.Debug.Strings)
 
 local function ResetProperties(object: Instance)
 	for propertyName, propertyValue in pairs(DefaultSettings[object.ClassName]) do
@@ -121,8 +122,7 @@ function ObjectPool:Return(object)
 		return
 	end
 
-	-- TODO: Rephrase error, very confusing
-	return error(("%s is not a valid type that ObjectPool accepts!"):format(tostring(object)))
+	return error((DebugStrings.ObjectPoolReturnFail):format(tostring(object)))
 end
 
 function ObjectPool:Destroy()
