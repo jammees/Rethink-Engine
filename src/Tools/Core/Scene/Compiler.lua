@@ -161,7 +161,7 @@ function Compiler.GetScene(sceneData: { [string]: any })
 end
 
 -- TODO: Add function to compile an object by itself
-function Compiler.Prototype_Compile(sceneData: { [string]: any }): { [number]: Instance }
+function Compiler.Prototype_Compile(sceneData: { [string]: any }): Types.Promise
 	local compiledObjects = {}
 
 	-- Simplified the data
