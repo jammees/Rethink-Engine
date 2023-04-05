@@ -72,7 +72,7 @@ function Symbols.FindSymbol(array: { any }, targetSymbol: string)
 	return nil
 end
 
-function Symbols.AttachToInstance(object: Types.SceneObject, symbols: { [string]: { [number]: Types.Symbol } })
+function Symbols.AttachToInstance(object: Types.ObjectReference, symbols: { [string]: { [number]: Types.Symbol } })
 	for symbolName: string, collectedSymbols: { [number]: Types.Symbol } in pairs(symbols) do
 		for _, symbol: Types.Symbol in ipairs(collectedSymbols) do
 			local symbolProcessor = SymbolConfig.SymbolHandlers[symbolName]
