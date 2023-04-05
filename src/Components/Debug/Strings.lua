@@ -26,6 +26,8 @@ return {
 	MethodFailNoScene = "Attempted to %s the scene, but failed due to it being empty!",
 	IsWrongType = "Error whilst trying to call %q, expected to get %q; got %q!",
 
+	ObjectPoolReturnFail = "%s is not part of the pool or not part of ObjectPool.BusyObjects!",
+
 	-- Pretty sure there was a much better way of doing this, but since
 	-- I already took my time writing these down, I decided not to worry
 	Animator = {
