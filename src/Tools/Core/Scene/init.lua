@@ -90,9 +90,6 @@ Scene.Events = table.freeze({
 
 --[=[
 	Compiles a scene from a given data dictionary. Returns a `Promise`
-	
-	**Notes:**
-	Additional `scene config` can also be passed as an argument.
 
 	**Symbols**:
 
