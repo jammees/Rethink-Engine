@@ -42,7 +42,7 @@ return {
 			}
 			```
 		]=]
-		Event = function(object: Types.SceneObject, symbol: Types.Symbol)
+		Event = function(object: Types.ObjectReference, symbol: Types.Symbol)
 			local visualObject = IsRigidbody(object.Object) and object.Object:GetFrame() or object.Object
 
 			object.ObjectJanitor:Add(visualObject[symbol.SymbolData.Symbol]:Connect(function()
@@ -73,7 +73,7 @@ return {
 			print(Rethink.Scene.GetBodyFromTag("Hello world!"))
 			```
 		]=]
-		Tag = function(object: Types.SceneObject, symbol: Types.Symbol)
+		Tag = function(object: Types.ObjectReference, symbol: Types.Symbol)
 			local visualObject = IsRigidbody(object.Object) and object.Object:GetFrame() or object.Object
 
 			if typeof(symbol.SymbolData.Attached) == "table" then
@@ -102,7 +102,7 @@ return {
 			In this example, MyObject's background will become blue instead
 			of the default white.
 		]=]
-		Property = function(object: Types.SceneObject, symbol: Types.Symbol)
+		Property = function(object: Types.ObjectReference, symbol: Types.Symbol)
 			local visualObject = IsRigidbody(object.Object) and object.Object:GetFrame() or object.Object
 
 			for propertyName, propertyValue in pairs(symbol.SymbolData.Attached) do
@@ -135,7 +135,7 @@ return {
 			Scene.Flush(true)
 			```
 		]=]
-		ShouldFlush = function(object: Types.SceneObject, symbol: Types.Symbol)
+		ShouldFlush = function(object: Types.ObjectReference, symbol: Types.Symbol)
 			object.ShouldFlush = symbol.SymbolData.Attached
 		end,
 	},
