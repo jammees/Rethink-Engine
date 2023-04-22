@@ -55,7 +55,7 @@ if not engineStarted then
 
 	-- Initiate a canvas
 	-- This is basically unnecessary if KeepInCanvas is always false
-	physicsClass:CreateCanvas(Vector2.new(0, 0), workspace.CurrentCamera.ViewportSize, engineUi.Canvas)
+	physicsClass:CreateCanvas(Vector2.new(0, 0), workspace.CurrentCamera.ViewportSize, engineUi.Viewport)
 
 	-- Create a new global to get access to the now initialized Nature2D class
 	Template.NewGlobal("__Rethink_Physics", physicsClass, true)
@@ -88,6 +88,5 @@ return {
 	-- Unfinsished, unstable tools
 	Prototypes = {
 		Camera = require(core.Camera),
-		PCamera = require(core.Prototype_Camera),
 	},
 }
