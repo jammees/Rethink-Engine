@@ -210,7 +210,6 @@ end
 
 	@param {instance} object - The object to be added to the scene
 	@param {array} tags - List of tags to add to the object
-	@param {boolean} destroyAfterFlush - Whether the object will get deleted after .Flush() was called
 	@fires ObjectAdded
 ]=]
 
@@ -289,8 +288,6 @@ end
 
 --[=[
 	Removes the given object from the `scene dictionary`.
-	If the object does not exist in the `scnene dictionary` it will throw a warning instead
-	of an error.
 
 	**Warning:** It does not delete the object!
 
@@ -366,7 +363,7 @@ end
 	Scene.Flush()
 	```
 
-	@param {boolean} ignoreShouldFlush 
+	@param {boolean} ignoreShouldFlush - Whether Scene should delete objects that have ShouldFlush set to false
 	@yields
 	@fires Flush#FlushStarted
 	@fires Flush#FlushFinished
