@@ -128,6 +128,16 @@ function Camera.Render(deltaTime: number?)
 	prePosition = Camera.Position
 end
 
+function Camera.IsAttached(object)
+	for _, reference: ObjectData in Camera.Objects do
+		if reference.Object == object then
+			return true
+		end
+	end
+
+	return false
+end
+
 function Camera.Attach(object)
 	local originPosition = nil
 
