@@ -51,7 +51,6 @@ end
 local function CreateContainer()
 	local folder = Instance.new("Folder")
 	folder.Name = "ObjectPool-ObjectContainer"
-	folder.Parent = game:GetService("RunService"):IsStudio() and workspace or nil
 
 	return folder
 end
