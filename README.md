@@ -24,7 +24,7 @@
 - evaera (GitHub) for Promise
 - HowManySmall (GitHub) for Janitor
 - Brownsage for helping with Camera
-- nidorx (GitHub) for dat.GUI to test Rethink
+- Michael-48 (GitHub) for Iris to test Rethink
 
 <h3>Contribution</h3>
 
