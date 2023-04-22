@@ -590,6 +590,7 @@ function RigidBody:SetPosition(PositionX: number, PositionY: number)
 	return oldPosition, UDim2.fromOffset(PositionX, PositionY)
 end
 
+-- Exposed the UpdateVertices funtion for Camera
 function RigidBody:Rethink_UpdateVertices()
 	UpdateVertices(self.frame, self.vertices, self.engine)
 end
