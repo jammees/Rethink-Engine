@@ -72,7 +72,7 @@ function Point:ApplyForce(force: Vector2, t: number)
 end
 
 -- This method is used to apply external forces like gravity and is responsible for moving the point.
-function Point:Update(dt: number)
+function Point:Update()
 	if not self.snap then
 		self:ApplyForce(self.gravity)
 

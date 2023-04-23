@@ -1,11 +1,13 @@
 local UserInputService = game:GetService("UserInputService")
 
-return function (engine: { any }, range: number)
+return function(engine: { any }, range: number)
 	local held = nil
 	local connections = {}
 
 	connections.InputBegan = UserInputService.InputBegan:Connect(function(input, processedEvent)
-		if processedEvent then return end
+		if processedEvent then
+			return
+		end
 
 		if input.UserInputType == Enum.UserInputType.MouseButton1 and not held then
 			for _, b in ipairs(engine.bodies) do
@@ -26,7 +28,9 @@ return function (engine: { any }, range: number)
 	end)
 
 	connections.InputEnded = UserInputService.InputEnded:Connect(function(input, processedEvent)
-		if processedEvent then return end
+		if processedEvent then
+			return
+		end
 
 		if input.UserInputType == Enum.UserInputType.MouseButton1 and held then
 			held.selectable = false
@@ -36,7 +40,9 @@ return function (engine: { any }, range: number)
 	end)
 
 	connections.InputChanged = UserInputService.InputChanged:Connect(function(input, processedEvent)
-		if processedEvent then return end
+		if processedEvent then
+			return
+		end
 
 		if input.UserInputType == Enum.UserInputType.MouseMovement and held then
 			local mouse = UserInputService:GetMouseLocation()
@@ -44,7 +50,7 @@ return function (engine: { any }, range: number)
 		end
 	end)
 
-	return function ()
+	return function()
 		held.snap = false
 		held = nil
 		connections.InputBegan:Disconnect()

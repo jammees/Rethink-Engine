@@ -2,7 +2,7 @@
 
 return {
 	engineInit = {
-		gravity = Vector2.new(0, .3),
+		gravity = Vector2.new(0, 0.3),
 		friction = 0.9,
 		airfriction = 0.98,
 		bounce = 0.8,
@@ -19,7 +19,7 @@ return {
 		"friction",
 		"collisionmultiplier",
 		"airfriction",
-		"universalmass"
+		"universalmass",
 	},
 	rigidbody = {
 		props = {
@@ -33,11 +33,11 @@ return {
 			"AirFriction",
 			"Structure",
 			"Mass",
-			"CanRotate"
+			"CanRotate",
 		},
 		must_have = {
-			"Object"
-		}
+			"Object",
+		},
 	},
 	constraint = {
 		color = Color3.new(1, 1, 1),
@@ -45,7 +45,7 @@ return {
 		types = {
 			"rope",
 			"spring",
-			"rod"
+			"rod",
 		},
 		props = {
 			"Type",
@@ -61,7 +61,7 @@ return {
 			"Type",
 			"Point1",
 			"Point2",
-		}
+		},
 	},
 	point = {
 		radius = 2.5,
@@ -73,11 +73,11 @@ return {
 			"Snap",
 			"KeepInCanvas",
 			"Radius",
-			"Color"
+			"Color",
 		},
 		must_have = {
-			"Position"
-		}
+			"Position",
+		},
 	},
 	offset = Vector2.new(0, 36),
 
@@ -103,7 +103,7 @@ return {
 		"AirFriction",
 		"Structure",
 		"Mass",
-		"CanRotate"
+		"CanRotate",
 	},
 
 	OBJECT_PROPS_TYPES = {
@@ -126,6 +126,6 @@ return {
 		AirFriction = "number",
 		Structure = "table",
 		Mass = "number",
-		CanRotate = "boolean"
+		CanRotate = "boolean",
 	},
 }

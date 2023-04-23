@@ -1,6 +1,6 @@
 -- Handling type errors
 
-return function (arg: string, param, pos: number, expected: string)
+return function(arg: string, param, pos: number, expected: string)
 	if typeof(param) ~= expected then
 		error(
 			string.format(

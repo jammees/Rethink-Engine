@@ -20,7 +20,7 @@ function Runner.CollisionResponse(
 	other: Types.RigidBody,
 	isColliding: boolean,
 	Collision: Types.Collision,
-	dt: number,
+	_,
 	oldCollidingWith,
 	iteration: number
 )
@@ -181,7 +181,7 @@ function Runner.Update(self, dt)
 	if #self.constraints > 0 then
 		for _, constraint in ipairs(self.constraints) do
 			if constraint._TYPE ~= "SPRING" then
-				for i = 1, self.iterations.constraint do
+				for _ = 1, self.iterations.constraint do
 					constraint:Constrain()
 				end
 			else

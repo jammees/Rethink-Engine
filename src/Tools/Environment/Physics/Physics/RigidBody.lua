@@ -52,7 +52,7 @@ local function CalculatePenetration(minA: number, maxA: number, minB: number, ma
 	end
 end
 
-local function CalculateOffset(pos, anchorPoint, size)
+local function CalculateOffset(_, anchorPoint, size)
 	return (Vector2.new(0.5, 0.5) - anchorPoint) * size
 end
 
@@ -394,7 +394,7 @@ function RigidBody:Update(dt: number)
 	end
 
 	for _, edge in ipairs(self.edges) do
-		for i = 1, self.engine.iterations.constraint do
+		for _ = 1, self.engine.iterations.constraint do
 			edge:Constrain()
 		end
 		edge:Render()

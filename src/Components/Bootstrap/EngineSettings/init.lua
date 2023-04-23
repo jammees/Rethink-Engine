@@ -9,7 +9,7 @@ function SettingsController.Run()
 		--	continue
 		--end
 
-		local settingController = script:FindFirstChild(category)--script[category]
+		local settingController = script:FindFirstChild(category) --script[category]
 
 		if typeof(settingController) == "Instance" and settingController:IsA("ModuleScript") then
 			for procName, procCallback in pairs(require(settingController)) do
