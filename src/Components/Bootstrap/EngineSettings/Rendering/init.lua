@@ -28,7 +28,6 @@ local RunService = game:GetService("RunService")
 local package = script:FindFirstAncestor("Components").Parent
 
 local Scene = require(package.Tools.Core.Scene)
-local Culling = require(script.Culling)
 
 return {
 	Disable3DRendering = function(value: any)
@@ -225,26 +224,6 @@ return {
 			end)
 
 			Scene.Events.ObjectRemoved:Connect(function() end)
-		end
-	end,
-
-	Prototype_GuiCulling_v2 = function(value: boolean)
-		if value then
-			Scene.Events.ObjectAdded:Connect(function(object)
-				Culling.Add(object)
-			end)
-
-			Scene.Events.FlushStarted:Connect(function()
-				Culling.Cleanup()
-			end)
-
-			Scene.Events.ObjectRemoved:Connect(function(object)
-				Culling.Remove(object)
-			end)
-
-			game:GetService("RunService").RenderStepped:Connect(function()
-				Culling.Run()
-			end)
 		end
 	end,
 }
