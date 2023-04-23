@@ -25,7 +25,6 @@ return {
 		-- PROTOTYPE
 		-- RECOMMENDED TO KEEP IT ON FALSE
 		CullGuiElements = false, -- Culls out every object that is out of the screen or is obstructed prototype V1 // finished but laggy and unefficient
-		Prototype_GuiCulling_v2 = false, -- Culls out every object that is out of the screen or is obstructed prototype V2
 	},
 
 	-- Here are all of the settings that are related to the pool
