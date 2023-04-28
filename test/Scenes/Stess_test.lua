@@ -5,12 +5,7 @@ local Rethink = require(game:GetService("ReplicatedStorage").Rethink)
 local Symbols = Rethink.Scene.Symbols
 
 local function createObjects(amount: number)
-	local groupTable = {
-		[Symbols.Property] = {
-			Transparency = 0.5,
-			[Symbols.Tag] = "Interactibles",
-		},
-	}
+	local groupTable = {}
 
 	for _ = amount, 1, -1 do
 		table.insert(groupTable, {
@@ -24,7 +19,7 @@ local function createObjects(amount: number)
 		})
 	end
 
-	return groupTable
+	return table.unpack(groupTable)
 end
 
 return {
