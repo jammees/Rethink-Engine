@@ -58,15 +58,13 @@ local Compiler = {}
 
 Compiler.CompilerDistributor = TaskDistributor
 
--- TODO: Dynamically scan how deep is the table
--- TODO: Use infinite recursion to allow more customization and organization (?)
 -- TODO: Reduce size by referencing properties multiple times for objects that have the same properties
-function Compiler.Prototype_MapSceneData(sceneData: { [number]: any }): { [number]: ChunkObject }
+function Compiler.MapSceneData<TBL>(sceneData: { TBL }): { Types.Prototype_ChunkObject }
 	local chunkObjects = {}
 	local savedProperties = {}
 	local objectType = nil
 
-	local function ProcessAndMerge(object, group, saved, type, name): { [number]: Types.Prototype_ChunkObject }
+	local function ProcessAndMerge(object, saved, type, name): { Types.Prototype_ChunkObject }
 		local objectData = {
 			Properties = {},
 			Symbols = {},
@@ -74,9 +72,15 @@ function Compiler.Prototype_MapSceneData(sceneData: { [number]: any }): { [numbe
 			ObjectClass = "Frame",
 		}
 
-		local function Process(propertyTable: { [string]: any })
+		local function Process<TBL>(propertyTable: { TBL })
+			local typeIndex, typeValue = Symbols.FindSymbol(propertyTable, "Type")
+
+			if typeIndex then
+				objectData.ObjectType = typeValue
+			end
+
 			if propertyTable then
-				for propertyName, value in pairs(propertyTable) do
+				for propertyName, value in propertyTable do
 					if IsSymbol(propertyName) then
 						objectData.Symbols[propertyName] = value
 
@@ -89,9 +93,7 @@ function Compiler.Prototype_MapSceneData(sceneData: { [number]: any }): { [numbe
 		end
 
 		-- Order is very important
-		-- This order prioritises object's properties more than the ones declared in either the saved or the group properties
 		Process(saved)
-		Process(select(2, Symbols.FindSymbol(group, "Property")))
 		Process(object)
 
 		-- Re-allocate the Class property
@@ -108,7 +110,7 @@ function Compiler.Prototype_MapSceneData(sceneData: { [number]: any }): { [numbe
 		return objectData
 	end
 
-	for _, sceneCategory in pairs(sceneData) do
+	for _, sceneCategory in sceneData do
 		if typeof(sceneCategory) ~= "table" then
 			continue
 		end
@@ -118,18 +120,12 @@ function Compiler.Prototype_MapSceneData(sceneData: { [number]: any }): { [numbe
 		savedProperties = select(2, Symbols.FindSymbol(sceneCategory, "Property"))
 		objectType = select(2, Symbols.FindSymbol(sceneCategory, "Type"))
 
-		for gKey, group in pairs(sceneCategory) do
-			if IsSymbol(gKey) then
+		for objectName, object in sceneCategory do
+			if IsSymbol(objectName) then
 				continue
 			end
 
-			for oKey, object in pairs(group) do
-				if IsSymbol(oKey) then
-					continue
-				end
-
-				table.insert(chunkObjects, ProcessAndMerge(object, group, savedProperties, objectType, oKey))
-			end
+			table.insert(chunkObjects, ProcessAndMerge(object, savedProperties, objectType, objectName))
 		end
 	end
 
@@ -137,8 +133,7 @@ function Compiler.Prototype_MapSceneData(sceneData: { [number]: any }): { [numbe
 end
 
 function Compiler.CacheScene(sceneData: { [string]: any })
-	local sceneChunk =
-		TaskDistributor.GenerateChunk(Compiler.Prototype_MapSceneData(sceneData), Settings.CompilerChunkSize)
+	local sceneChunk = TaskDistributor.GenerateChunk(Compiler.MapSceneData(sceneData), Settings.CompilerChunkSize)
 
 	print(`Estimated cache size for {sceneData.Name} is ~{math.floor(#HttpService:JSONEncode(sceneData) / 1024)}KB`)
 
