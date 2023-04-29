@@ -9,14 +9,23 @@
 <h3>Interested in using it? Here's some if it's features</h3>
 
 - Physics
-- Manage scenes with Scene
-- Disable 3D rendering
+- Optimize Roblox for 2D games
 - Use Camera to explore your whole scene
 - Raycasts
-- Animations with spritesheets or a group of images
+- Animations with spritesheets or with a group of images
 - Collisions
-- Robust scene creation with symbols
+- Robust scene handling with symbols
 - And more!
+
+<h3>Editor</h3>
+
+Rethink comes with its own editor!
+The editor makes it easier to work with scenes, mitigate the use of Roblox Studio whilst
+working with Rethink.
+
+[Source code](https://github.com/jammees/rethink-editor)
+
+Still in development!
 
 <h3>Credits</h3>
 
