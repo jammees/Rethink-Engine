@@ -8,8 +8,6 @@
 	MIT license
 ]]
 
--- TODO: Get a new fresh copy of Nature2D and edit it again
-
 local components = script.Components
 local tools = script.Tools
 local core = tools.Core
