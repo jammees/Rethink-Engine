@@ -5,13 +5,9 @@
 *.rbxl
 *.lock
 
+# ignore files
+mkdocs.yml
+sourcemap.json
+
 # ignore some folders
 docs
-mkdocs.yml
-
-# temporary (still not ready to release 0.6.0)
-# camera not working :(
-src
-unit
-manual
-benchmark

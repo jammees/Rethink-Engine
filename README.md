@@ -1,48 +1,39 @@
-<p align="center">
-    <img widht=400 height=100 src="./assets/dark.png#gh-light-mode-only">
-</p>
-<p align="center">
-    <img widht=400 height=100 src="./assets/light.png#gh-dark-mode-only">
-</p>
+<img align="left" height=150 src="./assets/full_dark.png#gh-light-mode-only">
+<img align="left" height=150 src="./assets/full_light.png#gh-dark-mode-only">
+<h3><strong>Versatile, easy-to-use 2D game engine</strong>.</h3>
+0.6.0-inDev release
 
-<div align="center">
-    <h3><strong>Versatile, easy-to-use 2D game engine</strong>.</h3>
-    Rethink is still in ALPHA! This is not the final product.
-</div>
-
-<h4><strong>Note:</strong> This README is not accurate to the current product! This version refers to v. 0.6.0 that will come out soon.</h4>
+<hr>
+<br>
 
 <h3>Interested in using it? Here's some if it's features</h3>
 
 - Physics
-- Manage scenes with Scene
-- Disable 3D rendering (kind of)
+- Optimize Roblox for 2D games
 - Use Camera to explore your whole scene
 - Raycasts
-- Animations with spritesheets or a group of images
+- Animations with spritesheets or with a group of images
 - Collisions
-- Custom scene API with symbols
+- Robust scene handling with symbols
 - And more!
 
-<h3>Features that I plan to implement</h3>
+<h3>Editor</h3>
 
-- Expand on the Input library
-- Support Fusion and Roact for Scene
+Rethink comes with its own editor!
+The editor makes it easier to work with scenes, mitigate the use of Roblox Studio whilst
+working with Rethink.
 
-<h3>RePreview</h3>
+[Source code](https://github.com/jammees/rethink-editor)
 
-RePreview is a small plugin that will help you create scenes from code by visualizing it in a widget.
-
-Download not available at the moment.
-
-Progress: 90% done
+Still in development!
 
 <h3>Credits</h3>
 
-- jaipack17 for Nature2D / GuiCollisionService / RayCast2
-- evaera for Promise
-- Validark and HowManySmall for Janitor
+- jaipack17 (GitHub) for Nature2D / GuiCollisionService / RayCast2
+- evaera (GitHub) for Promise
+- HowManySmall (GitHub) for Janitor
 - Brownsage for helping with Camera
+- Michael-48 (GitHub) for Iris to test Rethink
 
 <h3>Contribution</h3>
 
