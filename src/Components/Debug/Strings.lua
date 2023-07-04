@@ -10,7 +10,7 @@ return {
                                                      |___/              
 
     Versatile, easy-to-use 2D game engine.
-    Version: 0.6.0-inDev
+    Version: 0.6.0
 
     ]],
 
