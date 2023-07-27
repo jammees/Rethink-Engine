@@ -31,7 +31,7 @@ local Symbols = require(script.Symbols)
 local TypeCheck = require(script.Parent.Parent.Library.TypeCheck)
 local TaskDistributor = require(script.Parent.Parent.Library.TaskDistributor).new()
 local Janitor = require(script.Parent.Parent.Library.Janitor)
----@module src.Library.ObjectPool-v2
+---@module src.Library.ObjectPool
 local UiPool = Template.FetchGlobal("__Rethink_Pool")
 
 local function GetTableLenght<T>(tbl: T)
