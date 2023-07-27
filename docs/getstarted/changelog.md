@@ -1,5 +1,15 @@
 <hr>
 
+## Update: 0.6.1
+- Fixed objects not being removed completely
+- Rewritten ObjectPool
+- Added new argument `stripSymbols` to `.Remove`
+- Symbols are now being tracked with their own IDs
+- Symbols have their own Janitor now
+- Fixed documentation
+- Symbols now use `.Symbols` table to store data instead of using the object's reference table directly
+- Fixed symbols staying on objects after flushed or removed
+
 ## Update: 0.6.0
 * Added aliases to the **Type** symbol:
     - Layer `UiBase`
