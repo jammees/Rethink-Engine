@@ -54,7 +54,6 @@ function TaskDistributor.GenerateChunk<T>(data: { T }, chunkSize: number): Cache
 	TypeCheck.Is("chunkSize", chunkSize, "number")
 
 	local dataChunk = {}
-	local dataLenght = GetTableLenght(data)
 	local iteration = 1
 	local chunkIteration = 1
 
