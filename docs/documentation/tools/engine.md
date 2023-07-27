@@ -28,7 +28,7 @@ Returns the modules. Does not check whether if Rethink is initializes or not!
     Tools located in the `Prototypes` table are unstable or unfinished!
     Using such tools are highly unrecommended due to stability issues!
 
-??? info "What Rethink returns (0.6.0)"
+??? info "What Rethink returns"
 
     - Collision `module`
     - Raycast `module`
