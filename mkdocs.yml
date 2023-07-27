@@ -6,6 +6,7 @@ repo_name: jammees/Rethink-Engine
 theme:
   # initial settings
   name: material
+  custom_dir: docs/overrides
   logo: assets/favicon.png
   favicon: assets/favicon.png
 
