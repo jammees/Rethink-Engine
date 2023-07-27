@@ -19,11 +19,9 @@ https://devforum.roblox.com/t/benchmarker-plugin-compare-function-speeds-with-gr
 -- This is not surprising, because when loading the compiler has to get each object, symbol, data, then use Scene.Add to create
 -- a scene object, add a cleanup method, add symbols then finally allocate a space in the sceneObjects table.
 
-local scenes = game.Players.LocalPlayer.PlayerScripts.Tests.Scenes
-
-local Rethink = require(game:GetService("ReplicatedStorage").Rethink)
-
-Rethink.Scene.TEST_MODE = true
+---@module src.init
+local Rethink = require(game:GetService("ReplicatedStorage").Rethink).Init()
+local Scene = Rethink.GetModules().Scene
 
 return {
 
@@ -38,18 +36,16 @@ return {
 
 			-- Your code here
 
-			Profiler.Begin("Require scene file")
-
-			local sceneFile = require(scenes.Stess_test)
-
+			Profiler.Begin("Prepare scene module")
+			local sceneModule = require(game:FindFirstChild("Test.scene", true))
 			Profiler.End()
 
-			Rethink.Scene.Load(sceneFile[1], sceneFile[2])
+			Profiler.Begin("Load")
+			Scene.Load(sceneModule)
+			Profiler.End()
 
-			Profiler.Begin("Flush Scene")
-
-			Rethink.Scene.Flush()
-
+			Profiler.Begin("Flush")
+			Scene.Flush(true)
 			Profiler.End()
 		end,
 
