@@ -70,7 +70,7 @@ nav:
     - Installation: getstarted/installation.md
     - Changelog: getstarted/changelog.md
   - Documentation:
-    - Engine: documentation/tools/engine.md
+    - Rethink: documentation/tools/engine.md
     - Animation: documentation/tools/animation.md
     - Camera: documentation/tools/camera.md
     - Scene: documentation/tools/scene.md
