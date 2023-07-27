@@ -9,6 +9,7 @@
 - Fixed documentation
 - Symbols now use `.Symbols` table to store data instead of using the object's reference table directly
 - Fixed symbols staying on objects after flushed or removed
+- Added `.Init` and `.GetModules` function to Rethink
 
 ## Update: 0.6.0
 * Added aliases to the **Type** symbol:
