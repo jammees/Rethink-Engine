@@ -1,0 +1,81 @@
+site_name: Rethink Engine
+
+repo_url: https://github.com/jammees/Rethink-Engine
+repo_name: jammees/Rethink-Engine
+
+theme:
+  # initial settings
+  name: material
+  logo: assets/favicon.png
+  favicon: assets/favicon.png
+
+  # set theme
+  palette:
+    - media: "(prefers-color-scheme: light)" 
+      scheme: default
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/lightbulb-outline
+        name: Switch to dark mode
+
+    - media: "(prefers-color-scheme: dark)" 
+      scheme: slate
+      primary: blue
+      accent: light blue
+      toggle:
+        icon: material/lightbulb
+        name: Switch to light mode
+
+  # features
+  features:
+    - navigation.tabs
+    - search.highlight
+    - search.suggest
+    - navigation.instant
+
+markdown_extensions:
+  - attr_list
+  - tables
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+
+extra_css:
+  - stylesheets/colors.css
+  - stylesheets/extra.css
+
+extra:
+  version:
+    provider: mike
+
+plugins:
+  - mike:
+      # These fields are all optional; the defaults are as below...
+      canonical_version: null
+      version_selector: true
+      css_dir: docs/stylesheets
+      javascript_dir: docs/javascript
+
+#extra_javascript:
+
+# setup navigation
+nav:
+  - Home: index.md
+  - Get started:
+    - Installation: getstarted/installation.md
+    - Changelog: getstarted/changelog.md
+  - Documentation:
+    - Engine: documentation/tools/engine.md
+    - Animation: documentation/tools/animation.md
+    - Camera: documentation/tools/camera.md
+    - Scene: documentation/tools/scene.md
+    - Environment: documentation/tools/enviroment.md
+    - Outline: documentation/tools/outline.md
+    - Template: documentation/tools/template.md
+    - Components:
+      - Task Distributor: documentation/tools/taskdistributor.md
+    - Settings: documentation/tools/settings.md
