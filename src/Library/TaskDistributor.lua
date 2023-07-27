@@ -14,15 +14,6 @@ local Promise = require(script.Parent.Promise)
 local DebugStrings = require(script.Parent.Parent.Strings)
 local TypeCheck = require(script.Parent.TypeCheck)
 
-local function GetTableLenght<T>(tbl: T)
-	local lenght = 0
-
-	for _ in tbl do
-		lenght += 1
-	end
-
-	return lenght
-end
 local TaskDistributor = {}
 TaskDistributor.__index = TaskDistributor
 
