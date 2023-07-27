@@ -3,7 +3,7 @@ local Rethink = require(game:GetService("ReplicatedStorage").Rethink)
 local RethinkModules = Rethink.GetModules()
 local Symbols = RethinkModules.Scene.Symbols
 
----@module src.Library.ObjectPool-v2
+---@module src.Library.ObjectPool
 local ObjectPool = RethinkModules.Template.FetchGlobal("__Rethink_Pool")
 
 local myObject = ObjectPool:Get("TextButton")
