@@ -149,7 +149,7 @@ local function RenderScene()
 end
 
 local function RenderPool()
-	---@module src.Library.ObjectPool-v2
+	---@module src.Library.ObjectPool
 	local objectPool = Rethink.GetModules().Template.FetchGlobal("__Rethink_Pool")
 
 	Iris.TextWrapped({ "\nObjectPool" })
