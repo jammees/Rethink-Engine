@@ -5,9 +5,5 @@
 *.rbxl
 *.lock
 
-# ignore files
-mkdocs.yml
 sourcemap.json
-
-# ignore some folders
-docs
+TODO.txt
