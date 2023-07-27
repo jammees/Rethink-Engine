@@ -1,6 +1,12 @@
-On the first require of the module, Rethink will initialize itself.
+# Rethink
 
-This includes things such as:
+## API:
+
+<hr>
+
+### .Init()
+
+Initializes Rethink. This includes:
 
 - Setting up the game UI elements
 - Setting up the physics engine
@@ -9,7 +15,13 @@ This includes things such as:
 After Rethink has initialized successfully it's header will get printed into the console.
 This behaviour can be configured in the `Settings` file under `Settings.Console.LogHeader` (true by default)
 
-After the initialization phase Rethink will return you a table full of tools, used in developing 2D games.
+<br>
+
+### .GetModules()
+
+<span style="color:rgba(197, 148, 197, 1);">@returns {dictionary} modules</span>
+
+Returns the modules. Does not check whether if Rethink is initializes or not!
 
 !!! warning
 
@@ -25,8 +37,7 @@ After the initialization phase Rethink will return you a table full of tools, us
     - Scene `module`
     - Template `module`
     - Physics `module`
-    - Components `folder`
-    - Tools `folder`
+    - Pool `module`
 
     - Ui `table`
         - GameFrame `frame`
