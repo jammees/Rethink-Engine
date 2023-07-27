@@ -197,8 +197,6 @@ return {
 							end
 
 							objectData.VObject.Visible = false
-
-							print(objectData.VObject, objectData)
 						end
 
 						isCulling = false

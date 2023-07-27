@@ -313,14 +313,12 @@ function Scene.Remove(object: GuiBase2d | Types.Rigidbody, stripSymbols: boolean
 	-- remove it from the scene dictionary
 	for objectID, sceneObject: Types.ObjectReference in sceneObjects do
 		if sceneObject.Object == object and objectID == sceneObject.ID then
-			print(`{objectID} is being removed! Parameters: [{object}, {stripSymbols}]`, sceneObject)
 			-- Return it to the pool
 			UiPool:Retire(Scene.IsRigidbody(object) and object:GetFrame() or object)
 
 			if not stripSymbols then
 				for _, symbolID in sceneObject.Symbols.IDs do
 					sceneObject.SymbolJanitor:RemoveNoClean(symbolID)
-					print(sceneObject.SymbolJanitor:Get(symbolID) == nil)
 				end
 			end
 
