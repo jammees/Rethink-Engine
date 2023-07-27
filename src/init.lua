@@ -2,89 +2,72 @@
 	Rethink
 	Versatile, easy-to-use 2D game engine.
 
-	@james_mc98
-	Version: 0.6.0
-
 	MIT license
 ]]
 
-local components = script.Components
-local tools = script.Tools
-local core = tools.Core
-local environment = tools.Environment
-local utility = tools.Utility
-
-local DebugStrings = require(components.Debug.Strings)
-local Physics = require(environment.Physics)
-local Template = require(utility.Template)
+local DebugStrings = require(script.Strings)
+local Physics = require(script.Modules.Physics)
+local Template = require(script.Modules.Template)
 local Settings = require(script.Settings)
-local ObjectPool = require(components.Library.ObjectPool)
+local ObjectPool = require(script.Library.ObjectPool)
 
--- These are values that will get exported with the rest of the modules after
--- The engine was fully intitialized
-local engineStarted = false
-local engineUi = nil
-local physicsClass = nil
-local pool = nil
+local initEngineUi = nil
+local initPhysicsClass = nil
+local initPool = nil
 
-if not engineStarted then
-	engineStarted = true
+local Rethink = {}
+Rethink.Self = script
+Rethink.IsInitialized = false
+Rethink.Version = script:WaitForChild("Version").Value
 
-	-- setup core game ui
-	engineUi = require(components.Bootstrap.GenerateGUI)()
-
-	-- Initiate some globals that other components/tools can have access to
-	-- These are mainly exists for the sole purpose of quality of life benefits
-	Template.NewGlobal("__Rethink_Settings", Settings, true)
-	Template.NewGlobal("__Rethink_Ui", engineUi, true)
-
-	-- Setting up UI pool for Scene
-	pool = ObjectPool.new(Settings.Pool.InitialCache)
-	Template.NewGlobal("__Rethink_Pool", pool, true)
-
-	-- initiate Nature2D
-	physicsClass = Physics.init(engineUi.GameFrame)
-
-	-- Apply settings
-	-- More in-depth explanation can be found in the Settings module
-	physicsClass:UseQuadtrees(Settings.Physics.QuadTreesEnabled)
-	physicsClass:SetCollisionIterations(Settings.Physics.CollisionIteration)
-	physicsClass:SetConstraintIterations(Settings.Physics.ConstraintIteration)
-
-	-- Initiate a canvas
-	-- This is basically unnecessary if KeepInCanvas is always false
-	physicsClass:CreateCanvas(Vector2.new(0, 0), workspace.CurrentCamera.ViewportSize, engineUi.Viewport)
-
-	-- Create a new global to get access to the now initialized Nature2D class
-	Template.NewGlobal("__Rethink_Physics", physicsClass, true)
-
-	-- Apply engine settings and optimizations
-	-- After everything has been initialized
-	require(components.Bootstrap.EngineSettings)
-
-	-- Print header into the console if the LogHeader flag is enabled
-	if Settings.Console.LogHeader == true then
-		warn(DebugStrings.ConsoleHero)
+function Rethink.Init()
+	if Rethink.IsInitialized then
+		return warn("Already initialized!")
 	end
+
+	Rethink.IsInitialized = true
+
+	initEngineUi = require(script.Bootstrap.GenerateGUI)()
+
+	initPool = ObjectPool.new(Settings.Pool.InitialCache)
+
+	initPhysicsClass = Physics.init(initEngineUi.GameFrame)
+	initPhysicsClass:UseQuadtrees(Settings.Physics.QuadTreesEnabled)
+	initPhysicsClass:SetCollisionIterations(Settings.Physics.CollisionIteration)
+	initPhysicsClass:SetConstraintIterations(Settings.Physics.ConstraintIteration)
+	initPhysicsClass:CreateCanvas(Vector2.new(0, 0), workspace.CurrentCamera.ViewportSize, initEngineUi.Viewport)
+
+	Template.NewGlobal("__Rethink_Settings", Settings, true)
+	Template.NewGlobal("__Rethink_Ui", initEngineUi, true)
+	Template.NewGlobal("__Rethink_Pool", initPool, true)
+	Template.NewGlobal("__Rethink_Physics", initPhysicsClass, true)
+
+	require(script.Bootstrap.EngineSettings)
+
+	if Settings.Console.LogHeader == true then
+		warn(DebugStrings.ConsoleHero:format(Rethink.Version))
+	end
+
+	return Rethink
 end
 
-return {
-	Collision = require(environment.Collision),
-	Raycast = require(environment.Raycast),
-	Animation = require(core.Animation),
-	Outline = require(utility.Outline),
-	Scene = require(core.Scene),
-	Physics = physicsClass,
-	Template = Template,
-	Ui = engineUi,
-	Pool = pool,
+function Rethink.GetModules()
+	return {
+		Collision = require(script.Modules.Collision),
+		Raycast = require(script.Modules.Raycast),
+		Animation = require(script.Modules.Animation),
+		Outline = require(script.Modules.Outline),
+		Scene = require(script.Modules.Scene),
 
-	-- Expose the paths for easier access
-	Components = components,
-	Tools = tools,
+		Physics = initPhysicsClass,
+		Template = Template,
+		Ui = initEngineUi,
+		Pool = initPool,
 
-	-- Unfinsished, unstable tools
-	Prototypes = {
-		Camera = require(core.Camera),
-	},
-}
+		Prototypes = {
+			Camera = require(script.Modules.Camera),
+		},
+	}
+end
+
+return Rethink
