@@ -1,5 +1,7 @@
-<img align="left" height=150 src="./assets/full_dark.png#gh-light-mode-only">
-<img align="left" height=150 src="./assets/full_light.png#gh-dark-mode-only">
+<p align="center">
+  <img height=150 src="./assets/full_dark.png#gh-light-mode-only">
+  <img height=150 src="./assets/full_light.png#gh-dark-mode-only">
+</p>
 <h3><strong>Versatile, easy-to-use 2D game engine</strong>.</h3>
 0.6.1 release
 
@@ -9,11 +11,7 @@
 <h3>Interested in using it? Here's some if it's features</h3>
 
 - Physics
-- Optimize Roblox for 2D games
-- Use Camera to explore your whole scene
-- Raycasts
 - Animations with spritesheets or with a group of images
-- Collisions
 - Robust scene handling with symbols
 - And more!
 
