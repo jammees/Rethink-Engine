@@ -26,7 +26,7 @@ end
 
 function RbxScriptConnection._new(RBXScriptConnection: RBXScriptConnection)
 	return setmetatable({
-		Connection = RBXScriptConnection;
+		Connection = RBXScriptConnection,
 	}, RbxScriptConnection)
 end
 
@@ -34,5 +34,7 @@ function RbxScriptConnection:__tostring()
 	return "RbxScriptConnection<" .. tostring(self.Connected) .. ">"
 end
 
-export type RbxScriptConnection = typeof(RbxScriptConnection._new(game:GetPropertyChangedSignal("ClassName"):Connect(function() end)))
+export type RbxScriptConnection = typeof(RbxScriptConnection._new(
+	game:GetPropertyChangedSignal("ClassName"):Connect(function() end)
+))
 return RbxScriptConnection
