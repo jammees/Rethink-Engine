@@ -355,14 +355,12 @@ end
 		My_Container = {
 			[Type] = "Rigidbody",
 			
-			My_group = {
-				Box = {
-					AnchorPoint = Vector2.new(0.5, 0.5),
-					Position = UDim2.fromScale(0.5, 0.5),
-					Size = UDim2.fromOffset(100, 100),
-					Image = "rbxassetid://30115084",
-				}
-			},
+			Box = {
+				AnchorPoint = Vector2.new(0.5, 0.5),
+				Position = UDim2.fromScale(0.5, 0.5),
+				Size = UDim2.fromOffset(100, 100),
+				Image = "rbxassetid://30115084",
+			}
 		},
 	})
 
