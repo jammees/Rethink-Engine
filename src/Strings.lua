@@ -1,7 +1,7 @@
 -- TODO: Cleanup
 return {
 	ConsoleHero = [[
-		
+
      ____      _   _     _       _       _____             _            
     |  _ \ ___| |_| |__ (_)_ __ | | __  | ____|_ __   __ _(_)_ __   ___ 
     | |_) / _ \ __| '_ \| | '_ \| |/ /  |  _| | '_ \ / _` | | '_ \ / _ \
@@ -39,7 +39,10 @@ return {
 		AnimationNotExist = "Error whilst trying to call :ChangeAnimation(), specified animation does not exist!",
 	},
 
-	TaskDistributor = {
-		AlreadyProcessing = "Error whilst trying to call :Distribute(), already processing a chunk!",
+	Scene = {
+		CallBlockedProcessOngoing = "Cannot %s the scene, whilst %s is still in process!",
+		ObjectReferenceNotFound = "Failed to fetch %s's reference table from the scene!",
 	},
+
+	RethinkInitialized = "Rethink is already initialized!",
 }
