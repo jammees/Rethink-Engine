@@ -24,14 +24,16 @@ type CompileType = {
 
 local Types = require(script.Parent.Parent.Types)
 local Template = require(script.Parent.Parent.Parent.Template)
-local UiBase = require(script.Parent.UiBase)
-local Promise = require(script.Parent.Parent.Parent.Parent.Library.Promise)
-local UiPool = Template.FetchGlobal("__Rethink_Pool")
-local Physics = Template.FetchGlobal("__Rethink_Physics")
+local UIBase = require(script.Parent.UIBase)
+local Promise = require(script.Parent.Parent.Parent.Parent.Vendors.Promise)
+local Log = require(script.Parent.Parent.Parent.Parent.Library.Log)
 
 local function CompileDynamic(data: Types.Prototype_ChunkObject)
+	local UiPool = Template.FetchGlobal("__Rethink_Pool")
+	local Physics = Template.FetchGlobal("__Rethink_Physics")
+
 	local rigidbodyData = {
-		Object = UiBase(data),
+		Object = UIBase(data),
 	}
 
 	-- Add symbols related to rigidbodies
@@ -54,7 +56,7 @@ local function CompileDynamic(data: Types.Prototype_ChunkObject)
 		resolve()
 	end)
 		:catch(function(errorMessage: string)
-			warn("Encountered an error whilst trying to create a Rigidbody:\n\n" .. errorMessage)
+			Log.Warn("Encountered an error whilst trying to create a Rigidbody:\n\n" .. errorMessage)
 
 			UiPool:Return(rigidbodyData.Object)
 			table.clear(rigidbodyData)
