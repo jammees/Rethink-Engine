@@ -1,12 +1,13 @@
+---@module src.init
 local Rethink = require(game:GetService("ReplicatedStorage").Rethink)
-local Animation = Rethink.Animation
+local Animator = Rethink.GetModules().Animator
 
-local animationClass = Animation.new()
+local animationClass = Animator.new()
 
 return function()
 	describe("Tools.PopulateRow()", function()
 		it("should return an array with the specified lenght", function()
-			local array = Animation.Tools.PopulateRow(5)
+			local array = Animator.Tools.PopulateRow(5)
 
 			expect(#array).to.equal(5)
 		end)
@@ -14,14 +15,14 @@ return function()
 
 	describe("Tools.PopulateColumn()", function()
 		it("should return a set of arrays specified by x, y", function()
-			local setArrays = table.pack(Animation.Tools.PopulateColumn(5, 5))
+			local setArrays = table.pack(Animator.Tools.PopulateColumn(5, 5))
 
 			expect(setArrays.n - 1).to.equal(5)
 			expect(#setArrays[1]).to.equal(5)
 		end)
 
 		it("should include the bonus", function()
-			local setArrays = table.pack(Animation.Tools.PopulateColumn(0, 0, 5))
+			local setArrays = table.pack(Animator.Tools.PopulateColumn(0, 0, 5))
 
 			expect(setArrays.n).to.equal(1)
 			expect(#setArrays[1]).to.equal(5)
@@ -35,12 +36,12 @@ return function()
 		end)
 
 		it("should be a parent of the root module", function()
-			expect(getmetatable(animationClass) == Animation).to.equal(true)
+			expect(getmetatable(animationClass) == Animator).to.equal(true)
 		end)
 
 		it("should set Objects if argument is present", function()
 			local frame = Instance.new("Frame")
-			local tClass = Animation.new({ frame })
+			local tClass = Animator.new({ frame })
 
 			expect(tClass.Objects).to.be.ok()
 			expect(tClass.Objects[1]).to.equal(frame)
@@ -89,7 +90,7 @@ return function()
 		it("should successfully process the animation data", function()
 			animationClass:AddSpritesheet(10770144128, Vector2.new(73, 73), {
 				["test"] = {
-					Animation.Tools.PopulateColumn(13, 13, 6),
+					Animator.Tools.PopulateColumn(13, 13, 6),
 				},
 			})
 
