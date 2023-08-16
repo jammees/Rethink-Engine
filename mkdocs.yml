@@ -6,7 +6,6 @@ repo_name: jammees/Rethink-Engine
 theme:
   # initial settings
   name: material
-  custom_dir: docs/overrides
   logo: assets/favicon.png
   favicon: assets/favicon.png
 
@@ -33,7 +32,8 @@ theme:
     - navigation.tabs
     - search.highlight
     - search.suggest
-    - navigation.instant
+    - content.code.copy
+    - navigation.footer
 
 markdown_extensions:
   - attr_list
@@ -41,27 +41,17 @@ markdown_extensions:
   - admonition
   - pymdownx.details
   - pymdownx.superfences
+  - md_in_html
   - pymdownx.emoji:
       emoji_index: !!python/name:materialx.emoji.twemoji
       emoji_generator: !!python/name:materialx.emoji.to_svg
+  - toc:
+      permalink: true
+      permalink_title: Anchor link to this section for reference
 
 extra_css:
   - stylesheets/colors.css
   - stylesheets/extra.css
-
-extra:
-  version:
-    provider: mike
-
-plugins:
-  - mike:
-      # These fields are all optional; the defaults are as below...
-      canonical_version: null
-      version_selector: true
-      css_dir: docs/stylesheets
-      javascript_dir: docs/javascript
-
-#extra_javascript:
 
 # setup navigation
 nav:
@@ -70,13 +60,11 @@ nav:
     - Installation: getstarted/installation.md
     - Changelog: getstarted/changelog.md
   - Documentation:
-    - Rethink: documentation/tools/engine.md
-    - Animation: documentation/tools/animation.md
-    - Camera: documentation/tools/camera.md
-    - Scene: documentation/tools/scene.md
-    - Environment: documentation/tools/enviroment.md
-    - Outline: documentation/tools/outline.md
-    - Template: documentation/tools/template.md
-    - Components:
-      - Task Distributor: documentation/tools/taskdistributor.md
-    - Settings: documentation/tools/settings.md
+    - Rethink: documentation/rethink.md
+    - Animator: documentation/animator.md
+    - Camera: documentation/camera.md
+    - Scene: documentation/scene.md
+    - Outline: documentation/outline.md
+    - Template: documentation/template.md
+    - Settings: documentation/settings.md
+    - 3rd Party Modules: documentation/3rdpartymodules.md
