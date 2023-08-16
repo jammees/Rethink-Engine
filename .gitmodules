@@ -1,0 +1,12 @@
+[submodule "t"]
+	path = src/Vendors/t
+	url = https://github.com/osyrisrblx/t
+[submodule "src/Vendors/goodsignal"]
+	path = src/Vendors/goodsignal
+	url = https://github.com/stravant/goodsignal
+[submodule "src/Vendors/Janitor"]
+	path = src/Vendors/Janitor
+	url = https://github.com/howmanysmall/Janitor
+[submodule "src/Vendors/Promise"]
+	path = src/Vendors/Promise
+	url = https://github.com/evaera/roblox-lua-promise
