@@ -90,8 +90,8 @@ return {
 
 	CullGuiElements = function(value: boolean)
 		if value then
-			local JanitorCullGuiElements = require(script.Parent.Parent.Parent.Library.Janitor).new()
-			local Promise = require(script.Parent.Parent.Parent.Library.Promise)
+			local JanitorCullGuiElements = require(script.Parent.Parent.Parent.Vendors.Janitor).new()
+			local Promise = require(script.Parent.Parent.Parent.Vendors.Promise)
 			local Collision = require(script.Parent.Parent.Parent.Parent.Tools.Environment.Collision)
 
 			local function IsOutOfBounds(object: GuiBase2d)

@@ -15,7 +15,7 @@ local package = script:FindFirstAncestor("Components").Parent
 
 local Scene = require(package.Tools.Core.Scene)
 local Collision = require(package.Tools.Environment.Collision)
-local Promise = require(package.Components.Library.Promise)
+local Promise = require(package.Components.Vendors.Promise)
 
 -- Checks if an object is not visible.
 local function IsOutOfBounds(object: GuiBase2d)
