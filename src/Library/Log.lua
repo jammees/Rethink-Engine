@@ -33,6 +33,9 @@ end
 local Log = {}
 
 function Log.TAssert(predicate: boolean, message: string)
+	assert(t.boolean(predicate))
+	assert(t.optional(t.string)(message))
+
 	if predicate then
 		return
 	end
@@ -41,10 +44,14 @@ function Log.TAssert(predicate: boolean, message: string)
 end
 
 function Log.Print(message: string)
+	assert(t.string(message))
+
 	print(`[{GetCallerName()}]: ` .. ProcessMessage(message))
 end
 
 function Log.Debug(message: string)
+	assert(t.string(message))
+
 	if not isStudio then
 		return
 	end
@@ -53,10 +60,14 @@ function Log.Debug(message: string)
 end
 
 function Log.Warn(message: string)
+	assert(t.string(message))
+
 	warn(`[WARN] [{GetCallerName()}]: ` .. ProcessMessage(message))
 end
 
 function Log.Error(message: string)
+	assert(t.string(message))
+
 	error(`[ERROR] [{GetCallerName()}]: ` .. ProcessMessage(message), 2)
 end
 
