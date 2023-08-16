@@ -1,8 +1,8 @@
-local Janitor = require(script.Parent.Parent.Parent.Library.Janitor)
-local Rigidbody = require(script.Parent.Parent.Physics.Physics.RigidBody)
-local Promise = require(script.Parent.Parent.Parent.Library.Promise)
+local Janitor = require(script.Parent.Parent.Parent.Vendors.Janitor)
+local Rigidbody = require(script.Parent.Parent.Nature2D.Physics.RigidBody)
+local Promise = require(script.Parent.Parent.Parent.Vendors.Promise)
 
-type UUID = string
+export type UUID = string
 
 export type Janitor = Janitor.Janitor
 
@@ -24,12 +24,25 @@ export type Symbol = {
 export type ObjectReference = {
 	Object: GuiObject | Rigidbody,
 	Janitor: Janitor,
-	SymbolJanitor: Janitor?,
+	SymbolJanitor: Janitor,
 	ID: string,
 	Symbols: {
-		IDs: { UUID },
-		ShouldFlush: boolean?,
-	}?,
+		IDs: { UUID }?,
+		Permanent: boolean?,
+		LinkIDs: { string }?,
+	},
+}
+
+export type AvailableSymbols = {
+	Property: any,
+	Type: any,
+	Tag: any,
+	Rigidbody: any,
+	Permanent: any,
+	LinkTag: any,
+	Event: any,
+	LinkGet: any,
+	Class: any,
 }
 
 export type Prototype_ChunkObject = {
