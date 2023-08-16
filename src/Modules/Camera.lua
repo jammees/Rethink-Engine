@@ -13,7 +13,8 @@ type ObjectData = {
 
 local Scene = require(script.Parent.Scene)
 local Template = require(script.Parent.Template)
-local Physics = Template.FetchGlobal("__Rethink_Physics")
+local Log = require(script.Parent.Parent.Library.Log)
+local t = require(script.Parent.Parent.Vendors.t)
 
 local runnerConnection = nil
 local prePosition = Vector2.new(0, 0)
@@ -109,6 +110,8 @@ end
 -- If deltaTime is provided it will multiply the final position by deltaTime
 -- if not it won't
 function Camera.Render(deltaTime: number?)
+	Log.TAssert(t.optional(t.number)(deltaTime))
+
 	if Camera.Position == prePosition then
 		return
 	end
@@ -129,6 +132,8 @@ function Camera.Render(deltaTime: number?)
 end
 
 function Camera.IsAttached(object)
+	Log.TAssert(t.union(t.Instance, t.table)(object))
+
 	for _, reference: ObjectData in Camera.Objects do
 		if reference.Object == object then
 			return true
@@ -139,6 +144,8 @@ function Camera.IsAttached(object)
 end
 
 function Camera.Attach(object)
+	Log.TAssert(t.union(t.Instance, t.table)(object))
+
 	local originPosition = nil
 
 	local isRigidbody, isAnchored = GetState(object)
@@ -158,13 +165,15 @@ function Camera.Attach(object)
 	if handler then
 		handler(objectData, Camera.Position)
 	else
-		return warn(`Unexpected object: No Render Handler was found -> Object was not attached!`)
+		return Log.Warn(`Unexpected object: No Render Handler was found -> Object was not attached!`)
 	end
 
 	table.insert(Camera.Objects, objectData)
 end
 
 function Camera.Detach(object)
+	Log.TAssert(t.union(t.Instance, t.table)(object))
+
 	for index, obj in Camera.Objects do
 		if obj.Object == object then
 			table.remove(Camera.Objects, index)
@@ -173,6 +182,9 @@ function Camera.Detach(object)
 end
 
 function Camera.SetPosition(x: number, y: number)
+	Log.TAssert(t.number(x))
+	Log.TAssert(t.number(y))
+
 	-- Clamp the new x and y to the given boundary
 	Camera.Position = Vector2.new(
 		math.clamp(x, Camera.XBounds.Min, Camera.XBounds.Max),
@@ -182,10 +194,10 @@ end
 
 function Camera.Start()
 	if Camera.IsRunning then
-		return warn("Camera is already running!")
+		return Log.Warn("Camera is already running!")
 	end
 
-	runnerConnection = Physics.Updated:Connect(function(deltaTime)
+	runnerConnection = Template.FetchGlobal("__Rethink_Physics").Updated:Connect(function(deltaTime)
 		Camera.Render(deltaTime)
 	end)
 
@@ -194,7 +206,7 @@ end
 
 function Camera.Stop()
 	if not Camera.IsRunning then
-		return warn("Camera is not running!")
+		return Log.Warn("Camera is not running!")
 	end
 
 	runnerConnection:Disconnect()
@@ -204,6 +216,9 @@ function Camera.Stop()
 end
 
 function Camera.SetBoundary(XBounds: NumberRange, YBounds: NumberRange)
+	Log.TAssert(t.NumberRange(XBounds))
+	Log.TAssert(t.NumberRange(YBounds))
+
 	Camera.XBounds = XBounds
 	Camera.YBounds = YBounds
 end
