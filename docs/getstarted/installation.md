@@ -25,7 +25,7 @@ This is probably the most easiest way to get Rethink into your game!
 <h2><b>2. With git</b></h2>
 Using git simply run the following command in the command line that will clone the repository
 ```
-git clone https://github.com/jammees/Rethink-Engine.git
+git clone --recurse-submodules https://github.com/jammees/Rethink-Engine.git
 ```
 
 <h2><b>3. Downloading the source code on github</b></h2>
