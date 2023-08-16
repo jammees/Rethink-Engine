@@ -172,6 +172,7 @@ Determines if the *Compiler* should notify in the console, if an unprocessable p
 
 ### CompilerChunkSize 
 
+<span class=warn>:material-alert-outline: Warning:</span> Deprecated since 0.6.2
 <span class=def>:material-tag-outline: Since:</span> 0.6.0
 <span class=def>:material-database-arrow-down-outline: Default:</span> CompilerChunkSize `100`
 
