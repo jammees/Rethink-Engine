@@ -17,7 +17,7 @@ hide:
 <br>
 
 [Installation](getstarted/installation.md){ .md-button .md-button--primary}
-[Documentation](documentation/tools/engine.md){ .md-button}
+[Documentation](documentation/rethink.md){ .md-button}
 
 <hr>
 
