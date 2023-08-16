@@ -456,13 +456,13 @@ Fires [ObjectAdded](#events).
 type ObjectReference = {
 	Object: GuiObject | Rigidbody,
 	Janitor: Janitor,
-	SymbolJanitor: Janitor?,
+	SymbolJanitor: Janitor,
 	ID: string,
 	Symbols: {
-		IDs: { UUID },
-		ShouldFlush: boolean?,
-		LinkIDs: { string }
-	}?,
+		IDs: { UUID }?,
+		Permanent: boolean?,
+		LinkIDs: { string }?,
+	},
 }
 ```
 
