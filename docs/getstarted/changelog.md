@@ -1,5 +1,43 @@
 <hr>
 
+## Update: 0.6.2
+- Removed debug prints left in on accident
+- Rename type `UiBase` to `UIBase`
+- Documentation site improvements
+- Removed support of the `Type` symbol having aliases
+- Added `Symbols.RegisterCustomSymbol()` function to create custom symbols more easily
+- Added wrapper function in Scene for `Symbols.RegisterCustomSymbol()`
+- Fixed spelling mistakes
+- Removed deprecated RDC runner script
+- Fixed Rethink throwing errors if `Rethink.GetModules()` was called before it's initialized
+- Updated warnings in Template, Scene
+- Added `Scene.Cleanup()`
+- Fixed bug relating to Pool not returning the correct object
+- Moved `Scene.Events.ObjectRemoved` invoking to object's cleanup method
+- Replaced .IsLoading to .State to indicate the states that scene is in, such as: Loading, Flushing, Standby
+- Removed Scene throwing a warning in `.Flush()` was called, when the scene is empty
+- Added `LinkTag` and `LinkGet` symbols to reference other objects in the scene module
+- Cleaned up Symbols module, separation of each handler into its own module
+- Updates docs of `Scene` to match current state
+- Scene no longer returns a Promise when `.Load` is called
+- Renamed back 3rd party modules to their original names
+- Renamed Animation back to Animator
+- Fixed error regarding not formatting objects correctly when throwing errors
+- Scene now exports `ObjectReference` type
+- Removed SelfView, CompilerChunkSize from settings
+- Added Class symbol to define object ClassNames
+- Utilize gitmodules to track third party libraries
+- Symbols now return `visual object`s (e.g. Frame)
+- Object's reference table is now initially set up with symbol handling
+- Rewritten `Scene.Remove()` to use `Scene.GetObjectReference()` internally
+- Rewritten `Scene.Flush()`, `Scene.Load()` to stop using `TaskDistributor`
+- Use promise in symbol handlers to catch warnings to prevent code halting
+- Fixed memory-leak when removing objects using `Scene.Remove()`
+- Removed `TaskDistributor`
+- Renamed ShouldFlush to Permanent
+- Built-in symbols now do type-checking
+- Reworked messages and logging using `Log` library
+
 ## Update: 0.6.1
 - Fixed objects not being removed completely
 - Rewritten ObjectPool
@@ -10,6 +48,7 @@
 - Symbols now use `.Symbols` table to store data instead of using the object's reference table directly
 - Fixed symbols staying on objects after flushed or removed
 - Added `.Init` and `.GetModules` function to Rethink
+- Restructure of engine internals
 
 ## Update: 0.6.0
 * Added aliases to the **Type** symbol:
