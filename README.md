@@ -2,9 +2,10 @@
   <img height=150 src="./assets/full_dark.png#gh-light-mode-only">
   <img height=150 src="./assets/full_light.png#gh-dark-mode-only">
 
-  [![CI](https://github.com/jammees/Rethink-Engine/actions/workflows/ci.yaml/badge.svg)](https://github.com/jammees/Rethink-Engine/actions/workflows/ci.yaml)
-  [![Deploy docs](https://github.com/jammees/Rethink-Engine/actions/workflows/deploy_docs.yaml/badge.svg)](https://github.com/jammees/Rethink-Engine/actions/workflows/deploy_docs.yaml)
 </p>
+
+[![CI](https://github.com/jammees/Rethink-Engine/actions/workflows/ci.yaml/badge.svg)](https://github.com/jammees/Rethink-Engine/actions/workflows/ci.yaml)
+[![Deploy docs](https://github.com/jammees/Rethink-Engine/actions/workflows/deploy_docs.yaml/badge.svg)](https://github.com/jammees/Rethink-Engine/actions/workflows/deploy_docs.yaml)
 
 <h3><strong>Versatile, easy-to-use 2D game engine</strong>.</h3>
 0.6.2 release
@@ -12,7 +13,7 @@
 <hr>
 <br>
 
-<h3>Interested in using it? Here's some if it's features</h3>
+<h3>Interested in using it? Here's some if its features</h3>
 
 - Physics
 - Animations with spritesheets or with a group of images
@@ -37,9 +38,12 @@ Still in development!
 - Brownsage for helping with Camera
 - Michael-48 (GitHub) for Iris to test Rethink
 
+All the licenses and the links to the github pages can be found [here!](https://jammees.github.io/Rethink-Engine/documentation/3rdpartymodules/)
+
 <h3>Contribution</h3>
 
 Feel free to open up issues and pull requests! All contributions are welcome.
 But before you would like to open up an issue or a pull request you should read the [CONTRIBUTION.md](https://github.com/jammees/Rethink-Game-Engine-2D/blob/main/CONTRIBUTION.md) file.
 
 The project is not dead, it's just that I'm working on this alone and I'm not a guy known for working fast.
+To see the progress of Rethink check out it's [development place!](https://www.roblox.com/games/11693314673/Rethink-Engine-Dev-Place)
