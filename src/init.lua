@@ -6,13 +6,14 @@
 ]]
 
 local DebugStrings = require(script.Strings)
-local Physics = require(script.Modules.Physics)
+local Physics = require(script.Modules.Nature2D)
 local Template = require(script.Modules.Template)
 local Settings = require(script.Settings)
 local ObjectPool = require(script.Library.ObjectPool)
+local Log = require(script.Library.Log)
 
 local initEngineUi = nil
-local initPhysicsClass = nil
+local initNature2DClass = nil
 local initPool = nil
 
 local Rethink = {}
@@ -22,7 +23,7 @@ Rethink.Version = script:WaitForChild("Version").Value
 
 function Rethink.Init()
 	if Rethink.IsInitialized then
-		return warn("Already initialized!")
+		return Log.Warn(DebugStrings.RethinkInitialized)
 	end
 
 	Rethink.IsInitialized = true
@@ -31,16 +32,16 @@ function Rethink.Init()
 
 	initPool = ObjectPool.new(Settings.Pool.InitialCache)
 
-	initPhysicsClass = Physics.init(initEngineUi.GameFrame)
-	initPhysicsClass:UseQuadtrees(Settings.Physics.QuadTreesEnabled)
-	initPhysicsClass:SetCollisionIterations(Settings.Physics.CollisionIteration)
-	initPhysicsClass:SetConstraintIterations(Settings.Physics.ConstraintIteration)
-	initPhysicsClass:CreateCanvas(Vector2.new(0, 0), workspace.CurrentCamera.ViewportSize, initEngineUi.Viewport)
+	initNature2DClass = Physics.init(initEngineUi.GameFrame)
+	initNature2DClass:UseQuadtrees(Settings.Physics.QuadTreesEnabled)
+	initNature2DClass:SetCollisionIterations(Settings.Physics.CollisionIteration)
+	initNature2DClass:SetConstraintIterations(Settings.Physics.ConstraintIteration)
+	initNature2DClass:CreateCanvas(Vector2.new(0, 0), workspace.CurrentCamera.ViewportSize, initEngineUi.Viewport)
 
 	Template.NewGlobal("__Rethink_Settings", Settings, true)
 	Template.NewGlobal("__Rethink_Ui", initEngineUi, true)
 	Template.NewGlobal("__Rethink_Pool", initPool, true)
-	Template.NewGlobal("__Rethink_Physics", initPhysicsClass, true)
+	Template.NewGlobal("__Rethink_Physics", initNature2DClass, true)
 
 	require(script.Bootstrap.EngineSettings)
 
@@ -53,13 +54,13 @@ end
 
 function Rethink.GetModules()
 	return {
-		Collision = require(script.Modules.Collision),
-		Raycast = require(script.Modules.Raycast),
-		Animation = require(script.Modules.Animation),
+		Collision = require(script.Modules.GuiCollisionService),
+		Raycast = require(script.Modules.RayCast2),
+		Animator = require(script.Modules.Animator),
 		Outline = require(script.Modules.Outline),
 		Scene = require(script.Modules.Scene),
 
-		Physics = initPhysicsClass,
+		Physics = initNature2DClass,
 		Template = Template,
 		Ui = initEngineUi,
 		Pool = initPool,
