@@ -5,7 +5,7 @@ type SceneConfig = {
 	CompileMode: string?,
 }
 
-type AttachedSymbolsHolder = { any: () -> nil? }
+type AttachedSymbolsHolder = { [any]: () -> nil? }
 
 type ChunkObject = {
 	ObjectIdentifier: string?,
@@ -16,34 +16,21 @@ type ChunkObject = {
 	SymbolsAttached: AttachedSymbolsHolder,
 }
 
-local ALIAS_OBJECTS_NAMES = {
-	Layer = "UiBase",
-	Static = "UiBase",
-	Dynamic = "Rigidbody",
-
-	-- Base
-	Rigidbody = "Rigidbody",
-	UiBase = "UiBase",
-}
-
 local ContentProvider = game:GetService("ContentProvider")
 
-local Promise = require(script.Parent.Parent.Parent.Library.Promise)
+local Promise = require(script.Parent.Parent.Parent.Vendors.Promise)
 local Symbols = require(script.Parent.Symbols)
-local TaskDistributor = require(script.Parent.Parent.Parent.Library.TaskDistributor).new()
-local Settings = require(script.Parent.Parent.Parent.Settings)
+local Log = require(script.Parent.Parent.Parent.Library.Log)
 
 local CompilerObjects = {
 	Rigidbody = require(script.Parent.Objects.Rigidbody),
-	UiBase = require(script.Parent.Objects.UiBase),
+	UIBase = require(script.Parent.Objects.UIBase),
 }
 
 local sceneCaches = {}
 local scenePointers = {}
 
 local Compiler = {}
-
-Compiler.CompilerDistributor = TaskDistributor
 
 -- TODO: Reduce size by referencing properties multiple times for objects that have the same properties
 function Compiler.MapSceneData<TBL>(sceneData: { TBL }): { Types.Prototype_ChunkObject }
@@ -84,9 +71,15 @@ function Compiler.MapSceneData<TBL>(sceneData: { TBL }): { Types.Prototype_Chunk
 		Process(object)
 
 		-- Re-allocate the Class property
-		if objectData.Properties.Class then
-			objectData.ObjectClass = objectData.Properties.Class
-			objectData.Properties.Class = nil
+		-- if objectData.Properties.Class then
+		-- 	objectData.ObjectClass = objectData.Properties.Class
+		-- 	objectData.Properties.Class = nil
+		-- end
+
+		local classSymbol, attachedValue = Symbols.FindSymbol(objectData.Symbols, "Class")
+
+		if classSymbol then
+			objectData.ObjectClass = attachedValue
 		end
 
 		-- Apply index as name if it is not present in the properties table
@@ -120,7 +113,8 @@ function Compiler.MapSceneData<TBL>(sceneData: { TBL }): { Types.Prototype_Chunk
 end
 
 function Compiler.CacheScene(sceneData: { [string]: any })
-	local sceneChunk = TaskDistributor.GenerateChunk(Compiler.MapSceneData(sceneData), Settings.CompilerChunkSize)
+	-- local sceneChunk = TaskDistributor.GenerateChunk(Compiler.MapSceneData(sceneData), Settings.CompilerChunkSize)
+	local sceneChunk = Compiler.MapSceneData(sceneData)
 
 	local reservedId = #sceneCaches + 1
 	sceneCaches[reservedId] = sceneChunk
@@ -141,35 +135,106 @@ function Compiler.GetScene(sceneData: { [string]: any })
 end
 
 -- TODO: Add function to compile an object by itself
-function Compiler.Prototype_Compile(sceneData: { [string]: any }): Types.Promise
-	local compiledObjects = {}
+function Compiler.Compile(sceneData: { [string]: any }): Types.Promise
+	local Scene = require(script.Parent)
 
-	-- Simplified the data
 	return Promise.new(function(resolve)
-		TaskDistributor:Distribute(Compiler.GetScene(sceneData), function(object: Types.Prototype_ChunkObject)
+		for _, object: Types.Prototype_ChunkObject in Compiler.GetScene(sceneData) do
 			Promise.try(function()
-				-- Default to UiBase if it is not present
+				-- Default to UIBase if it is not present
 				if object.ObjectType == nil then
-					object.ObjectType = "UiBase"
-					warn(`[Compiler] {object}.ObjectType not found, defaulted to UiBase!`)
+					object.ObjectType = "UIBase"
+					Log.Warn(`{object}.ObjectType not found, defaulted to UIBase!`)
 				end
 
-				return CompilerObjects[ALIAS_OBJECTS_NAMES[object.ObjectType]](object)
+				return CompilerObjects[object.ObjectType](object)
 			end)
 				:andThen(function(cObject: GuiBase2d | Types.Rigidbody)
-					ContentProvider:PreloadAsync({ typeof(cObject) == "table" and cObject.frame or cObject })
+					Promise.async(function()
+						ContentProvider:PreloadAsync({
+							if Scene.IsRigidbody(cObject) then cObject:GetFrame() else cObject,
+						})
+					end)
 
-					table.insert(compiledObjects, {
-						Symbols = object.Symbols,
-						Object = cObject,
-					})
+					Scene.Add(cObject, object.Symbols)
 				end)
-				:catch(warn)
+				:catch(Log.Warn)
 				:await()
-		end):await()
+		end
 
-		resolve(compiledObjects)
-	end):catch(warn)
+		resolve()
+	end):catch(Log.Warn)
 end
+
+-- function Compiler.CompileV2<DATA>(sceneData: { DATA }): Types.Promise
+-- 	local Scene = require(script.Parent)
+
+-- 	local function GetChildrenSymbols(symbols: { [Types.Symbol]: any })
+-- 		local children = {}
+
+-- 		for symbolIndex, symbolValue in symbols do
+-- 			if not (symbolIndex.Name == "Children") then
+-- 				continue
+-- 			end
+
+-- 			table.insert(children, symbolValue)
+-- 		end
+
+-- 		return children
+-- 	end
+
+-- 	local function CompileChildren(children, parent)
+-- 		print(children, parent)
+
+-- 		local mappedData = Compiler.MapSceneData(children)
+-- 		warn(mappedData)
+
+-- 		for _, object in mappedData do
+-- 			object.ObjectType = "UIBase"
+
+-- 			local cObject = CompilerObjects[object.ObjectType](object)
+-- 			cObject.Parent = parent
+
+-- 			Scene.Add(cObject, object.Symbols)
+
+-- 			local childrenSymbols = GetChildrenSymbols(object.Symbols)
+
+-- 			if childrenSymbols then
+-- 				CompileChildren(childrenSymbols, cObject)
+-- 			end
+-- 		end
+-- 	end
+
+-- 	return Promise.new(function(resolve)
+-- 		TaskDistributor:Distribute(Compiler.GetScene(sceneData), function(object: Types.Prototype_ChunkObject)
+-- 			Promise.try(function()
+-- 				-- Default to UIBase if it is not present
+-- 				if object.ObjectType == nil then
+-- 					object.ObjectType = "UIBase"
+-- 					warn(`[Compiler] {object}.ObjectType not found, defaulted to UIBase!`)
+-- 				end
+
+-- 				local cObject = CompilerObjects[object.ObjectType](object)
+
+-- 				local childrenSymbols = GetChildrenSymbols(object.Symbols)
+
+-- 				if childrenSymbols then
+-- 					CompileChildren(childrenSymbols, cObject)
+-- 				end
+
+-- 				return cObject
+-- 			end)
+-- 				:andThen(function(cObject: GuiBase2d | Types.Rigidbody)
+-- 					ContentProvider:PreloadAsync({ typeof(cObject) == "table" and cObject.frame or cObject })
+
+-- 					Scene.Add(cObject, object.Symbols)
+-- 				end)
+-- 				:catch(warn)
+-- 				:await()
+-- 		end):await()
+
+-- 		resolve()
+-- 	end):catch(warn)
+-- end
 
 return Compiler
