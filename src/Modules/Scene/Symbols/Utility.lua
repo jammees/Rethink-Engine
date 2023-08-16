@@ -46,7 +46,7 @@ function Utility.CheckSymbolData(object: Types.ObjectReference, symbol: Types.Sy
 			Permanent = t.optional(t.boolean),
 			LinkIDs = t.optional(t.table),
 		}),
-	}))
+	})(object))
 
 	Log.TAssert(t.strictInterface({
 		__identifier = t.string,
@@ -56,7 +56,7 @@ function Utility.CheckSymbolData(object: Types.ObjectReference, symbol: Types.Sy
 			Symbol = t.optional(t.any),
 			Attached = t.any,
 		}),
-	}))
+	})(symbol))
 end
 
 return Utility
