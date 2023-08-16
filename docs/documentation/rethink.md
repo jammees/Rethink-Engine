@@ -41,7 +41,7 @@ Returns the modules. Does not check whether if Rethink is initialized or not!
 
     - Collision `module`
     - Raycast `module`
-    - Animation `module`
+    - Animator `module`
     - Outline `module`
     - Scene `module`
     - Template `module`
