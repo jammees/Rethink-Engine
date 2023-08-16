@@ -1,7 +1,11 @@
 <p align="center">
   <img height=150 src="./assets/full_dark.png#gh-light-mode-only">
   <img height=150 src="./assets/full_light.png#gh-dark-mode-only">
+
+  [![CI](https://github.com/jammees/Rethink-Engine/actions/workflows/ci.yaml/badge.svg)](https://github.com/jammees/Rethink-Engine/actions/workflows/ci.yaml)
+  [![Deploy docs](https://github.com/jammees/Rethink-Engine/actions/workflows/deploy_docs.yaml/badge.svg)](https://github.com/jammees/Rethink-Engine/actions/workflows/deploy_docs.yaml)
 </p>
+
 <h3><strong>Versatile, easy-to-use 2D game engine</strong>.</h3>
 0.6.2 release
 
