@@ -1,11 +1,11 @@
 local OBJECT_NUMBER = 2000
 
+---@module src.init
 local Rethink = require(game:GetService("ReplicatedStorage").Rethink)
 local Symbols = Rethink.GetModules().Scene.Symbols
 
-local viewportSize = workspace.CurrentCamera.ViewportSize
-
 local function createObjects(amount: number)
+	local viewportSize = workspace.CurrentCamera.ViewportSize
 	local groupTable = {}
 
 	for _ = amount, 1, -1 do
@@ -27,11 +27,11 @@ return {
 	Name = "Stress test",
 
 	Interactibles = {
-		[Symbols.Type] = "UiBase",
+		[Symbols.Type] = "UIBase",
 		[Symbols.Property] = {
-			Class = "ImageButton",
 			BackgroundColor3 = Color3.fromRGB(255, 125, 25),
 
+			[Symbols.Class] = "ImageButton",
 			[Symbols.Tag] = "UniversalTag",
 		},
 
@@ -41,9 +41,9 @@ return {
 	Rigidbodies = {
 		[Symbols.Type] = "Rigidbody",
 		[Symbols.Property] = {
-			Class = "ImageButton",
 			BackgroundColor3 = Color3.fromRGB(25, 190, 255),
 
+			[Symbols.Class] = "ImageButton",
 			[Symbols.Tag] = "UniversalTag",
 			[Symbols.Rigidbody] = {
 				Collidable = true,
