@@ -1,7 +1,6 @@
 --[[
 
     Scene
-	Last updated: 13/01/2023
 
 	Scene does not support custom rigidbodies yet.
 
@@ -18,121 +17,87 @@ type Tag = { [number]: string } | string?
 
 type SceneConfig = { Name: string }
 
+export type ObjectReference = Types.ObjectReference
+
 local CollectionService = game:GetService("CollectionService")
 local HTTPService = game:GetService("HttpService")
 
-local Settings = require(script.Parent.Parent.Settings)
-local RigidBody = require(script.Parent.Physics.Physics.RigidBody)
+local RigidBody = require(script.Parent.Nature2D.Physics.RigidBody)
 local Template = require(script.Parent.Template)
 local DebugStrings = require(script.Parent.Parent.Strings)
-local Signal = require(script.Parent.Parent.Library.Signal)
+local Signal = require(script.Parent.Parent.Vendors.goodsignal)
 local Compiler = require(script.Compiler)
 local Symbols = require(script.Symbols)
-local TypeCheck = require(script.Parent.Parent.Library.TypeCheck)
-local TaskDistributor = require(script.Parent.Parent.Library.TaskDistributor).new()
-local Janitor = require(script.Parent.Parent.Library.Janitor)
----@module src.Library.ObjectPool
-local UiPool = Template.FetchGlobal("__Rethink_Pool")
+local Janitor = require(script.Parent.Parent.Vendors.Janitor)
+local t = require(script.Parent.Parent.Vendors.t)
+local Log = require(script.Parent.Parent.Library.Log)
 
-local function GetTableLenght<T>(tbl: T)
-	local lenght = 0
-
-	for _ in tbl do
-		lenght += 1
-	end
-
-	return lenght
-end
-
--- TODO: Create a hash table to store the position of each object's index
 local sceneObjects: { [string]: { [string]: any } } = {}
 
 local Scene = {}
 
 --[=[
-	**Symbols**:
+	Symbols __must__ be wrapped with `[ ]`. Reason is
+	that without the `[ ]` lua would just treat the index as
+	a simple string and not as a table.
 
-	| Name:				| Description:
-	|--------------------------------------------------------------
-	| Tag				| Gives the given object a `tag(s)` fetch it with `CollectionService` or `Scene:GetRigidbodyFromTag`
-	| Property			| Applies `properties` or `symbols` to objects in the `group` or the `container`
-	| Type				| How the compiler handles the object `UiBase` and `Rigidbody` or it's aliases
-	| Event				| Hook events to the given object
-	| ShouldFlush		| Determines if the object will get deleted on `.Flush()` (Delete After Flush)
-	| Rigidbody			| Add rigidbody properties that later get fed into the Physics engine
+	Symbols are an easy way to add additional extra functionality to an
+	object. This feature was inspired by Fusion. Rethink allows the creation
+	of custom symbols. See: `Scene.RegisterCustomSymbol()`
 
-	**Aliases with TYPE**
-
-	There are a couple of aliases that are available to make indentifying the type easier.
-	Additionally `UiBase` and `Rigidbody` can be used as well!
-	
-	| Alias:			| Base type:
-	|--------------------------------------------------------------
-	| Layer 			| UiBase
-	| Static 			| UiBase
-	| Dynamic 			| Rigidbody
+	@since 0.6.0
+	@readonly
 ]=]
 Scene.Symbols = table.freeze(Symbols.Types)
 
--- Is the compiler still loading a scene in
-Scene.IsLoading = false
+--[=[
+	Reports the current state of Scene:
 
--- Events that are useful to tell the state of Scene
+	- Loading
+	- Flushing
+	- Standby
+
+	@since 0.6.2
+	@readonly
+]=]
+Scene.State = "Standby"
+
+--[=[
+	Events are simple ways to run certain behaviour at certain times.
+
+	**List of all available events**
+
+	| Name:                     | Description:
+	| ------------------------- | ------------------------------------
+	| LoadStarted               | Fires before the scene gets loaded
+	| LoadFinished              | Fires after the scene got loaded
+	| FlushStarted              | Fires before the scene gets flushed/deleted
+	| FlushFinished             | Fires after the scene got flushed/deleted
+	| ObjectAdded               | Fires when an object got added to the scene, returns object
+	| ObjectRemoved             | Fires when an object got removed from the scene, returns object
+
+	@since 0.5.3
+	@readonly
+]=]
 Scene.Events = table.freeze({
-	--	Fires before the scene gets loaded.
 	LoadStarted = Signal.new(),
-	--	Fires after the scene finished loading.
 	LoadFinished = Signal.new(),
-	--	Fires before the scene gets flushed.
 	FlushStarted = Signal.new(),
-	--	Fires after the scene got flushed.
 	FlushFinished = Signal.new(),
-	--	Fires after an object got added to the scene.
-	--	@returns {Object} Can be a rigidbody class or a gui element
 	ObjectAdded = Signal.new(),
-	--	Fires after an object got removed from the scene.
-	--	@returns {Object} Can be a rigidbody class or a gui element
 	ObjectRemoved = Signal.new(),
 })
 
 --[=[
-	Compiles a scene from a given data dictionary. Returns a `Promise`
+	Loads in a scene using the sceneData table. A name field must be provided, otherwise
+	it will default to "Unnamed scene", which could cause unintended behaviours.
+	The compiler does not check if a scene already exists with that name, meaning it will
+	overwrite it.
 
-	**Symbols**:
-
-	| Name:				| Description:
-	|--------------------------------------------------------------
-	| Tag				| Gives the given object a `tag(s)` fetch it with `CollectionService` or `Scene:GetRigidbodyFromTag`
-	| Property			| Applies `properties` or `symbols` to objects in the `group` or the `container`
-	| Type				| How the compiler handles the object `UiBase` and `Rigidbody` or it's aliases
-	| Event				| Hook events to the given object
-	| ShouldFlush		| Determines if the object will get deleted on `.Flush()` (Delete After Flush)
-	| Rigidbody			| Add rigidbody properties that later get fed into the Physics engine
-
-	**Aliases with TYPE**
-
-	There are a couple of aliases that are available to make
-	indentifying the type easier.
-	Additionally `UiBase` and `Rigidbody` can be used as well!
-	
-	| Alias:			| Base type:
-	|--------------------------------------------------------------
-	| Layer 			| UiBase
-	| Static 			| UiBase
-	| Dynamic 			| Rigidbody
-
-	Symbols **must** be wrapped with `[]`. This is the reason
-	that `Symbol`s are simple tables that hold data.
+	### Example
 
 	```lua
-	local Rethink = require(game:GetService("ReplicatedStorage").Rethink)
-	local Scene = Rethink.Scene
-
-	local Type = Scene.Symbols.Type
-	local Property = Scene.Symbols.Property
-	local Tag = Scene.Symbols.Tag
-
-	Scene.Load({
+	return {
 		Name = "My scene",
 
 		My_Container = {
@@ -142,100 +107,108 @@ Scene.Events = table.freeze({
 				[Tag] = "Container!"
 			}
 			
-			Box = {
+			My_Object = {
 				AnchorPoint = Vector2.new(0.5, 0.5),
 				Position = UDim2.fromScale(0.5, 0.5),
 				Size = UDim2.fromOffset(100, 100),
-				Image = "rbxassetid://30115084",
 
 				[Tag] = "Object!"
 			}
 		},
-	})
+	}
 	```
 
-	@param {dictionary} sceneData
-	@returns {promise} sceneTable
-	@async
+	How a scene module is typically structured:
+
+	| Level  | Name       | Description
+	| ------ | ---------- | ------------------------------
+	| 0      | Main body  | Defines the `Containers` as well as the `Name`
+	| 1      | Containers | Defines the `Type` of the objects and the `Properties` that objects may share
+	| 2      | Objects    | Defines object properties and their symbols based on previous `Property` symbols present in `Containers` and the data inside the table itself
+
+	Objects always have higher priority when applying properties.
+
+	@since 0.3.0
+	@param sceneData `Dictionary`
 	@fires LoadStarted
 	@fires LoadFinished
 ]=]
-function Scene.Load(sceneData: { Name: string }): Types.Promise
-	if Scene.IsLoading then
-		return warn("[Scene] Already loading in a scene!")
+function Scene.Load(sceneData: { Name: string })
+	Log.TAssert(t.table(sceneData))
+
+	if Scene.State == "Loading" then
+		return Log.Warn(DebugStrings.Scene.CallBlockedProcessOngoing:format("load", "loading"))
 	end
 
-	assert(typeof(sceneData) == "table", string.format(DebugStrings.Expected, "table", typeof(sceneData), "2"))
+	if Scene.State == "Flushing" then
+		return Log.Warn(DebugStrings.Scene.CallBlockedProcessOngoing:format("load", "flushing"))
+	end
 
 	Scene.Events.LoadStarted:Fire()
 
-	Scene.IsLoading = true
+	Scene.State = "Loading"
 
-	if sceneData.Name == nil then
-		sceneData.Name = "Unnamed scene"
-	end
+	sceneData.Name = if sceneData.Name then sceneData.Name else "Unnamed scene"
 
-	-- Returns a promise to allow the function to
-	-- In this Promise:
-	-- Loop over the objects that the Compiler returned and add them to the scene
-	-- After all fire the .LoadFinished event
-	return Compiler.Prototype_Compile(sceneData)
-		:andThen(function(compiledObjects)
-			for _, object: CompiledObject in ipairs(compiledObjects) do
-				-- Attach symbols
-				Scene.Add(object.Object, object.Symbols)
-			end
+	Compiler.Compile(sceneData):catch(Log.Warn):await()
 
-			Scene.IsLoading = false
+	Scene.State = "Standby"
 
-			Scene.Events.LoadFinished:Fire()
-		end)
-		:catch(warn)
+	Scene.Events.LoadFinished:Fire()
 end
 
 --[=[
-	Can be used to add an instance into the scene, after it has been compiled.
-
-	If ShouldFlush is false it will prevent the `:Flush` method to clean that object up.
-	Supports adding symbols to the object.
+	Internally used by scene when the compiler has finished gathering and building up the
+	objects in the scene. Sets up a cleanup method for the object, creates a new entry
+	in the sceneObjects array saving an `ObjectReference` table associated with
+	the object and calls `Scene.AddSymbols()`.
 
 	```lua
-	local Rethink = require(game:GetService("ReplicatedStorage").Rethink)
-	local Scene = Rethink.Scene
-
-	local frame = Instance.new("Frame")
-	frame.Size = Udim2.new(0, 100, 0, 100)
-
-	Scene.Add(frame, {"Test1", "Test2"}, false)
+	type ObjectReference = {
+		Object: GuiObject | Rigidbody,
+		Janitor: Janitor,
+		SymbolJanitor: Janitor?,
+		ID: string,
+		Symbols: {
+			IDs: { UUID },
+			ShouldFlush: boolean?,
+			LinkIDs: { string }
+		}?,
+	}
 	```
 
-	@param {instance} object - The object to be added to the scene
-	@param {array} tags - List of tags to add to the object
+	@since 0.5.3
+	@param object `GuiObject | Rigidbody`
+	@param symbols `{[Symbol]: any}`
 	@fires ObjectAdded
 ]=]
-
 function Scene.Add(object: GuiBase2d | Types.Rigidbody, symbols: { [Types.Symbol]: any }?)
-	TypeCheck.Assert(DebugStrings.ExpectedNoArg, object, "Instance", "table")
-	TypeCheck.Assert(DebugStrings.ExpectedNoArg, symbols, "table")
+	Log.TAssert(t.union(t.Instance, t.table)(object))
+	Log.TAssert(t.optional(t.table)(symbols))
 
 	-- Define SceneObject
 	local objectReference: Types.ObjectReference = {
 		Object = object,
 		Janitor = Janitor.new(),
+		SymbolJanitor = Janitor.new(),
 		ID = HTTPService:GenerateGUID(false),
+		Symbols = {},
 	}
 
 	-- Allocate object
 	sceneObjects[objectReference.ID] = objectReference
 
 	-- Add cleanup function
+	objectReference.Janitor:Add(objectReference.SymbolJanitor, "Destroy", "SymbolJanitor")
 	objectReference.Janitor:Add(function()
 		local isRigidbody = Scene.IsRigidbody(objectReference.Object)
+
+		Scene.Events.ObjectRemoved:Fire(objectReference.Object)
 
 		if isRigidbody then
 			objectReference.Object:Destroy()
 		else
-			UiPool:Return(objectReference.Object)
+			Template.FetchGlobal("__Rethink_Pool"):Return(objectReference.Object)
 		end
 
 		sceneObjects[objectReference.ID] = nil
@@ -247,19 +220,21 @@ function Scene.Add(object: GuiBase2d | Types.Rigidbody, symbols: { [Types.Symbol
 end
 
 --[=[
-	Attaches symbols specified in `symbols` table to the specified `object`.
-	Useful to create a custom compiler.
+	Attaches symbols to an object. Used by `Scene.Add()`.
+	Does not support custom objects, due to symbols need to have the reference to
+	the object to access data such as the object's Janitor.
 
-	@param {GuiBase2D | Rigidbody} object
-	@param {dictionary} symbols
+	@since 0.6.0
+	@param object `GuiObject | Rigidbody`
+	@param symbols `{[Symbol]: any}`
 ]=]
 function Scene.AddSymbols(object: GuiBase2d | Types.Rigidbody, symbols: { [Types.Symbol]: any }?)
+	Log.TAssert(t.union(t.Instance, t.table)(object))
+	Log.TAssert(t.optional(t.table)(symbols))
+
 	if symbols == nil then
 		return
 	end
-
-	TypeCheck.Assert(DebugStrings.ExpectedNoArg, object, "Instance", "table")
-	TypeCheck.Assert(DebugStrings.ExpectedNoArg, symbols, "table")
 
 	local attachedSymbols = {}
 
@@ -274,150 +249,165 @@ function Scene.AddSymbols(object: GuiBase2d | Types.Rigidbody, symbols: { [Types
 		table.insert(attachedSymbols[symbol.Name], symbol)
 	end
 
-	local objectReference = Scene.GetObjectReference(object)
-
-	if not objectReference.Symbols then
-		objectReference.Symbols = {}
-		objectReference.SymbolJanitor = Janitor.new()
-		objectReference.Janitor:Add(objectReference.SymbolJanitor, "Destroy", "SymbolJanitor")
-	end
-
-	Symbols.AttachToInstance(objectReference, attachedSymbols)
+	Symbols.AttachToInstance(Scene.GetObjectReference(object), attachedSymbols)
 end
 
 --[=[
-	Removes the given object from the `scene dictionary`.
+	Removes the object from the scene without destroying it nor cleaning up the Janitor.
+	If stripSymbols is set to true it will cleanup the symbols.
 
-	**Warning:** It does not delete the object!
-
-	**Example:**
-	```lua
-	local Rethink = require(game:GetService("ReplicatedStorage").Rethink)
-	local Scene = Rethink.Scene
-
-	local frame = Instance.new("Frame")
-	frame.Size = Udim2.new(0, 100, 0, 100)
-
-	Scene.Add(frame)
-
-	Scene.Remove(frame)
-	```
-
-	@param {instance} object - The object to get removed from the scene dictionary
-	@yields
+	@since 0.6.0
+	@param object `GuiObject | Rigidbody`
+	@param stripSymbols `Boolean`
+	@default stripSymbols `false`
 	@fires ObjectRemoved
 ]=]
 function Scene.Remove(object: GuiBase2d | Types.Rigidbody, stripSymbols: boolean?)
-	TypeCheck.Assert(DebugStrings.ExpectedNoArg, object, "Instance", "table")
+	Log.TAssert(t.union(t.Instance, t.table)(object))
+	Log.TAssert(t.optional(t.boolean)(stripSymbols))
 
-	-- remove it from the scene dictionary
-	for objectID, sceneObject: Types.ObjectReference in sceneObjects do
-		if sceneObject.Object == object and objectID == sceneObject.ID then
-			-- Return it to the pool
-			UiPool:Retire(Scene.IsRigidbody(object) and object:GetFrame() or object)
+	local reference = Scene.GetObjectReference(object)
 
-			if not stripSymbols then
-				for _, symbolID in sceneObject.Symbols.IDs do
-					sceneObject.SymbolJanitor:RemoveNoClean(symbolID)
-				end
-			end
+	-- Return it to the pool
+	Template.FetchGlobal("__Rethink_Pool"):Retire(Scene.IsRigidbody(object) and object:GetFrame() or object)
 
-			sceneObject.Janitor:RemoveNoClean(objectID)
-			sceneObject.Janitor:Destroy()
-
-			sceneObjects[objectID] = nil
-
-			Scene.Events.ObjectRemoved:Fire(object)
-
-			return
+	if not stripSymbols and t.table(reference.Symbols.IDs) then
+		for _, symbolID in reference.Symbols.IDs do
+			reference.SymbolJanitor:RemoveNoClean(symbolID)
 		end
 	end
 
-	return error(string.format(DebugStrings.RemoveErrorNoObject, object.Name, typeof(object)))
+	sceneObjects[reference.ID] = nil
+
+	reference.Janitor:RemoveNoClean(reference.ID)
+	reference.Janitor:Destroy()
+
+	Scene.Events.ObjectRemoved:Fire(object)
 end
 
 --[=[
-	Cleans up the janitor and removes every index from the `scene dictionary` if `ShouldFlush` is
-	a falsy value (nil or false).
+	Cleans up the provided object.
 
-	**Notes:**
-	- If the scene is empty, it will throw a warning.
-	- Will ignore objects that have their `ShouldFlush` set to false
-
-	**Example:**
-	```lua
-	local Rethink = require(game:GetService("ReplicatedStorage").Rethink)
-	local Scene = Rethink.Scene
-
-	local Type = Scene.Symbols.Type
-
-	Scene.Load({Name = "My scene"}, {
-		My_Container = {
-			[Type] = "Rigidbody",
-			
-			Box = {
-				AnchorPoint = Vector2.new(0.5, 0.5),
-				Position = UDim2.fromScale(0.5, 0.5),
-				Size = UDim2.fromOffset(100, 100),
-				Image = "rbxassetid://30115084",
-			}
-		},
-	})
-
-	Scene.Flush()
-	```
-
-	@param {boolean} ignoreShouldFlush - Whether Scene should delete objects that have ShouldFlush set to false
-	@yields
-	@fires Flush#FlushStarted
-	@fires Flush#FlushFinished
+	@since 0.6.2
+	@param object `GuiObject | Rigidbody`
 ]=]
-function Scene.Flush(ignoreShouldFlush: boolean)
-	if not (GetTableLenght(sceneObjects) > 0) then
-		return warn((DebugStrings.MethodFailNoScene):format("flush"))
+function Scene.Cleanup(object: GuiBase2d | Types.Rigidbody)
+	Log.TAssert(t.union(t.Instance, t.table)(object))
+
+	Scene.GetObjectReference(object).Janitor:Destroy()
+end
+
+--[=[
+	Cleans up all of the objects in the scene if called. If `ignorePermanent` is 
+	set to true Scene will ignore objects which have the ShouldFlush 
+	symbol's value set to false.
+
+	@since 0.5.3
+	@param ignorePermanent `Boolean`
+	@default ignorePermanent `false`
+	@fires FlushStarted
+	@fires FlushFinished
+]=]
+function Scene.Flush(ignorePermanent: boolean?)
+	Log.TAssert(t.optional(t.boolean)(ignorePermanent))
+	-- if not (GetTableLenght(sceneObjects) > 0) then
+	-- 	return warn((DebugStrings.MethodFailNoScene):format("flush"))
+	-- end
+
+	if Scene.State == "Loading" then
+		return Log.Warn(DebugStrings.Scene.CallBlockedProcessOngoing:format("flush", "loading"))
 	end
 
-	if Scene.IsLoading then
-		return warn("Attempted to flush the scene; Loading in process!")
+	if Scene.State == "Flushing" then
+		return Log.Warn(DebugStrings.Scene.CallBlockedProcessOngoing:format("flush", "flushing"))
 	end
 
 	Scene.Events.FlushStarted:Fire()
 
+	Scene.State = "Flushing"
+
 	-- Remove the left references to the deleted objects from sceneObjects
-	TaskDistributor
-		:Distribute(
-			TaskDistributor.GenerateChunk(sceneObjects, Settings.CompilerChunkSize),
-			function(object: Types.ObjectReference)
-				if object.Symbols.ShouldFlush == false and ignoreShouldFlush == false or ignoreShouldFlush == nil then
-					return
-				end
+	-- TaskDistributor
+	-- 	:Distribute(
+	-- 		TaskDistributor.GenerateChunk(sceneObjects, Settings.CompilerChunkSize),
+	-- 		function(object: Types.ObjectReference)
+	-- 			if object.Symbols.ShouldFlush == false and ignoreShouldFlush == false or ignoreShouldFlush == nil then
+	-- 				return
+	-- 			end
 
-				warn(object.ID)
+	-- 			-- Scene.Events.ObjectRemoved:Fire(object.Object)
 
-				Scene.Events.ObjectRemoved:Fire(object.Object)
+	-- 			-- Destroy the object's Janitor
+	-- 			-- This will result in having all of the events disconnected, Rigidbody being destroyed
+	-- 			-- and the UI element getting returned to the Pool for later use
+	-- 			object.Janitor:Destroy()
+	-- 		end
+	-- 	)
+	-- 	:await()
 
-				-- Destroy the object's Janitor
-				-- This will result in having all of the events disconnected, Rigidbody being destroyed
-				-- and the UI element getting returned to the Pool for later use
-				object.Janitor:Destroy()
-			end
-		)
-		:await()
+	for _, object: Types.ObjectReference in Scene.GetObjects() do
+		if
+			(t.boolean(object.Symbols.Permanent) and object.Symbols.Permanent == true)
+			and (not t.boolean(ignorePermanent) or ignorePermanent == false)
+		then
+			continue
+		end
+
+		Scene.Events.ObjectRemoved:Fire(object.Object)
+
+		Scene.Cleanup(object.Object)
+	end
+
+	Scene.State = "Standby"
 
 	Scene.Events.FlushFinished:Fire()
 end
 
 --[=[
-	Get's every object that has that specific
-	tag no matter what type it is.
+	Registers a new custom symbol handler. The `returnKind` parameter accepts:
 
-	@param {string} tag
-	@yields
-	@public
-	@returns {array} All of the collected objects that were tagged
+	- 0 - Returns the symbol
+	- 1 - Returns a function, when called returns the symbol
+
+	### Example
+
+	This example prints the object's ID and the attached value of the symbol.
+
+	```lua
+	Scene.RegisterCustomSymbol("testSymbol", 0, function(object, symbol)
+		print(object.ID, symbol.SymbolData.Attached)
+	end)
+	```
+
+	@since 0.6.2
+	@param name `string`
+	@param returnKind `number`
+	@param controller `(object, symbol)
+]=]
+function Scene.RegisterCustomSymbol(
+	name: string,
+	returnKind: number,
+	controller: (object: Types.ObjectReference, symbol: Types.Symbol) -> ()
+)
+	Log.TAssert(t.string(name))
+	Log.TAssert(t.number(returnKind))
+	Log.TAssert(t.callback(controller))
+
+	Symbols.RegisterCustomSymbol(name, returnKind, controller)
+
+	Log.Debug(`Registered new symbol with name: {name}, kind: {returnKind}!`)
+end
+
+--[=[
+	Returns all of the objects with the specified tag.
+
+	@since 0.6.0
+	@param tag `String`
+	@returns Objects `{[number]: GuiBase2d | Types.Rigidbody}`
 ]=]
 function Scene.GetFromTag(tag: string): { [number]: GuiBase2d | Types.Rigidbody }
-	assert(typeof(tag) == "string", string.format(DebugStrings.ExpectedNoArg, "string", typeof(tag)))
+	-- assert(typeof(tag) == "string", string.format(DebugStrings.ExpectedNoArg, "string", typeof(tag)))
+	Log.TAssert(t.string(tag))
 
 	local taggedObjects = CollectionService:GetTagged(tag)
 	local foundObjects = {}
@@ -434,50 +424,52 @@ function Scene.GetFromTag(tag: string): { [number]: GuiBase2d | Types.Rigidbody 
 end
 
 --[=[
-	Checks the given instance if it is a rigidbody
+	Returns a boolean to indicate if object is a rigidbody or not.
 
-	@param {Instance | table} object - The object to check if it is a rigidbody
-	@yields
-	@public
-	@returns {boolean}
+	@since 0.6.0
+	@param object `GuiObject | Rigidbody`
+	@returns Result `Boolean`
 ]=]
 function Scene.IsRigidbody(object: GuiBase2d | Types.Rigidbody): boolean
+	Log.TAssert(t.union(t.Instance, t.table)(object))
+
 	return getmetatable(typeof(object) == "table" and object or nil) == RigidBody
 end
 
 --[=[
-	Returns the object's data that is tracked in `Scene`.
+	Returns the object's ObjectReference table used by Scene.
 
 	Useful to add custom events or logic to the object and making it sure
-	that, that event/logic gets disconnected upon destroying it.
+	that, that event/logic gets disconnected upon the destruction of the object.
 
-	@param {GuiBase2d | Types.Rigidbody} object
-	@yields
-	@returns {SceneObject}
+	Internally used by `Scene.AddSymbols()`.
+
+	@since 0.6.0
+	@param object `GuiObject | Rigidbody`
+	@returns Reference `ObjectReference`
 ]=]
 function Scene.GetObjectReference(object: GuiBase2d | Types.Rigidbody): Types.ObjectReference
+	Log.TAssert(t.union(t.Instance, t.table)(object))
+
 	for _, objectReference: Types.ObjectReference in sceneObjects do
-		if objectReference.Object ~= object then
+		if not (objectReference.Object == object) then
 			continue
 		end
 
 		return objectReference
 	end
 
-	return error(`Unable to find {object} in the sceneObjects list!`)
+	Log.Error(DebugStrings.Scene.ObjectReferenceNotFound:format(tostring(object)))
 end
 
 --[=[
-	Can be used to retrieve all of the scene objects, that make the currently compiled scene.
-	
-	Contains the Janitor used to clean that specific objec up, the object reference, ShouldFlush
-	flag as well as the position in the sceneObjects.
+	Returns all of the objects wihin scene containing all
+	of the `ObjectReferences`.
 
-	@yields
-	@public
-	@returns {array} Returns all of the trakced objects
+	@since 0.5.3
+	@returns Objects `{ [Types.UUID]: ObjectReference }
 ]=]
-function Scene.GetObjects(): { Types.ObjectReference }
+function Scene.GetObjects(): { [Types.UUID]: Types.ObjectReference }
 	return sceneObjects
 end
 
