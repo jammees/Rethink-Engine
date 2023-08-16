@@ -2,9 +2,13 @@ local UserInputService = game:GetService("UserInputService")
 
 ---@module src.init
 local Rethink = require(game:GetService("ReplicatedStorage").Rethink)
+local Modules = Rethink.GetModules()
+local Scene = Modules.Scene
+local Camera = Modules.Prototypes.Camera
 local Iris = require(script["Iris-2.0.2"]).Init()
 local Tbl = require(script.tbl)
-local Janitor = require(Rethink.Self.Library.Janitor).new()
+---@module src.Vendors.Janitor.src.init
+local Janitor = require(Rethink.Self.Vendors.Janitor).new()
 
 -- States
 local isToggled = Iris.State(true)
@@ -16,6 +20,43 @@ local windowSize = Iris.State(Vector2.new(windowsizeX.value, windowsizeY.value))
 local sceneModules = {}
 local scenePointer = {}
 local sceneObjects = {}
+
+local function RenderPeeker(selectedObject: GuiBase2d)
+	local peekerWindowState = Iris.State()
+
+	if peekerWindowState.value then
+		peekerWindowState.value:Destroy()
+		peekerWindowState:set(nil)
+	end
+
+	local container = Instance.new("ImageLabel")
+	container.Size = UDim2.fromScale(1, 0.4)
+	container.Image = "rbxassetid://14287556722"
+	container.ZIndex = 99999999
+	container.Name = "PeekerWindow"
+	container.ClipsDescendants = true
+	Iris.Append(container)
+
+	local aspectRation = Instance.new("UIAspectRatioConstraint")
+	aspectRation.AspectRatio = 1.5
+	aspectRation.AspectType = Enum.AspectType.ScaleWithParentSize
+	aspectRation.DominantAxis = Enum.DominantAxis.Width
+	aspectRation.Parent = container
+
+	local copy = if typeof(selectedObject) == "table" then selectedObject:GetFrame() else selectedObject
+	copy = copy:Clone()
+	copy.ZIndex = 999999999
+	copy.Parent = container
+
+	local viewport = workspace.CurrentCamera.ViewportSize
+	local containerSize = container.AbsoluteSize
+	local copySize = copy.AbsoluteSize
+	local ratio = (containerSize / viewport).X
+	local newSize = UDim2.fromOffset(copySize.X * ratio, copySize.Y * ratio)
+	copy.Size = newSize
+
+	peekerWindowState:set(container)
+end
 
 local function FindScenesModules()
 	local function IsDuplicate(sceneModule)
@@ -37,8 +78,6 @@ local function FindScenesModules()
 end
 
 local function RenderExplorer()
-	local scene = Rethink.GetModules().Scene
-
 	local objectIndex = Iris.State(1)
 	local explorerWindow = Iris.State(Vector2.new(150, windowSize.value.Y))
 	local odWindow = Iris.State(Vector2.new(300, windowSize.value.Y))
@@ -66,7 +105,7 @@ local function RenderExplorer()
 
 	for index, object in sceneObjects do
 		Iris.Selectable(
-			{ scene.IsRigidbody(object) and object:GetFrame().Name or object.Name, index },
+			{ Scene.IsRigidbody(object) and object:GetFrame().Name or object.Name, index },
 			{ index = objectIndex }
 		)
 	end
@@ -74,7 +113,7 @@ local function RenderExplorer()
 	Iris.End()
 
 	local selectedObject = sceneObjects[objectIndex.value]
-	local frame = selectedObject and (scene.IsRigidbody(selectedObject) and selectedObject:GetFrame() or selectedObject)
+	local frame = selectedObject and (Scene.IsRigidbody(selectedObject) and selectedObject:GetFrame() or selectedObject)
 
 	Iris.Window({
 		`Object data {selectedObject and selectedObject.Name and `- "{frame.Name}"` or ""}`,
@@ -90,10 +129,10 @@ local function RenderExplorer()
 
 	if selectedObject then
 		Iris.TextWrapped({
-			`Position: {frame.Position}\nIsRigidbody: {scene.IsRigidbody(selectedObject)}\nTags: {table.concat(frame:GetTags(), ", ")}`,
+			`Position: {frame.Position}\nIsRigidbody: {Scene.IsRigidbody(selectedObject)}\nTags: {table.concat(frame:GetTags(), ", ")}`,
 		})
 
-		local reference = scene.GetObjectReference(selectedObject)
+		local reference = Scene.GetObjectReference(selectedObject)
 
 		Iris.PushConfig({ TextColor = Color3.fromRGB(109, 109, 109) })
 		Iris.TextWrapped({ `\nReference data:` })
@@ -110,10 +149,16 @@ local function RenderExplorer()
 
 		Iris.SameLine()
 		if Iris.Button({ "Remove" }).clicked() then
-			scene.Remove(selectedObject, stripSymbols.value)
+			Scene.Remove(selectedObject, stripSymbols.value)
 		end
 		Iris.Checkbox({ "stripSymbols" }, { isChecked = stripSymbols })
 		Iris.End()
+
+		if Iris.Button({ "Cleanup" }).clicked() then
+			Scene.Cleanup(selectedObject)
+		end
+
+		RenderPeeker(selectedObject)
 	end
 
 	Iris.End()
@@ -122,13 +167,12 @@ local function RenderExplorer()
 end
 
 local function RenderScene()
-	local Scene = Rethink.GetModules().Scene
 	local sceneIndex = Iris.State("Test.scene")
-	local ignoreShouldFlush = Iris.State(true)
+	local ignorePermanent = Iris.State(true)
 
 	Iris.Text({ "Scene" })
 
-	Iris.TextWrapped({ `Objects: {Tbl.GetLenght(Scene.GetObjects())}\nIsLoading: {Scene.IsLoading}\n` })
+	Iris.TextWrapped({ `Objects: {Tbl.GetLenght(Scene.GetObjects())}\nState: {Scene.State}\n` })
 
 	Iris.ComboArray({ "Scene" }, { index = sceneIndex }, scenePointer)
 
@@ -142,9 +186,9 @@ local function RenderScene()
 	-- You guessed it! It throws an error that it's too much or not enough!!!11
 	Iris.SameLine()
 	if Iris.Button({ `Flush` }).clicked() then
-		Scene.Flush(ignoreShouldFlush.value)
+		Scene.Flush(ignorePermanent.value)
 	end
-	Iris.Checkbox("Ignore ShouldFlush", { isChecked = ignoreShouldFlush })
+	Iris.Checkbox("Ignore Permanent", { isChecked = ignorePermanent })
 	Iris.End()
 end
 
@@ -196,6 +240,12 @@ local function RenderPool()
 	Iris.End()
 end
 
+local function RenderCamera()
+	Iris.TextWrapped({ "\nCamera" })
+
+	Iris.Text(`Position: {Camera.Position}`)
+end
+
 local DebugConsole = {}
 DebugConsole.IsRunning = false
 DebugConsole.IsInitialized = false
@@ -215,19 +265,28 @@ function DebugConsole.Start()
 		})
 	end
 
-	Janitor:Add(Rethink.GetModules().Scene.Events.ObjectAdded:Connect(function(object)
-		table.insert(sceneObjects, object)
-	end))
+	Janitor:Add(
+		Scene.Events.ObjectAdded:Connect(function(object)
+			table.insert(sceneObjects, object)
+		end),
+		"Disconnect"
+	)
 
-	Janitor:Add(Rethink.GetModules().Scene.Events.ObjectRemoved:Connect(function(object)
-		table.remove(sceneObjects, table.find(sceneObjects, object))
-	end))
+	Janitor:Add(
+		Scene.Events.ObjectRemoved:Connect(function(object)
+			table.remove(sceneObjects, table.find(sceneObjects, object))
+		end),
+		"Disconnect"
+	)
 
-	Janitor:Add(UserInputService.InputBegan:Connect(function(key)
-		if key.KeyCode == Enum.KeyCode.M then
-			isToggled:set(not isToggled.value)
-		end
-	end))
+	Janitor:Add(
+		UserInputService.InputBegan:Connect(function(key)
+			if key.KeyCode == Enum.KeyCode.M then
+				isToggled:set(not isToggled.value)
+			end
+		end),
+		"Disconnect"
+	)
 
 	Iris:Connect(function()
 		-- Update window states
@@ -262,6 +321,7 @@ function DebugConsole.Start()
 		Iris.Separator()
 
 		RenderScene()
+		RenderCamera()
 		RenderPool()
 		RenderExplorer()
 
