@@ -17,6 +17,9 @@
     
 ]]
 
+local Log = require(script.Parent.Parent.Library.Log)
+local t = require(script.Parent.Parent.Vendors.t)
+
 local globalTemplate = {}
 
 local Template = {}
@@ -34,9 +37,10 @@ Template.__index = Template
 	end)
 	```
 ]=]
-function Template.NewGlobal(globalName: string, element: any, isLocked: boolean)
-	assert(type(globalName) == "string", "Expected string, got; " .. typeof(globalName) .. " instead!")
-	assert(type(element) ~= "nil", "Expected any type, got; nil instead!")
+function Template.NewGlobal(globalName: string, element: any, isLocked: boolean?)
+	Log.TAssert(t.string(globalName))
+	Log.TAssert(t.any(element))
+	Log.TAssert(t.optional(t.boolean)(isLocked))
 
 	globalTemplate[globalName] = { Locked = isLocked, Element = element }
 end
@@ -58,7 +62,7 @@ end
 	```
 ]=]
 function Template.FetchGlobal(target: string)
-	assert(type(target) == "string", "Expected string, got; " .. typeof(target) .. " instead!")
+	Log.TAssert(t.string(target))
 
 	local registry = globalTemplate[target]
 
@@ -66,7 +70,8 @@ function Template.FetchGlobal(target: string)
 		return globalTemplate[target].Element
 	end
 
-	return warn("Failed to find " .. target)
+	-- return warn("Failed to find " .. target)
+	Log.Error(`Failed to find requested item {target}\nStracktrace:\n{debug.traceback()}`)
 end
 
 --[=[
@@ -94,8 +99,8 @@ end
 	```
 ]=]
 function Template.UpdateGlobal(target: string, element: any)
-	assert(type(target) == "string", "Expected string, got; " .. typeof(target) .. " instead!")
-	assert(type(element) ~= "nil", "Expected any type, got; nil instead!")
+	Log.TAssert(t.string(target))
+	Log.TAssert(t.any(element))
 
 	local globalTarget = globalTemplate[target]
 
@@ -121,8 +126,11 @@ end
 	end)
 	```
 ]=]
-function Template.new(element: any, isLocked: boolean)
-	if typeof(element) == "Instance" then
+function Template.new(element: any, isLocked: boolean?)
+	Log.TAssert(t.any(element))
+	Log.TAssert(t.optional(t.boolean)(isLocked))
+
+	if t.Instance(element) then
 		element.Parent = nil
 	end
 
@@ -147,7 +155,7 @@ end
 	```
 ]=]
 function Template:Fetch(): Instance | any
-	if typeof(self.instance) == "Instance" then
+	if t.Instance(self.instance) then
 		return self.instance:Clone()
 	else
 		return self.instance
@@ -173,9 +181,13 @@ end
 	```
 ]=]
 function Template:Update(element: any)
-	if self.isLocked == false then
-		self.instance = element
+	Log.TAssert(t.any(element))
+
+	if t.boolean(self.isLocked) and self.isLocked then
+		return
 	end
+
+	self.instance = element
 end
 
 --[=[
@@ -198,7 +210,7 @@ end
 	```
 ]=]
 function Template:Destroy()
-	if typeof(self.instance) == "Instance" then
+	if t.Instance(self.instance) then
 		self.instance:Destroy()
 	end
 
