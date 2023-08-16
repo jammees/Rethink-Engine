@@ -3,7 +3,7 @@
   <img height=150 src="./assets/full_light.png#gh-dark-mode-only">
 </p>
 <h3><strong>Versatile, easy-to-use 2D game engine</strong>.</h3>
-0.6.1 release
+0.6.2 release
 
 <hr>
 <br>
