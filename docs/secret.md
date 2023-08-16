@@ -43,7 +43,3 @@ Example:
 <span class=def>:material-book-cog-outline: Read-Only</span>
 
 <span class=def>:material-database-arrow-down-outline: Default:</span> 5
-
-<span class=annotate markdown>heelp (1)</span>
-
-1. :man_raising_hand: I'm an annotation!
