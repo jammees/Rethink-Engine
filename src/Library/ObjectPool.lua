@@ -103,7 +103,7 @@ end
 ---@param object any
 function PoolClass:Return(object: Instance)
 	for _, objectID in self.Busy do
-		if not self.Objects[objectID].Object == object then
+		if not (self.Objects[objectID].Object == object) then
 			continue
 		end
 
@@ -150,6 +150,9 @@ function ObjectPool.new(objectList: { [string]: number })
 		PoolClasses = poolClasses,
 	}, ObjectPool)
 end
+
+-- TODO: If kind is non-existent create a new pool class with the
+-- specified kind
 
 ---Returns an object from a pool, which handles the specified kind
 ---@within PoolClass
