@@ -1,18 +1,11 @@
-type Rigidbody = { [string]: any }
-
-type AvailableSymbols = {
-	Property: any,
-	Type: any,
-	Tag: any,
-	Rigidbody: any,
-	Event: (propertyName: string) -> Instance | Rigidbody,
-	ShouldFlush: any,
-}
+local Types = require(script.Parent.Types)
 
 local HttpService = game:GetService("HttpService")
 
-local Types = require(script.Parent.Types)
+local Promise = require(script.Parent.Parent.Parent.Vendors.Promise)
 local SymbolConfig = require(script.SymbolConfig)
+local Log = require(script.Parent.Parent.Parent.Library.Log)
+local t = require(script.Parent.Parent.Parent.Vendors.t)
 
 local function CreateSymbol(symbolName: string, symbolData: any?): Types.Symbol
 	return {
@@ -23,7 +16,6 @@ local function CreateSymbol(symbolName: string, symbolData: any?): Types.Symbol
 			Attached = "Not assigned",
 		},
 
-		-- This exists only to make each symbol unique
 		__identifier = HttpService:GenerateGUID(false),
 	}
 end
@@ -34,10 +26,11 @@ local Symbols = {}
 -- previously the problem was that the symbols were created once and because of
 -- that lua overwrote symbols that were technically the same.
 -- This fixed the problem by creating a symbol if it was called like Symbols.Types.Event
-local TypesHandle: AvailableSymbols = setmetatable({}, {
+
+local TypesHandle: Types.AvailableSymbols = setmetatable({}, {
 	__index = function(_, symbolName)
 		if SymbolConfig.TypeLookup[symbolName] == nil then
-			error("Attempt to index non-existing symbol!", 2)
+			Log.Error(`Attempt to index non-existent symbol with {tostring(symbolName)}!`)
 		end
 
 		-- If it should be a function
@@ -48,6 +41,10 @@ local TypesHandle: AvailableSymbols = setmetatable({}, {
 		end
 
 		return CreateSymbol(symbolName)
+	end,
+
+	__newindex = function(_, index)
+		Log.Error(`Attempt to create new index({tostring(index)}) in TypesHandle!`)
 	end,
 })
 
@@ -82,17 +79,28 @@ function Symbols.AttachToInstance(object: Types.ObjectReference, symbols: { [str
 				continue
 			end
 
-			symbolProcessor(object, symbol)
+			Promise.try(function()
+				symbolProcessor(object, symbol)
+			end):catch(warn)
 		end
 	end
 end
 
-function Symbols.IsSymbol(tableIndex: any): boolean
-	if typeof(tableIndex) == "table" and tableIndex.Name ~= nil then
-		return true
+function Symbols.RegisterCustomSymbol(
+	name: string,
+	returnKind: number,
+	controller: (object: Types.ObjectReference, symbol: Types.Symbol) -> ()
+)
+	if SymbolConfig[name] then
+		Log.Error(`Attempted to register custom symbol named "{name}": Already exists!`)
 	end
 
-	return false
+	SymbolConfig.TypeLookup[name] = returnKind
+	SymbolConfig.SymbolHandlers[name] = controller
+end
+
+function Symbols.IsSymbol(tableIndex: any): boolean
+	return t.table(tableIndex) and t.string(tableIndex.Name)
 end
 
 return Symbols
