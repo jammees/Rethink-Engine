@@ -258,8 +258,6 @@ function. Otherwise, the object itself will get returned.
 
 ??? example
 
-	## First example
-
 	```lua
 	MyObject = {
 		[Symbols.LinkTag] = "Hello world!"
@@ -278,8 +276,6 @@ function. Otherwise, the object itself will get returned.
 	will rename itself from "Something totally different!" to "MyObject".
 
 	<br>
-
-	## Second example
 
 	```lua
 	TextObject = {
