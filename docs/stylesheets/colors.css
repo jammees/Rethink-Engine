@@ -19,6 +19,17 @@
     --md-code-bg-color:                #0e0e0e;
 }
 
-.tag {
-    color: var(--md-accent-fg-color)
+.def {
+    color: var(--md-accent-fg-color);
+    font-size: 18px;
+}
+
+.warn {
+    color: darkorange;
+    font-size: 18px;
+}
+
+.error {
+    color: firebrick;
+    font-size: 18px;
 }
