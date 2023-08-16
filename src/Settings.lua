@@ -16,7 +16,6 @@ return {
 		EnableCoreGuis = {
 			EmotesMenu = false,
 			PlayerList = false,
-			SelfView = false,
 			Backpack = false,
 			Health = false,
 			Chat = false,
@@ -46,7 +45,6 @@ return {
 		ExtensionSize = 10, -- How many objects should be created to refill the pool if there are no available ones
 	},
 
-	CompilerChunkSize = 100, -- The lower the number the faster the loading process will take, however with more lag
 	ViewportColor = Color3.fromRGB(35, 68, 139),
 
 	-- Here are all of the settings related to the physics engine
