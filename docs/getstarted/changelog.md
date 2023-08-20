@@ -37,6 +37,8 @@
 - Renamed ShouldFlush to Permanent
 - Built-in symbols now do type-checking
 - Reworked messages and logging using `Log` library
+- Add missing documentation for the main module (init.lua)
+- Fixed inconsistencies with types not being capitalized sometimes
 
 ## Update: 0.6.1
 - Fixed objects not being removed completely
