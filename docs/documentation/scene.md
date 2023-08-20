@@ -395,7 +395,7 @@ Objects always have higher priority when applying properties.
 
 <span class=def>:material-tag-outline: Since:</span> 0.5.3
 <span class=def>:material-cog-outline: Parameter:</span> object `GuiObject | Rigidbody`
-<span class=def>:material-cog-outline: Parameter:</span> symbols `{[Symbol]: any}`
+<span class=def>:material-cog-outline: Parameter:</span> symbols `{[Symbol]: Any}`
 
 Internally used by scene when the compiler has finished gathering and building up the 
 objects in the scene. Sets up a cleanup method for the object, creates a new entry 
@@ -424,7 +424,7 @@ type ObjectReference = {
 
 <span class=def>:material-tag-outline: Since:</span> 0.6.0
 <span class=def>:material-cog-outline: Parameter:</span> object `GuiObject | Rigidbody`
-<span class=def>:material-cog-outline: Parameter:</span> symbols `{[Symbol]: any}`
+<span class=def>:material-cog-outline: Parameter:</span> symbols `{[Symbol]: Any}`
 
 Attaches symbols to an object. Used by [Scene.Add()](#addobject-symbols).
 Does not support custom objects, due to symbols need to have the reference to 
@@ -437,7 +437,7 @@ the object to access data such as the object's Janitor.
 <span class=def>:material-tag-outline: Since:</span> 0.6.0
 <span class=def>:material-cog-outline: Parameter:</span> object `GuiObject | Rigidbody`
 <span class=def>:material-cog-outline: Parameter:</span> stripSymbols `Boolean`
-<span class=def>:material-database-arrow-down-outline: Default:</span> stripSymbols `false`
+<span class=def>:material-database-arrow-down-outline: Default:</span> stripSymbols `False`
 
 Removes the object from the scene without destroying it nor cleaning up the Janitor.
 If stripSymbols is set to true it will cleanup the symbols.
@@ -459,7 +459,7 @@ Cleans up the provided object.
 
 <span class=def>:material-tag-outline: Since:</span> 0.5.3
 <span class=def>:material-cog-outline: Parameter:</span> ignorePermanent `Boolean`
-<span class=def>:material-database-arrow-down-outline: Default:</span> ignorePermanent `false`
+<span class=def>:material-database-arrow-down-outline: Default:</span> ignorePermanent `False`
 
 Cleans up all of the objects in the scene if called. If ignorePermanent is set to true Scene will ignore objects which have the Permanent symbol attached with the value
 of true.
@@ -469,8 +469,8 @@ of true.
 ### .RegisterCustomSymbol(`name`, `returnKind`, `controller`)
 
 <span class=def>:material-tag-outline: Since:</span> 0.6.2
-<span class=def>:material-cog-outline: Parameter:</span> name `string`
-<span class=def>:material-cog-outline: Parameter:</span> returnKind `number`
+<span class=def>:material-cog-outline: Parameter:</span> name `String`
+<span class=def>:material-cog-outline: Parameter:</span> returnKind `Number`
 <span class=def>:material-cog-outline: Parameter:</span> controller `(object, symbol) -> ()`
 
 Registers a new custom symbol handler. The returnKind parameter accepts:
@@ -494,7 +494,7 @@ Registers a new custom symbol handler. The returnKind parameter accepts:
 
 <span class=def>:material-tag-outline: Since:</span> 0.6.0
 <span class=def>:material-cog-outline: Parameter:</span> tag `String`
-<span class=def>:material-keyboard-return: Returns:</span> Objects `{[number]: GuiBase2d | Types.Rigidbody}`
+<span class=def>:material-keyboard-return: Returns:</span> Objects `{[Number]: GuiBase2d | Types.Rigidbody}`
 
 Returns all of the objects with the specified tag.
 
