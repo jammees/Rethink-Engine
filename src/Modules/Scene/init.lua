@@ -65,7 +65,7 @@ Scene.State = "Standby"
 --[=[
 	Events are simple ways to run certain behaviour at certain times.
 
-	**List of all available events**
+	__List of all available events__
 
 	| Name:                     | Description:
 	| ------------------------- | ------------------------------------
@@ -92,7 +92,8 @@ Scene.Events = table.freeze({
 	Loads in a scene using the sceneData table. A name field must be provided, otherwise
 	it will default to "Unnamed scene", which could cause unintended behaviours.
 	The compiler does not check if a scene already exists with that name, meaning it will
-	overwrite it.
+	overwrite it. It is a good practice to have each container's type defined, even if
+	it is supposed to be an `UIBase`! Otherwise, an error will be thrown!
 
 	### Example
 
@@ -226,7 +227,7 @@ end
 
 	@since 0.6.0
 	@param object `GuiObject | Rigidbody`
-	@param symbols `{[Symbol]: any}`
+	@param symbols `{[Symbol]: Any}`
 ]=]
 function Scene.AddSymbols(object: GuiBase2d | Types.Rigidbody, symbols: { [Types.Symbol]: any }?)
 	Log.TAssert(t.union(t.Instance, t.table)(object))
@@ -259,7 +260,7 @@ end
 	@since 0.6.0
 	@param object `GuiObject | Rigidbody`
 	@param stripSymbols `Boolean`
-	@default stripSymbols `false`
+	@default stripSymbols `False`
 	@fires ObjectRemoved
 ]=]
 function Scene.Remove(object: GuiBase2d | Types.Rigidbody, stripSymbols: boolean?)
@@ -298,13 +299,13 @@ function Scene.Cleanup(object: GuiBase2d | Types.Rigidbody)
 end
 
 --[=[
-	Cleans up all of the objects in the scene if called. If `ignorePermanent` is 
-	set to true Scene will ignore objects which have the ShouldFlush 
-	symbol's value set to false.
+	Cleans up all of the objects in the scene if called. If ignorePermanent
+	is set to true Scene will ignore objects which have the Permanent
+	symbol attached with the value of true.
 
 	@since 0.5.3
 	@param ignorePermanent `Boolean`
-	@default ignorePermanent `false`
+	@default ignorePermanent `False`
 	@fires FlushStarted
 	@fires FlushFinished
 ]=]
@@ -364,7 +365,7 @@ function Scene.Flush(ignorePermanent: boolean?)
 end
 
 --[=[
-	Registers a new custom symbol handler. The `returnKind` parameter accepts:
+	Registers a new custom symbol handler. The returnKind parameter accepts:
 
 	- 0 - Returns the symbol
 	- 1 - Returns a function, when called returns the symbol
@@ -380,9 +381,9 @@ end
 	```
 
 	@since 0.6.2
-	@param name `string`
-	@param returnKind `number`
-	@param controller `(object, symbol)
+	@param name `String`
+	@param returnKind `Number`
+	@param controller `(object, symbol) -> ()`
 ]=]
 function Scene.RegisterCustomSymbol(
 	name: string,
@@ -403,7 +404,7 @@ end
 
 	@since 0.6.0
 	@param tag `String`
-	@returns Objects `{[number]: GuiBase2d | Types.Rigidbody}`
+	@returns Objects `{[Number]: GuiBase2d | Types.Rigidbody}`
 ]=]
 function Scene.GetFromTag(tag: string): { [number]: GuiBase2d | Types.Rigidbody }
 	-- assert(typeof(tag) == "string", string.format(DebugStrings.ExpectedNoArg, "string", typeof(tag)))
