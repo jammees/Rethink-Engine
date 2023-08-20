@@ -251,9 +251,9 @@ If the symbol has been applied during loading of the scene,
 the execution will be delayed until [LoadFinished](#events) has been fired
 else, when [ObjectAdded](#events) fires.
 
-Accepts a tuple of strings or a string as a parameter. If
+Accepts an array of strings or a string as a parameter. If
 the given link name has more than one object tied to
-it, it will return a tuple of the objects in the `Callback`
+it, will return an array of the objects in the `Callback`
 function. Otherwise, the object itself will get returned.
 
 ??? example
@@ -266,58 +266,14 @@ function. Otherwise, the object itself will get returned.
 	NamedAfterMyobject = {
 		Name = "Something totally different!",
 
-		[Symbols.LinkGet("Hello world!")] = function(thisObject, linkedObjects: { [number]: any }
-			thisObject.Name = linkedObjects[1].Name
-		end)
+		[Symbols.LinkGet({ "Hello world!" })] = function(thisObject, myObject: Frame)
+			thisObject.Name = myObject.Name
+		end
 	}
 	```
 
 	From the example above, after the scene has finished loading `NamedAfterMyobject`
 	will rename itself from "Something totally different!" to "MyObject".
-
-	<br>
-
-	```lua
-	TextObject = {
-		Text = "Something something...",
-
-		[Symbols.LinkTag] = "text",
-		[Symbols.Class] = "TextLabel",
-	},
-
-	ChildObject1 = {
-		[Symbols.LinkTag] = "child",
-	},
-
-	ChildObject2 = {
-		[Symbols.LinkTag] = "child",
-	},
-
-	ChildObject3 = {
-		[Symbols.LinkTag] = "child",
-	},
-
-	MyObject = {
-		[Symbols.Class] = "TextLabel",
-		[Symbols.LinkGet({ "text", "child" })] = function(
-			thisObject: TextLabel,
-			text: TextLabel,
-			childObjects: { Frame }
-		)
-			thisObject.Text = text.Text
-
-			for _, object in childObjects do
-				object.Parent = thisObject
-			end
-		end,
-	},
-	```
-
-	<img src="../../assets/docs/link_get_tuple.png" align="left">
-
-	The above example will result in MyObject's text being set to
-	TextObject's text, while the ChildObject1-3's parent get set to
-	MyObject's. To the left the result can be seen.
 
 <br>
 
