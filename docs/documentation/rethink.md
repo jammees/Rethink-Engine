@@ -1,5 +1,3 @@
-## API:
-
 !!! danger
 
     Version below 0.6.1 automatically sets up everything once the module
@@ -8,11 +6,42 @@
     This change was introduced to have more control over initialization
     and to prepare for future support of Rethink's editor.
 
+## Properties
+
+<hr>
+
+### Self
+
+<span class=def>:material-tag-outline: Since:</span> 0.6.2
+
+A reference to the instance itself.
+
+<br>
+
+### IsInitialized
+
+<span class=def>:material-tag-outline: Since:</span> 0.6.2
+<span class=def>:material-book-cog-outline: Read-Only</span>
+
+Tells whether Rethink was initialized or not.
+
+<br>
+
+### Version
+
+<span class=def>:material-tag-outline: Since:</span> 0.6.2
+<span class=def>:material-book-cog-outline: Read-Only</span>
+
+Tells the current version of Rethink.
+
+## API
+
 <hr>
 
 ### .Init()
 
 <span class=def>:material-tag-outline: Since:</span> 0.6.2
+<span class=def>:material-keyboard-return: Returns:</span> Rethink `Module`
 
 Initializes Rethink. This includes:
 
@@ -28,14 +57,14 @@ This behaviour can be configured in the `Settings` file under `Settings.Console.
 ### .GetModules()
 
 <span class=def>:material-tag-outline: Since:</span> 0.6.2
-<span class=def>:material-keyboard-return: Returns:</span> modules `Dictionary`
+<span class=def>:material-keyboard-return: Returns:</span> Modules `Dictionary`
 
 Returns the modules. Does not check whether if Rethink is initialized or not!
 
 !!! warning
 
-    Tools located in the `Prototypes` table are unstable or unfinished!
-    Using such tools are highly unrecommended due to stability issues!
+    Modules located in the `Prototypes` table are unstable or unfinished!
+    Using such modules are highly unrecommended due to stability issues!
 
 ??? info "What Rethink returns"
 
