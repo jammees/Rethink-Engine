@@ -17,10 +17,43 @@ local initNature2DClass = nil
 local initPool = nil
 
 local Rethink = {}
+
+--[[
+	A reference to the instance itself.
+
+	@since 0.6.2
+]]
 Rethink.Self = script
+
+--[[
+	Tells whether Rethink was initialized or not.
+
+	@since 0.6.2
+	@readonly
+]]
 Rethink.IsInitialized = false
+
+--[[
+	Tells the current version of Rethink.
+
+	@since 0.6.2
+	@readonly
+]]
 Rethink.Version = script:WaitForChild("Version").Value
 
+--[[
+	Initializes Rethink. This includes:
+
+	- Setting up the game UI elements
+	- Setting up the physics engine
+	- Setting up global variables that can be accessed with `Template`
+
+	After Rethink has initialized successfully it's header will get printed into the console.
+	This behaviour can be configured in the `Settings` file under `Settings.Console.LogHeader`
+	(true by default)
+
+	@since 0.6.2
+]]
 function Rethink.Init()
 	if Rethink.IsInitialized then
 		return Log.Warn(DebugStrings.RethinkInitialized)
@@ -52,6 +85,16 @@ function Rethink.Init()
 	return Rethink
 end
 
+--[[
+	Returns the modules. Does not check whether if Rethink is initialized or not!
+
+	__Warning__:
+	Tools located in the `Prototypes` table are unstable or unfinished!
+	such tools are highly unrecommended due to stability issues!
+
+	@since 0.6.2
+	@returns Modules `Dictionary`
+]]
 function Rethink.GetModules()
 	return {
 		Collision = require(script.Modules.GuiCollisionService),
