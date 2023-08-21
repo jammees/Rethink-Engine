@@ -45,15 +45,30 @@ local function RenderPeeker(selectedObject: GuiBase2d)
 
 	local copy = if typeof(selectedObject) == "table" then selectedObject:GetFrame() else selectedObject
 	copy = copy:Clone()
-	copy.ZIndex = 999999999
 	copy.Parent = container
 
-	local viewport = workspace.CurrentCamera.ViewportSize
-	local containerSize = container.AbsoluteSize
-	local copySize = copy.AbsoluteSize
-	local ratio = (containerSize / viewport).X
-	local newSize = UDim2.fromOffset(copySize.X * ratio, copySize.Y * ratio)
-	copy.Size = newSize
+	if copy:IsA("GuiBase2d") then
+		copy.ZIndex = 999999999
+
+		local viewport = workspace.CurrentCamera.ViewportSize
+		local containerSize = container.AbsoluteSize
+		local copySize = copy.AbsoluteSize
+		local ratio = (containerSize / viewport).X
+		local newSize = UDim2.fromOffset(copySize.X * ratio, copySize.Y * ratio)
+		copy.Size = newSize
+	else
+		copy:Destroy()
+		local label = Instance.new("TextLabel")
+		label.BackgroundTransparency = 1
+		label.TextColor3 = Color3.fromRGB(255, 255, 255)
+		label.TextTransparency = 0.8
+		label.TextSize = 25
+		label.Text = "No preview"
+		label.Size = UDim2.fromOffset(100, 50)
+		label.Position = UDim2.fromOffset(container.AbsoluteSize.X / 2 - 50, container.AbsoluteSize.Y / 2 - 25)
+		label.ZIndex = 999999999
+		label.Parent = container
+	end
 
 	peekerWindowState:set(container)
 end
