@@ -155,11 +155,18 @@ end
 -- specified kind
 
 ---Returns an object from a pool, which handles the specified kind
+---If `kind` does not exist, creates a new pool with the specified kind
 ---@within PoolClass
 ---@param kind string
 ---@return any
 function ObjectPool:Get(kind: string)
-	return self.PoolClasses[kind]:Get()
+	if self.PoolClasses[kind] then
+		return self.PoolClasses[kind]:Get()
+	end
+
+	self.PoolClasses[kind] = PoolClass.new(kind, Settings.Pool.ExtensionSize)
+
+	return self:Get(kind)
 end
 
 ---Returns an object to the pool, which handles the specified object
