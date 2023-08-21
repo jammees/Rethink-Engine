@@ -11,7 +11,11 @@ local CollectionService = game:GetService("CollectionService")
 local Settings = require(script.Parent.Parent.Settings)
 local DefaultSettings = require(script.Parent.Parent.Modules.Scene.DefaultProperties)
 
-local function ResetProperties(object: Instance)
+local function ResetProperties(object: Instance): Instance
+	if not object:IsA("GuiBase2d") then
+		return
+	end
+
 	for propertyName, propertyValue in DefaultSettings[object.ClassName] do
 		object[propertyName] = propertyValue
 	end
