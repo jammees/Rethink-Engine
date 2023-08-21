@@ -19,6 +19,7 @@ return {
 		Tag = 0,
 		LinkTag = 0,
 		Class = 0,
+		Children = 0,
 
 		Event = 1,
 		LinkGet = 1,
