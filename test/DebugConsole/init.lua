@@ -128,9 +128,9 @@ local function RenderExplorer()
 	})
 
 	if selectedObject then
-		Iris.TextWrapped({
-			`Position: {frame.Position}\nIsRigidbody: {Scene.IsRigidbody(selectedObject)}\nTags: {table.concat(frame:GetTags(), ", ")}`,
-		})
+		-- Iris.TextWrapped({
+		-- 	`Position: {frame.Position}\nIsRigidbody: {Scene.IsRigidbody(selectedObject)}\nTags: {table.concat(frame:GetTags(), ", ")}`,
+		-- })
 
 		local reference = Scene.GetObjectReference(selectedObject)
 
@@ -246,6 +246,29 @@ local function RenderCamera()
 	Iris.Text(`Position: {Camera.Position}`)
 end
 
+local function RenderPhysics()
+	local Physics = Rethink.GetModules().Physics
+
+	local isRunning = Iris.State(false)
+	local prevState = Iris.State(false)
+
+	Iris.TextWrapped({ "\nPhysics" })
+
+	Iris.Checkbox({ "isRunning" }, { isChecked = isRunning })
+
+	if not (prevState.value == isRunning.value) then
+		prevState:set(isRunning.value)
+
+		warn(Physics:GetBodies())
+
+		if isRunning.value then
+			Physics:Start()
+		else
+			Physics:Stop()
+		end
+	end
+end
+
 local DebugConsole = {}
 DebugConsole.IsRunning = false
 DebugConsole.IsInitialized = false
@@ -322,6 +345,7 @@ function DebugConsole.Start()
 
 		RenderScene()
 		RenderCamera()
+		RenderPhysics()
 		RenderPool()
 		RenderExplorer()
 
