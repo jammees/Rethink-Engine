@@ -128,7 +128,7 @@ local function RenderExplorer()
 	Iris.End()
 
 	local selectedObject = sceneObjects[objectIndex.value]
-	local frame = selectedObject and (Scene.IsRigidbody(selectedObject) and selectedObject:GetFrame() or selectedObject)
+	local frame: GuiBase2d = selectedObject and (Scene.IsRigidbody(selectedObject) and selectedObject:GetFrame() or selectedObject)
 
 	Iris.Window({
 		`Object data {selectedObject and selectedObject.Name and `- "{frame.Name}"` or ""}`,
@@ -153,12 +153,31 @@ local function RenderExplorer()
 		Iris.TextWrapped({ `\nReference data:` })
 		Iris.PopConfig()
 
-		Iris.TextWrapped({
-			`UUID: {reference.ID}\nObject: {reference.Object}\nJanitor: {reference.Janitor}\nSymbolJanitor: {reference.SymbolJanitor}\nSymbols: {Tbl.Concat(
-				reference.Symbols,
-				"\n\t[%s] = %s"
-			)}`,
-		})
+		-- Iris.TextWrapped({
+		-- 	`UUID: {reference.ID}\nObject: {reference.Object}\nJanitor: {reference.Janitor}\nSymbolJanitor: {reference.SymbolJanitor}\nSymbols: {Tbl.Concat(
+		-- 		reference.Symbols,
+		-- 		"\n\t[%s] = %s"
+		-- 	)}\nIsRigidbody: {Scene.IsRigidbody(
+		-- 		selectedObject
+		-- 	)}\nClassName: {frame.ClassName}`,
+		-- })
+
+		local info = ""
+		info ..= `UUID: <font color="rgb(136, 136, 136)">{reference.ID}</font>\n`
+		info ..= `Object: <font color="rgb(136, 136, 136)">{reference.Object}</font>\n`
+		info ..= `ClassName: <font color="rgb(136, 136, 136)">{frame.ClassName}</font>\n`
+		info ..= `IsRigidbody: <font color="rgb(136, 136, 136)">{Scene.IsRigidbody(selectedObject)}</font>\n`
+
+		if #frame:GetTags() > 0 then
+			info ..= `Tags: <font color="rgb(136, 136, 136)">{table.concat(frame:GetTags(), ", ")}</font>`
+		end
+
+		if Tbl.GetLenght(reference.Symbols) > 0 then
+			info ..= `Symbols: {Tbl.Concat(reference.Symbols, `\n\t[%s] = <font color="rgb(136, 136, 136)">%s</font>`)}\n`
+		end
+
+		-- janky way to get RichText to work
+		Iris.TextWrapped({ info }).Instance.RichText = true
 
 		Iris.Separator()
 
