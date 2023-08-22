@@ -39,6 +39,9 @@
 - Reworked messages and logging using `Log` library
 - Add missing documentation for the main module (init.lua)
 - Fixed inconsistencies with types not being capitalized sometimes
+- Add `Children` symbol
+- Make `ObjectPool` create new instances if the specified kind does not exist
+- `ObjectPool` now only resets objects that are `GuiBase2d`
 
 ## Update: 0.6.1
 - Fixed objects not being removed completely
