@@ -128,7 +128,8 @@ local function RenderExplorer()
 	Iris.End()
 
 	local selectedObject = sceneObjects[objectIndex.value]
-	local frame: GuiBase2d = selectedObject and (Scene.IsRigidbody(selectedObject) and selectedObject:GetFrame() or selectedObject)
+	local frame: GuiBase2d = selectedObject
+		and (Scene.IsRigidbody(selectedObject) and selectedObject:GetFrame() or selectedObject)
 
 	Iris.Window({
 		`Object data {selectedObject and selectedObject.Name and `- "{frame.Name}"` or ""}`,
@@ -169,7 +170,7 @@ local function RenderExplorer()
 		info ..= `IsRigidbody: <font color="rgb(136, 136, 136)">{Scene.IsRigidbody(selectedObject)}</font>\n`
 
 		if #frame:GetTags() > 0 then
-			info ..= `Tags: <font color="rgb(136, 136, 136)">{table.concat(frame:GetTags(), ", ")}</font>`
+			info ..= `Tags: <font color="rgb(136, 136, 136)">{table.concat(frame:GetTags(), ", ")}</font>\n`
 		end
 
 		if Tbl.GetLenght(reference.Symbols) > 0 then
@@ -275,9 +276,55 @@ local function RenderPool()
 end
 
 local function RenderCamera()
+	local x = Iris.State(0)
+	local lastX = Iris.State(0)
+	local y = Iris.State(0)
+	local lastY = Iris.State(0)
+
 	Iris.TextWrapped({ "\nCamera" })
 
-	Iris.Text(`Position: {Camera.Position}`)
+	-- Iris.Checkbox({ "Is running" }, { isChecked = isRunning })
+	Iris.Text({ `Attached objects: {#Camera.Objects}` })
+
+	-- if not (prevState.value == isRunning.value) then
+	-- 	prevState:set(isRunning.value)
+
+	-- 	if isRunning.value then
+	-- 		Camera.Start()
+	-- 	else
+	-- 		Camera.Stop()
+	-- 	end
+	-- end
+
+	Iris.SameLine()
+	Iris.Text({ "X" })
+	Iris.PushConfig({ ContentWidth = UDim.new(0, 65) })
+	Iris.InputNum({ "", [Iris.Args.InputNum.NoButtons] = true }, { number = x })
+	Iris.PopConfig()
+	Iris.SliderNum({ "", 1, -500, 500 }, { number = x })
+	Iris.End()
+
+	Iris.SameLine()
+	Iris.Text({ "Y" })
+	Iris.PushConfig({ ContentWidth = UDim.new(0, 65) })
+	Iris.InputNum({ "", [Iris.Args.InputNum.NoButtons] = true }, { number = y })
+	Iris.PopConfig()
+	Iris.SliderNum({ "", 1, -500, 500 }, { number = y })
+	Iris.End()
+
+	if lastX.value ~= x.value then
+		Camera.SetPosition(x.value, y.value)
+		Camera.Render()
+
+		lastX:set(x.value)
+	end
+
+	if lastY.value ~= y.value then
+		Camera.SetPosition(x.value, y.value)
+		Camera.Render()
+
+		lastY:set(x.value)
+	end
 end
 
 local function RenderPhysics()
@@ -292,8 +339,6 @@ local function RenderPhysics()
 
 	if not (prevState.value == isRunning.value) then
 		prevState:set(isRunning.value)
-
-		warn(Physics:GetBodies())
 
 		if isRunning.value then
 			Physics:Start()
@@ -325,6 +370,10 @@ function DebugConsole.Start()
 	Janitor:Add(
 		Scene.Events.ObjectAdded:Connect(function(object)
 			table.insert(sceneObjects, object)
+
+			if not (Scene.IsRigidbody(object)) and object:IsA("GuiBase2d") then
+				Camera.Attach(object)
+			end
 		end),
 		"Disconnect"
 	)
@@ -332,6 +381,10 @@ function DebugConsole.Start()
 	Janitor:Add(
 		Scene.Events.ObjectRemoved:Connect(function(object)
 			table.remove(sceneObjects, table.find(sceneObjects, object))
+
+			if not (Scene.IsRigidbody(object)) and object:IsA("GuiBase2d") then
+				Camera.Detach(object)
+			end
 		end),
 		"Disconnect"
 	)
