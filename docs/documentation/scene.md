@@ -34,7 +34,7 @@ of custom symbols. See: [Scene.RegisterCustomSymbol()](#registercustomsymbolname
 
 <hr>
 
-__<p style="font-size:111%;">Tag</p>__
+#### Tag
 
 <span class=def>:material-tag-outline: Since:</span> 0.6.0
 <span class=def>:material-cog-outline: Parameter:</span> Tag(s) `String | {String}`
@@ -65,7 +65,7 @@ Can be retrieved using CollectionService or
 
 <br>
 
-__<p style="font-size:111%;">Property</p>__
+#### Property
 
 <span class=def>:material-tag-outline: Since:</span> 0.6.0
 <span class=def>:material-cog-outline: Parameter:</span> Properties `{[String | Symbol]: any}`
@@ -93,7 +93,7 @@ containers.
 
 <br>
 
-__<p style="font-size:111%;">Type</p>__
+#### Type
 
 <span class=def>:material-tag-outline: Since:</span> 0.6.0
 <span class=def>:material-cog-outline: Parameter:</span> Type `String`
@@ -114,7 +114,7 @@ will throw a warning and default to `UIBase`!
 
 <br>
 
-__<p style="font-size:111%;">Event</p>__
+#### Event
 
 <span class=def>:material-tag-outline: Since:</span> 0.6.0
 <span class=def>:material-cog-outline: Parameter:</span> EventName `String`
@@ -135,7 +135,7 @@ function with the object.
 
 <br>
 
-__<p style="font-size:111%;">Permanent</p>__
+#### Permanent
 
 <span class=def>:material-tag-outline: Since:</span> 0.6.2
 <span class=def>:material-cog-outline: Parameter:</span> Predicate `Boolean`
@@ -164,7 +164,7 @@ true in [Scene.Flush()](#flushignorepermanent).
 
 <br>
 
-__<p style="font-size:111%;">ShouldFlush</p>__
+#### ShouldFlush
 
 <span class=def>:material-tag-outline: Since:</span> 0.6.0
 <span class=def>:material-cog-outline: Parameter:</span> Predicate `Boolean`
@@ -195,7 +195,7 @@ true in [Scene.Flush()](#flushignorepermanent).
 
 <br>
 
-__<p style="font-size:111%;">Rigidbody</p>__
+#### Rigidbody
 
 <span class=def>:material-tag-outline: Since:</span> 0.6.0
 <span class=def>:material-cog-outline: Parameter:</span> Properties `{[String]: any}`
@@ -222,7 +222,7 @@ handled automatically.
 
 <br>
 
-__<p style="font-size:111%;">LinkTag</p>__
+#### LinkTag
 
 <span class=def>:material-tag-outline: Since:</span> 0.6.2
 <span class=def>:material-cog-outline: Parameter:</span> Tag `String`
@@ -240,7 +240,7 @@ Adds a tag to object, which can be fetched using the
 
 <br>
 
-__<p style="font-size:111%;">LinkGet</p>__
+#### LinkGet
 
 <span class=def>:material-tag-outline: Since:</span> 0.6.2
 <span class=def>:material-cog-outline: Parameter:</span> Tag `String | { String }`
@@ -277,7 +277,7 @@ function. Otherwise, the object itself will get returned.
 
 <br>
 
-__<p style="font-size:111%;">Class</p>__
+#### Class
 
 <span class=def>:material-tag-outline: Since:</span> 0.6.2
 <span class=def>:material-cog-outline: Parameter:</span> Type `String`
@@ -294,6 +294,37 @@ If not present, will default to `Frame`!
 		[Symbols.Class] = "TextLabel"
 	}
 	```
+
+<br>
+
+#### Children
+
+<span class=def>:material-tag-outline: Since:</span> 0.6.2
+<span class=def>:material-cog-outline: Parameter:</span> Children `Table`
+
+Adds instances to the object, adding them to
+the scene and attaching symbols to them. Does not support the use of
+the [Property](#property) symbol currently. The [Type](#type) symbol can
+be used to specify the child instance's type.
+
+??? example
+
+	```lua
+	MyContainer = {
+		MyRigidbody = {
+			[Symbols.Type] = "Rigidbody",
+
+			[Symbols.Children] = {
+				RoundedCorner = {
+					[Symbols.Class] = "UICorner"
+				}
+			}
+		}
+	}
+	```
+
+	From the example above, a rigidbody gets created with an `UICorner`
+	and gets parented to `MyContainer`.
 
 <br>
 
