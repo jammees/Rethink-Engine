@@ -371,7 +371,7 @@ function DebugConsole.Start()
 		Scene.Events.ObjectAdded:Connect(function(object)
 			table.insert(sceneObjects, object)
 
-			if not (Scene.IsRigidbody(object)) and object:IsA("GuiBase2d") then
+			if Scene.IsRigidbody(object) or object:IsA("GuiBase2d") then
 				Camera.Attach(object)
 			end
 		end),
@@ -382,7 +382,7 @@ function DebugConsole.Start()
 		Scene.Events.ObjectRemoved:Connect(function(object)
 			table.remove(sceneObjects, table.find(sceneObjects, object))
 
-			if not (Scene.IsRigidbody(object)) and object:IsA("GuiBase2d") then
+			if Scene.IsRigidbody(object) or object:IsA("GuiBase2d") then
 				Camera.Detach(object)
 			end
 		end),
