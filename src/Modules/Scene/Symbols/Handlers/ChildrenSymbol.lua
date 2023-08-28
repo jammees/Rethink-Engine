@@ -1,3 +1,32 @@
+--[=[
+	Children
+
+	Adds instances to the object, adding them to
+	the scene and attaching symbols to them. Does not support the use of
+	the [Property](#property) symbol currently. The [Type](#type) symbol can
+	be used to specify the child instance's type.
+
+	```lua
+	MyContainer = {
+		MyRigidbody = {
+			[Symbols.Type] = "Rigidbody",
+
+			[Symbols.Children] = {
+				RoundedCorner = {
+					[Symbols.Class] = "UICorner"
+				}
+			}
+		}
+	}
+	```
+
+	From the example above, a rigidbody gets created with an `UICorner`
+	and gets parented to `MyContainer`.
+
+	@since 0.6.2
+	@param Children `Table`
+]=]
+
 local Types = require(script.Parent.Parent.Parent.Types)
 local Utility = require(script.Parent.Parent.Utility)
 local Log = require(script.Parent.Parent.Parent.Parent.Parent.Library.Log)
