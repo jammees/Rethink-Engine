@@ -37,6 +37,7 @@ Still in development!
 - HowManySmall (GitHub) for Janitor
 - Brownsage for helping with Camera
 - Michael-48 (GitHub) for Iris to test Rethink
+- osyrisrblx (GitHub) for t
 
 All the licenses and the links to the github pages can be found [here!](https://jammees.github.io/Rethink-Engine/documentation/3rdpartymodules/)
 
