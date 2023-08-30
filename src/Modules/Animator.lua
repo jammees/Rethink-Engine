@@ -125,7 +125,7 @@ Animator.Tools = {
 	): { { [number]: { [number]: number } } }
 		Log.TAssert(t.number(columns))
 		Log.TAssert(t.number(rows))
-		Log.TAssert(t.optional(t.number(bonus)))
+		Log.TAssert(t.optional(t.number)(bonus))
 
 		local arrayContainer = {}
 
@@ -152,7 +152,7 @@ Animator.Tools = {
 	@return {animator}
 ]=]
 function Animator.new(objects: { [number]: ImageLabel | ImageButton }?)
-	Log.TAssert(t.optional(t.table(objects)))
+	Log.TAssert(t.optional(t.table)(objects))
 
 	local self = setmetatable({}, Animator)
 
@@ -166,7 +166,7 @@ function Animator.new(objects: { [number]: ImageLabel | ImageButton }?)
 	self.MaxFrames = nil
 	self.CurrentAnimation = nil
 	self.Running = false
-	self.Objects = type(objects) == "table" and objects or {}
+	self.Objects = objects or {}
 
 	return self
 end
