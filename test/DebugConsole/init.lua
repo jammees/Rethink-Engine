@@ -407,7 +407,11 @@ function DebugConsole.Start()
 	)
 
 	Janitor:Add(
-		UserInputService.InputBegan:Connect(function(key)
+		UserInputService.InputBegan:Connect(function(key, gameProcessed: boolean)
+			if gameProcessed then
+				return
+			end
+
 			if key.KeyCode == Enum.KeyCode.M then
 				isToggled:set(not isToggled.value)
 			end
