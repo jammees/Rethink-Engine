@@ -218,12 +218,12 @@ local function RenderScene()
 
 	Iris.Separator()
 
-	for index, sceneName: string in scenePointer do
+	for _, sceneName: string in scenePointer do
 		if not sceneName:lower():match(searchedScene.value:lower()) then
 			continue
 		end
 
-		Iris.Selectable({ sceneName, index }, { index = sceneIndex })
+		Iris.Selectable({ sceneName, sceneName }, { index = sceneIndex })
 	end
 
 	Iris.End()
