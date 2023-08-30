@@ -5,27 +5,6 @@ local Scene = Modules.Scene
 local Symbols = Scene.Symbols
 local Animator = Modules.Animator
 
--- Load in a scene
--- Create a layer container, inside that create a Box
--- Scene.Load({
--- 	Name = "awetawetawet",
--- 	My_Container = {
--- 		[Symbols.Type] = "Layer",
-
--- 		Box = {
--- 			Class = "ImageButton",
--- 			AnchorPoint = Vector2.new(0.5, 0.5),
--- 			Position = UDim2.fromScale(0.5, 0.5),
--- 			Size = UDim2.fromOffset(100, 100),
--- 			Image = "rbxassetid://30115084",
-
--- 			[Symbols.Tag] = "Box",
--- 		},
--- 	},
--- })
-
--- Scene.Load(require(script.Parent["Test.scene"]))
-
 Scene.Load({
 	Name = "Animation",
 	{
