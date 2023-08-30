@@ -204,12 +204,29 @@ end
 local function RenderScene()
 	local sceneIndex = Iris.State("Test.scene")
 	local ignorePermanent = Iris.State(true)
+	local searchedScene = Iris.State("")
 
 	Iris.Text({ "Scene" })
 
 	Iris.TextWrapped({ `Objects: {Tbl.GetLenght(Scene.GetObjects())}\nState: {Scene.State}\n` })
 
-	Iris.ComboArray({ "Scene" }, { index = sceneIndex }, scenePointer)
+	Iris.Combo({ "Scene" }, { index = sceneIndex })
+
+	Iris.PushConfig({ ContentWidth = UDim.new(1, 0) })
+	Iris.InputText({ "", "Search for a scene" }, { text = searchedScene })
+	Iris.PopConfig()
+
+	Iris.Separator()
+
+	for index, sceneName: string in scenePointer do
+		if not sceneName:lower():match(searchedScene.value:lower()) then
+			continue
+		end
+
+		Iris.Selectable({ sceneName, index }, { index = sceneIndex })
+	end
+
+	Iris.End()
 
 	if Iris.Button({ `Load {sceneModules[sceneIndex.value]}` }).clicked() then
 		Scene.Load(require(sceneModules[sceneIndex.value]))
