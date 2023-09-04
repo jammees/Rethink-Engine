@@ -1,5 +1,10 @@
 <hr>
 
+## Update: 0.6.3
+
+- Fix `Animator`'s type checking
+- Add `Sound` to modules
+
 ## Update: 0.6.2
 - Removed debug prints left in on accident
 - Rename type `UiBase` to `UIBase`
