@@ -136,7 +136,7 @@ end
 function Sound:Stop()
 	-- self.Instance:Stop()
 	for _, soundInstance: Sound in self.Instances do
-		soundInstance:Destroy()
+		soundInstance.Parent:Destroy()
 	end
 end
 
