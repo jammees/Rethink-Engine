@@ -69,6 +69,7 @@ return {
 		Steepness = 0.36,
 		Range = 0.26, -- Best to be kept at default value as the value will be between -1 and 1
 		RolloffMultiplier = 5,
+		DirectionalAudioEnabled = true,
 	},
 
 	-- Here are all of the settings related to the console
