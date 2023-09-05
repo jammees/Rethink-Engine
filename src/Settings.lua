@@ -64,6 +64,13 @@ return {
 		-- TODO: add setting to toggle dynamic Iteration based on the number of rigidbodies
 	},
 
+	DirectionalSound = {
+		Flatness = 0.101,
+		Steepness = 0.36,
+		Range = 0.26, -- Best to be kept at default value as the value will be between -1 and 1
+		RoloffMultiplier = 1.15,
+	},
+
 	-- Here are all of the settings related to the console
 	-- These settings are mostly here for debugging purposes
 	Console = {
