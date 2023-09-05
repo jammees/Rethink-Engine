@@ -68,7 +68,7 @@ return {
 		Flatness = 0.101,
 		Steepness = 0.36,
 		Range = 0.26, -- Best to be kept at default value as the value will be between -1 and 1
-		RoloffMultiplier = 1.15,
+		RoloffMultiplier = 5,
 	},
 
 	-- Here are all of the settings related to the console
