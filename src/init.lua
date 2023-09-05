@@ -96,12 +96,13 @@ end
 	@returns Modules `Dictionary`
 ]]
 function Rethink.GetModules()
-	return {
+	return table.freeze({
 		Collision = require(script.Modules.GuiCollisionService),
 		Raycast = require(script.Modules.RayCast2),
 		Animator = require(script.Modules.Animator),
 		Outline = require(script.Modules.Outline),
 		Scene = require(script.Modules.Scene),
+		Sound = require(script.Modules.Sound),
 
 		Physics = initNature2DClass,
 		Template = Template,
@@ -111,7 +112,7 @@ function Rethink.GetModules()
 		Prototypes = {
 			Camera = require(script.Modules.Camera),
 		},
-	}
+	})
 end
 
 return Rethink
