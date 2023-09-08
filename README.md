@@ -18,6 +18,7 @@
 - Physics
 - Animations with spritesheets or with a group of images
 - Robust scene handling with symbols
+- Directional sounds
 - And more!
 
 <h3>Editor</h3>
