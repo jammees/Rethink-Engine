@@ -1,0 +1,35 @@
+[data-md-color-scheme="custom"] {
+
+    
+    --md-default-fg-color:               hsla(0, 0%, 100%, 0.87);
+    --md-default-fg-color--light:        hsla(0, 0%, 75%, 0.54);
+    --md-default-fg-color--lighter:      hsla(0, 0%, 57%, 0.32);
+    --md-default-fg-color--lightest:     #303030;
+    --md-default-bg-color:               #161616;
+    --md-default-bg-color--light:        hsla(0, 43%, 58%, 0.7);
+    --md-default-bg-color--lighter:      hsla(110, 50%, 69%, 0.3);
+    --md-default-bg-color--lightest:     hsla(231, 95%, 47%, 0.12);
+
+    --md-primary-fg-color:        #2094f3;
+    --md-primary-fg-color--light: #399ff3;
+
+    --md-accent-fg-color: #3c78e2;
+
+    --md-code-fg-color:                rgb(199, 199, 199);
+    --md-code-bg-color:                #0e0e0e;
+}
+
+.def {
+    color: var(--md-accent-fg-color);
+    font-size: 18px;
+}
+
+.warn {
+    color: darkorange;
+    font-size: 18px;
+}
+
+.error {
+    color: firebrick;
+    font-size: 18px;
+}

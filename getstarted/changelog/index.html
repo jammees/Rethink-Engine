@@ -1,0 +1,1009 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../installation/">
+      
+      
+        <link rel="next" href="../../documentation/rethink/">
+      
+      <link rel="icon" href="../../assets/favicon.png">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.1.21">
+    
+    
+      
+        <title>Changelog - Rethink Engine</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.eebd395e.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ecc896b0.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/colors.css">
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="blue">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#update-070" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Rethink Engine" class="md-header__button md-logo" aria-label="Rethink Engine" data-md-component="logo">
+      
+  <img src="../../assets/favicon.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Rethink Engine
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Changelog
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+          
+            
+            
+            
+            <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="blue"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+            
+              <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 1 7 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 0 1 7-7M9 21v-1h6v1a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1m3-17a5 5 0 0 0-5 5c0 2.05 1.23 3.81 3 4.58V16h4v-2.42c1.77-.77 3-2.53 3-4.58a5 5 0 0 0-5-5Z"/></svg>
+              </label>
+            
+          
+            
+            
+            
+            <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent="light-blue"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+            
+              <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 2.38 1.19 4.47 3 5.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26c1.81-1.27 3-3.36 3-5.74a7 7 0 0 0-7-7M9 21a1 1 0 0 0 1 1h4a1 1 0 0 0 1-1v-1H9v1Z"/></svg>
+              </label>
+            
+          
+        </form>
+      
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/jammees/Rethink-Engine" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jammees/Rethink-Engine
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+
+
+  <li class="md-tabs__item">
+    <a href="../.." class="md-tabs__link">
+      Home
+    </a>
+  </li>
+
+      
+        
+  
+  
+    
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../installation/" class="md-tabs__link md-tabs__link--active">
+        Get started
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+
+
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../documentation/rethink/" class="md-tabs__link">
+        Documentation
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Rethink Engine" class="md-nav__button md-logo" aria-label="Rethink Engine" data-md-component="logo">
+      
+  <img src="../../assets/favicon.png" alt="logo">
+
+    </a>
+    Rethink Engine
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/jammees/Rethink-Engine" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jammees/Rethink-Engine
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          Get started
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Get started
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        Installation
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Changelog
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        Changelog
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#update-070" class="md-nav__link">
+    Update: 0.7.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#update-062" class="md-nav__link">
+    Update: 0.6.2
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#update-061" class="md-nav__link">
+    Update: 0.6.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#update-060" class="md-nav__link">
+    Update: 0.6.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#update-053" class="md-nav__link">
+    Update: 0.5.3
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#update-052" class="md-nav__link">
+    Update: 0.5.2
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#update-041" class="md-nav__link">
+    Update: 0.4.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#update-040" class="md-nav__link">
+    Update: 0.4.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#update-030" class="md-nav__link">
+    Update: 0.3.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#update-020" class="md-nav__link">
+    Update: 0.2.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#update-010" class="md-nav__link">
+    Update: 0.1.0
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          Documentation
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Documentation
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../documentation/rethink/" class="md-nav__link">
+        Rethink
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../documentation/animator/" class="md-nav__link">
+        Animator
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../documentation/camera/" class="md-nav__link">
+        Camera
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../documentation/scene/" class="md-nav__link">
+        Scene
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../documentation/outline/" class="md-nav__link">
+        Outline
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../documentation/template/" class="md-nav__link">
+        Template
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../documentation/settings/" class="md-nav__link">
+        Settings
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../documentation/3rdpartymodules/" class="md-nav__link">
+        3rd Party Modules
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#update-070" class="md-nav__link">
+    Update: 0.7.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#update-062" class="md-nav__link">
+    Update: 0.6.2
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#update-061" class="md-nav__link">
+    Update: 0.6.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#update-060" class="md-nav__link">
+    Update: 0.6.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#update-053" class="md-nav__link">
+    Update: 0.5.3
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#update-052" class="md-nav__link">
+    Update: 0.5.2
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#update-041" class="md-nav__link">
+    Update: 0.4.1
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#update-040" class="md-nav__link">
+    Update: 0.4.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#update-030" class="md-nav__link">
+    Update: 0.3.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#update-020" class="md-nav__link">
+    Update: 0.2.0
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#update-010" class="md-nav__link">
+    Update: 0.1.0
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+  <h1>Changelog</h1>
+
+<hr>
+
+<h2 id="update-070">Update: 0.7.0<a class="headerlink" href="#update-070" title="Anchor link to this section for reference">&para;</a></h2>
+<ul>
+<li>Fix <code>Animator</code>'s type checking</li>
+<li>Add <code>Sound</code> to modules</li>
+<li>Add settings regarding <code>Sound</code></li>
+</ul>
+<h2 id="update-062">Update: 0.6.2<a class="headerlink" href="#update-062" title="Anchor link to this section for reference">&para;</a></h2>
+<ul>
+<li>Removed debug prints left in on accident</li>
+<li>Rename type <code>UiBase</code> to <code>UIBase</code></li>
+<li>Documentation site improvements</li>
+<li>Removed support of the <code>Type</code> symbol having aliases</li>
+<li>Added <code>Symbols.RegisterCustomSymbol()</code> function to create custom symbols more easily</li>
+<li>Added wrapper function in Scene for <code>Symbols.RegisterCustomSymbol()</code></li>
+<li>Fixed spelling mistakes</li>
+<li>Removed deprecated RDC runner script</li>
+<li>Fixed Rethink throwing errors if <code>Rethink.GetModules()</code> was called before it's initialized</li>
+<li>Updated warnings in Template, Scene</li>
+<li>Added <code>Scene.Cleanup()</code></li>
+<li>Fixed bug relating to Pool not returning the correct object</li>
+<li>Moved <code>Scene.Events.ObjectRemoved</code> invoking to object's cleanup method</li>
+<li>Replaced .IsLoading to .State to indicate the states that scene is in, such as: Loading, Flushing, Standby</li>
+<li>Removed Scene throwing a warning in <code>.Flush()</code> was called, when the scene is empty</li>
+<li>Added <code>LinkTag</code> and <code>LinkGet</code> symbols to reference other objects in the scene module</li>
+<li>Cleaned up Symbols module, separation of each handler into its own module</li>
+<li>Updates docs of <code>Scene</code> to match current state</li>
+<li>Scene no longer returns a Promise when <code>.Load</code> is called</li>
+<li>Renamed back 3rd party modules to their original names</li>
+<li>Renamed Animation back to Animator</li>
+<li>Fixed error regarding not formatting objects correctly when throwing errors</li>
+<li>Scene now exports <code>ObjectReference</code> type</li>
+<li>Removed SelfView, CompilerChunkSize from settings</li>
+<li>Added Class symbol to define object ClassNames</li>
+<li>Utilize gitmodules to track third party libraries</li>
+<li>Symbols now return <code>visual object</code>s (e.g. Frame)</li>
+<li>Object's reference table is now initially set up with symbol handling</li>
+<li>Rewritten <code>Scene.Remove()</code> to use <code>Scene.GetObjectReference()</code> internally</li>
+<li>Rewritten <code>Scene.Flush()</code>, <code>Scene.Load()</code> to stop using <code>TaskDistributor</code></li>
+<li>Use promise in symbol handlers to catch warnings to prevent code halting</li>
+<li>Fixed memory-leak when removing objects using <code>Scene.Remove()</code></li>
+<li>Removed <code>TaskDistributor</code></li>
+<li>Renamed ShouldFlush to Permanent</li>
+<li>Built-in symbols now do type-checking</li>
+<li>Reworked messages and logging using <code>Log</code> library</li>
+<li>Add missing documentation for the main module (init.lua)</li>
+<li>Fixed inconsistencies with types not being capitalized sometimes</li>
+<li>Add <code>Children</code> symbol</li>
+<li>Make <code>ObjectPool</code> create new instances if the specified kind does not exist</li>
+<li><code>ObjectPool</code> now only resets objects that are <code>GuiBase2d</code></li>
+</ul>
+<h2 id="update-061">Update: 0.6.1<a class="headerlink" href="#update-061" title="Anchor link to this section for reference">&para;</a></h2>
+<ul>
+<li>Fixed objects not being removed completely</li>
+<li>Rewritten ObjectPool</li>
+<li>Added new argument <code>stripSymbols</code> to <code>.Remove</code></li>
+<li>Symbols are now being tracked with their own IDs</li>
+<li>Symbols have their own Janitor now</li>
+<li>Fixed documentation</li>
+<li>Symbols now use <code>.Symbols</code> table to store data instead of using the object's reference table directly</li>
+<li>Fixed symbols staying on objects after flushed or removed</li>
+<li>Added <code>.Init</code> and <code>.GetModules</code> function to Rethink</li>
+<li>Restructure of engine internals</li>
+</ul>
+<h2 id="update-060">Update: 0.6.0<a class="headerlink" href="#update-060" title="Anchor link to this section for reference">&para;</a></h2>
+<ul>
+<li>Added aliases to the <strong>Type</strong> symbol:<ul>
+<li>Layer <code>UiBase</code></li>
+<li>Static <code>UiBase</code></li>
+<li>Dynamic <code>Rigidbody</code></li>
+</ul>
+</li>
+<li>Deployed documentation</li>
+<li>Added pin_game.md to request your game getting pinned on the landing page as an example</li>
+<li>Introduced TaskDistributor</li>
+<li>Optimized Scene <code>Flush</code> and <code>Load</code></li>
+<li>Refactoring, as well as removing <code>Utils</code></li>
+<li>Fix <code>Physics</code> now automatically rescaling canvas, if viewport's size changed</li>
+<li>Simplifed UI hierarchy<ul>
+<li>GameFrame</li>
+<li>RenderFrame</li>
+<li>Viewport</li>
+<li>Ui</li>
+</ul>
+</li>
+<li>Introduced UiPool to try and minimize the rapid creation and deletion of objects</li>
+<li>Introduced Settings, where you can customize features to your likings</li>
+<li>Introduced <code>Prototypes</code>, that can be accessed with <code>Rethink.Prototypes</code></li>
+<li>Now <code>Components</code> and <code>Tools</code> can be accessed with Rethink for quality-of-life</li>
+<li>Optimizations regarding <code>Rendering</code></li>
+<li>Prototype <code>Culling</code> feature, to attempt to optimize heavy object scenarios</li>
+<li>Restructured code into three different categories:<ul>
+<li><strong>Core</strong>: The main deal of Rethink, modules made by me and are necessary</li>
+<li><strong>Environment</strong>: Modules created by <code>jaipack17</code> regarding physics and collisions</li>
+<li><strong>Utility</strong>: Smaller modules that are expected to be used less often than <code>Core</code> ones</li>
+</ul>
+</li>
+<li>Introduced <code>Animation</code> a new animation module for <code>Spritesheets</code> and <code>Set of images</code></li>
+<li>Removed being able to use custom <code>Protocol</code> modules, due to it just adding more complexity</li>
+<li>Made <code>Scene.GetBodyFromTag</code> into a single function</li>
+<li>Introduced Symbols that can be used in <code>Scene files</code><ul>
+<li><strong>Tag</strong>: Gives the given object a <code>tag(s)</code> fetch it with <code>CollectionService</code> or <code>Scene:GetRigidbodyFromTag</code></li>
+<li><strong>Property</strong>: Applies <code>properties</code> or <code>symbols</code> to objects in the <code>group</code> or the <code>container</code></li>
+<li><strong>Type</strong>: How the compiler handles the object <code>UiBase</code> and <code>Rigidbody</code></li>
+<li><strong>Children</strong>: Add objects that are parented to the given object</li>
+<li><strong>Event</strong>: Hook events to the given object</li>
+<li><strong>DAF</strong>: Determines if the object will get deleted on <code>.Flush()</code> (Delete After Flush)</li>
+<li><strong>Rigidbody</strong>: Add rigidbody properties that later get fed into the Physics engine</li>
+</ul>
+</li>
+<li>Switched from using <code>Wrapper</code> to instead using <code>Template</code> to pass on classes</li>
+<li>Replaced <code>:</code> with <code>.</code> where <code>Wrapper</code> was used</li>
+<li>Added documentation for functions (as well as JSDoc here and there)</li>
+<li>Added <code>Scene.IsRigidbody</code> for identifying rigidbodies easier</li>
+<li>Added <code>Default properties</code> to objects when compiling objects</li>
+<li>Introduced <code>Template</code>, a simple global data holder</li>
+<li>Removed <code>ReadOnly</code></li>
+<li>Added <code>Strings</code> for editing throw messages, header easier</li>
+<li>Cleaned up <code>GenerateGUI</code></li>
+<li>A Dev place has been made available to see my progress on the engine <a href="https://www.roblox.com/games/11693314673/Rethink-Engine-Dev-Place">Click here to view!</a></li>
+<li>Introduced <code>TypeCheck</code></li>
+<li>Lot of code refactoring</li>
+<li>Unit test for <code>TaskDistributor</code></li>
+<li>Removed the <code>Input</code> library</li>
+<li>Created new logo for Rethink</li>
+<li>Added github issue templates</li>
+<li>Moved actual engine code into <code>src</code></li>
+</ul>
+<div class="admonition info">
+<p class="admonition-title">For upcoming updates:</p>
+<ul>
+<li>Add Rethink to <code>Wally</code></li>
+<li>Create a lite version of Rethink</li>
+<li>Finish development of RePreview</li>
+<li>Create an example game</li>
+<li>Update GitHub page more frequently :)</li>
+</ul>
+</div>
+<h2 id="update-053">Update: 0.5.3<a class="headerlink" href="#update-053" title="Anchor link to this section for reference">&para;</a></h2>
+<ul>
+<li>Updated physics (Nature2D) to V: 0.6.0</li>
+<li>Added scene:GetRigidbodyFromTag() and scene:GetRigidbodiesFromTag()</li>
+<li>idk</li>
+</ul>
+<h2 id="update-052">Update: 0.5.2<a class="headerlink" href="#update-052" title="Anchor link to this section for reference">&para;</a></h2>
+<ul>
+<li>Updated physics (Nature2D) to V: 0.5.4</li>
+<li>Added <code>Outline</code></li>
+<li>Reverted function's first letter to lowercase</li>
+<li>Added <code>Gamepad</code> to inputs</li>
+<li>Added <code>fixedRot</code> and <code>fixedPos</code> to rigidbodies</li>
+</ul>
+<h2 id="update-041">Update: 0.4.1<a class="headerlink" href="#update-041" title="Anchor link to this section for reference">&para;</a></h2>
+<ul>
+<li>Made functions' first letter uppercase and the rest lowercase</li>
+<li>Made module names more consistent with eachother</li>
+</ul>
+<h2 id="update-040">Update: 0.4.0<a class="headerlink" href="#update-040" title="Anchor link to this section for reference">&para;</a></h2>
+<ul>
+<li>Added <code>current</code> to inputs</li>
+<li>Added <code>Template</code> to tools</li>
+</ul>
+<h2 id="update-030">Update: 0.3.0<a class="headerlink" href="#update-030" title="Anchor link to this section for reference">&para;</a></h2>
+<ul>
+<li>Added scene manager</li>
+<li>Added test folder</li>
+</ul>
+<h2 id="update-020">Update: 0.2.0<a class="headerlink" href="#update-020" title="Anchor link to this section for reference">&para;</a></h2>
+<ul>
+<li>Added utility functions for rigid bodies</li>
+</ul>
+<h2 id="update-010">Update: 0.1.0<a class="headerlink" href="#update-010" title="Anchor link to this section for reference">&para;</a></h2>
+<ul>
+<li>Inital release</li>
+</ul>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../installation/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Installation" rel="prev">
+            <div class="md-footer__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Installation
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../documentation/rethink/" class="md-footer__link md-footer__link--next" aria-label="Next: Rethink" rel="next">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Rethink
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "search.highlight", "search.suggest", "content.code.copy", "navigation.footer"], "search": "../../assets/javascripts/workers/search.74e28a9f.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.220ee61c.min.js"></script>
+      
+    
+  </body>
+</html>
