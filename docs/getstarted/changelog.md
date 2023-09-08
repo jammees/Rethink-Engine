@@ -1,9 +1,10 @@
 <hr>
 
-## Update: 0.6.3
+## Update: 0.7.0
 
 - Fix `Animator`'s type checking
 - Add `Sound` to modules
+- Add settings regarding `Sound`
 
 ## Update: 0.6.2
 - Removed debug prints left in on accident
