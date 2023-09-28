@@ -99,7 +99,7 @@ end
 -- after each call
 function Sound:PlayGlobal(origin: Vector2 | () -> Vector2)
 	if not Settings.DirectionalSound.DirectionalAudioEnabled then
-		self:PlayLocal()
+		return self:PlayLocal()
 	end
 
 	Log.TAssert(t.union(t.Vector2, t.callback)(origin))
