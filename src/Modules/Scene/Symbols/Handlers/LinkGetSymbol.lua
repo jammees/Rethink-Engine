@@ -97,7 +97,7 @@ return function(object: Types.ObjectReference, symbol: Types.Symbol)
 
 	local connection = nil
 	connection = Scene.Events.ObjectAdded:Connect(function(addedObject: Types.ObjectReference)
-		if not (Scene.GetObjectReference(addedObject) == object) then
+		if not (Scene.GetSceneObjectFrom(addedObject) == object) then
 			return
 		end
 
