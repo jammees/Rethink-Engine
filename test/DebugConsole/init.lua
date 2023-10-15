@@ -148,7 +148,7 @@ local function RenderExplorer()
 		-- 	`Position: {frame.Position}\nIsRigidbody: {Scene.IsRigidbody(selectedObject)}\nTags: {table.concat(frame:GetTags(), ", ")}`,
 		-- })
 
-		local reference = Scene.GetObjectReference(selectedObject)
+		local reference = Scene.GetSceneObjectFrom(selectedObject)
 
 		Iris.PushConfig({ TextColor = Color3.fromRGB(109, 109, 109) })
 		Iris.TextWrapped({ `\nReference data:` })
