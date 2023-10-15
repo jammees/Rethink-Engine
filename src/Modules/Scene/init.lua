@@ -429,10 +429,11 @@ function Scene.GetSceneObjectFrom(object: GuiBase2d | Types.Rigidbody): SceneObj
 	Log.TAssert(t.union(t.Instance, t.table)(object))
 
 	for _, Object: SceneObject.SceneObject in sceneObjects do
+		if not (Object.Object == object) then
 			continue
 		end
 
-		return objectReference
+		return Object
 	end
 
 	Log.Error(DebugStrings.Scene.ObjectReferenceNotFound:format(tostring(object)))
