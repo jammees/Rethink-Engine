@@ -441,7 +441,7 @@ end
 
 --[=[
 	Returns all of the objects wihin scene containing all
-	of the `ObjectReferences`.
+	of the `SceneObject`s.
 
 	@since 0.5.3
 	@returns Objects `{ [Types.UUID]: SceneObject }
