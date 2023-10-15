@@ -227,7 +227,7 @@ function Scene.AddSymbols(object: GuiBase2d | Types.Rigidbody, symbols: { [Types
 		table.insert(attachedSymbols[symbol.Name], symbol)
 	end
 
-	Symbols.AttachToInstance(Scene.GetObjectReference(object), attachedSymbols)
+	Symbols.AttachToInstance(Scene.GetSceneObjectFrom(object), attachedSymbols)
 end
 
 --[=[
@@ -244,7 +244,7 @@ function Scene.Remove(object: GuiBase2d | Types.Rigidbody, stripSymbols: boolean
 	Log.TAssert(t.union(t.Instance, t.table)(object))
 	Log.TAssert(t.optional(t.boolean)(stripSymbols))
 
-	local reference = Scene.GetObjectReference(object)
+	local Object = Scene.GetSceneObjectFrom(object)
 
 	-- Return it to the pool
 	Template.FetchGlobal("__Rethink_Pool"):Retire(Scene.IsRigidbody(object) and object:GetFrame() or object)
@@ -272,7 +272,7 @@ end
 function Scene.Cleanup(object: GuiBase2d | Types.Rigidbody)
 	Log.TAssert(t.union(t.Instance, t.table)(object))
 
-	Scene.GetObjectReference(object).Janitor:Destroy()
+	Scene.GetSceneObjectFrom(object):CleanUp()
 end
 
 --[=[
@@ -426,7 +426,7 @@ end
 	@param object `GuiObject | Rigidbody`
 	@returns Reference `ObjectReference`
 ]=]
-function Scene.GetObjectReference(object: GuiBase2d | Types.Rigidbody): Types.ObjectReference
+function Scene.GetSceneObjectFrom(object: GuiBase2d | Types.Rigidbody): SceneObject.SceneObject
 	Log.TAssert(t.union(t.Instance, t.table)(object))
 
 	for _, objectReference: Types.ObjectReference in sceneObjects do
