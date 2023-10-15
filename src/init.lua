@@ -72,6 +72,8 @@ function Rethink.Init()
 
 	Rethink.Settings = table.freeze(Settings)
 
+	require(script.Bootstrap.EngineSettings)
+
 	initEngineUi = require(script.Bootstrap.GenerateGUI)()
 
 	initPool = ObjectPool.new(Settings.Pool.InitialCache)
@@ -86,8 +88,6 @@ function Rethink.Init()
 	Template.NewGlobal("__Rethink_Ui", initEngineUi, true)
 	Template.NewGlobal("__Rethink_Pool", initPool, true)
 	Template.NewGlobal("__Rethink_Physics", initNature2DClass, true)
-
-	require(script.Bootstrap.EngineSettings)
 
 	if Settings.Console.LogHeader == true then
 		warn(DebugStrings.ConsoleHero:format(Rethink.Version))
