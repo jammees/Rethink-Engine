@@ -29,6 +29,7 @@ local Symbols = require(script.Symbols)
 local Janitor = require(script.Parent.Parent.Vendors.Janitor)
 local t = require(script.Parent.Parent.Vendors.t)
 local Log = require(script.Parent.Parent.Library.Log)
+local SceneObject = require(script.SceneObject)
 
 local sceneObjects: { [string]: SceneObject.SceneObject } = {}
 
