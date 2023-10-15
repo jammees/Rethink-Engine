@@ -187,33 +187,10 @@ function Scene.Add(object: GuiBase2d | Types.Rigidbody, symbols: { [Types.Symbol
 	Log.TAssert(t.union(t.Instance, t.table)(object))
 	Log.TAssert(t.optional(t.table)(symbols))
 
-	-- Define SceneObject
-	local objectReference: Types.ObjectReference = {
-		Object = object,
-		Janitor = Janitor.new(),
-		SymbolJanitor = Janitor.new(),
-		ID = HTTPService:GenerateGUID(false),
-		Symbols = {},
-	}
+	local Object = SceneObject.new(object)
 
 	-- Allocate object
-	sceneObjects[objectReference.ID] = objectReference
-
-	-- Add cleanup function
-	objectReference.Janitor:Add(objectReference.SymbolJanitor, "Destroy", "SymbolJanitor")
-	objectReference.Janitor:Add(function()
-		local isRigidbody = Scene.IsRigidbody(objectReference.Object)
-
-		Scene.Events.ObjectRemoved:Fire(objectReference.Object)
-
-		if isRigidbody then
-			objectReference.Object:Destroy()
-		else
-			Template.FetchGlobal("__Rethink_Pool"):Return(objectReference.Object)
-		end
-
-		sceneObjects[objectReference.ID] = nil
-	end, true, objectReference.ID)
+	sceneObjects[Object.ID] = Object
 
 	Scene.AddSymbols(object, symbols)
 
