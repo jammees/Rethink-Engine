@@ -43,7 +43,7 @@ return {
 
 			[Symbols.Class] = "TextButton",
 			[Symbols.LinkGet({ "Field", "Text" })] = function(thisObject: TextButton, field: TextBox, text: TextLabel)
-				local thisRef = Scene.GetObjectReference(thisObject)
+				local thisRef = Scene.GetSceneObjectFrom(thisObject)
 				thisRef.Janitor:Add(thisObject.MouseButton1Click:Connect(function()
 					text.Text = field.Text
 				end))

@@ -214,7 +214,7 @@ return function()
 
 			Scene.Add(frame)
 
-			local ref = Scene.GetObjectReference(frame)
+			local ref = Scene.GetSceneObjectFrom(frame)
 
 			expect(ref).to.be.ok()
 			expect(ref.Object).to.equal(frame)
@@ -225,12 +225,12 @@ return function()
 
 			Scene.Add(frame)
 
-			local ref = Scene.GetObjectReference(frame)
+			local ref = Scene.GetSceneObjectFrom(frame)
 			ref.Janitor:Destroy()
 
 			expect(GetLenght(Scene.GetObjects())).to.equal(0)
 			expect(function()
-				Scene.GetObjectReference(frame)
+				Scene.GetSceneObjectFrom(frame)
 			end).to.throw()
 		end)
 	end)
@@ -266,7 +266,7 @@ return function()
 
 			Scene.Add(frame, symbols)
 
-			local ref = Scene.GetObjectReference(frame)
+			local ref = Scene.GetSceneObjectFrom(frame)
 
 			expect(ref).to.be.ok()
 			expect(ref.Object).to.equal(frame)
@@ -308,7 +308,7 @@ return function()
 
 			Scene.Add(frame)
 
-			local ref = Scene.GetObjectReference(frame)
+			local ref = Scene.GetSceneObjectFrom(frame)
 
 			expect(ref).to.be.ok()
 			expect(ref.Object).to.equal(frame)
@@ -358,7 +358,7 @@ return function()
 			expect(obj).to.be.ok()
 			expect(GetLenght(Scene.GetObjects())).to.equal(0)
 			expect(function()
-				Scene.GetObjectReference(obj)
+				Scene.GetSceneObjectFrom(obj)
 			end).to.throw()
 			expect(obj:GetFullName()).to.never.equal(path)
 		end)
