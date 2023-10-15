@@ -8,7 +8,7 @@
 [![Deploy docs](https://github.com/jammees/Rethink-Engine/actions/workflows/deploy_docs.yaml/badge.svg)](https://github.com/jammees/Rethink-Engine/actions/workflows/deploy_docs.yaml)
 
 <h3><strong>Versatile, easy-to-use 2D game engine</strong>.</h3>
-0.6.3 release
+0.8.0 release
 
 <hr>
 <br>
