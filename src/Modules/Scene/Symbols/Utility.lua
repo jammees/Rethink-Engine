@@ -4,6 +4,7 @@ local Rigidbody = require(script.Parent.Parent.Parent.Nature2D.Physics.RigidBody
 local Types = require(script.Parent.Parent.Types)
 local Log = require(script.Parent.Parent.Parent.Parent.Library.Log)
 local t = require(script.Parent.Parent.Parent.Parent.Vendors.t)
+local SceneObject = require(script.Parent.Parent.SceneObject)
 
 local Utility = {}
 
@@ -19,7 +20,7 @@ function Utility.IsRigidbody(object: any): boolean
 	return getmetatable(typeof(object) == "table" and object or nil) == Rigidbody
 end
 
-function Utility.CreateUUID(object: Types.ObjectReference)
+function Utility.CreateUUID(object: SceneObject.SceneObject)
 	local uuid = HTTPService:GenerateGUID(false)
 
 	if not object.Symbols.IDs then
