@@ -390,9 +390,10 @@ function Scene.GetFromTag(tag: string): { [number]: GuiBase2d | Types.Rigidbody 
 	local foundObjects = {}
 
 	for _, Object: SceneObject.SceneObject in sceneObjects do
+		local object = Object:GetInstance()
 
 		if table.find(taggedObjects, object) then
-			table.insert(foundObjects, sceneObject.Object)
+			table.insert(foundObjects, Object.Object)
 		end
 	end
 
