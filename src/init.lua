@@ -113,7 +113,7 @@ function Rethink.GetModules()
 		Animator = require(script.Modules.Animator),
 		Outline = require(script.Modules.Outline),
 		Scene = require(script.Modules.Scene),
-		Sound = require(script.Modules.Sound),
+		Sound = require(script.Modules.LegacySound),
 
 		Physics = initNature2DClass,
 		Template = Template,
