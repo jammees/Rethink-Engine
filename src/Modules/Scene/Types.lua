@@ -43,6 +43,7 @@ export type AvailableSymbols = {
 	Event: any,
 	LinkGet: any,
 	Class: any,
+	Children: any,
 }
 
 export type Prototype_ChunkObject = {
