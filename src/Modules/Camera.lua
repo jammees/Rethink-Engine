@@ -15,6 +15,7 @@ local Scene = require(script.Parent.Scene)
 local Template = require(script.Parent.Template)
 local Log = require(script.Parent.Parent.Library.Log)
 local t = require(script.Parent.Parent.Vendors.t)
+local Signal = require(script.Parent.Parent.Vendors.goodsignal)
 
 local runnerConnection = nil
 local prePosition = Vector2.new(0, 0)
@@ -129,6 +130,8 @@ function Camera.Render(deltaTime: number?)
 	-- Set the prePosition to the new position to make .Render
 	-- stop updating if it's the same + more accurate delta
 	prePosition = Camera.Position
+
+	Camera.Rendered:Fire()
 end
 
 function Camera.IsAttached(object)
