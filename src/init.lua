@@ -70,6 +70,8 @@ function Rethink.Init()
 
 	Rethink.IsInitialized = true
 
+	Rethink.Settings = table.freeze(Settings)
+
 	initEngineUi = require(script.Bootstrap.GenerateGUI)()
 
 	initPool = ObjectPool.new(Settings.Pool.InitialCache)
