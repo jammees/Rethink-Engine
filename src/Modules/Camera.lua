@@ -25,13 +25,15 @@ local function GetState<OBJ>(object: OBJ)
 	return isRigidbody, isRigidbody and object.anchored
 end
 
-local Camera = {
-	Position = Vector2.new(0, 0),
-	Objects = {},
-	IsRunning = false,
-	XBounds = NumberRange.new(-math.huge, math.huge),
-	YBounds = NumberRange.new(-math.huge, math.huge),
-}
+local Camera = {}
+
+Camera.Position = Vector2.new(0, 0)
+Camera.Objects = {}
+Camera.IsRunning = false
+Camera.XBounds = NumberRange.new(-math.huge, math.huge)
+Camera.YBounds = NumberRange.new(-math.huge, math.huge)
+
+Camera.Rendered = Signal.new()
 
 -- Define Render Handlers that sole purpose is to update the objects
 -- positions based on the Camera
