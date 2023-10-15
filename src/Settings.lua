@@ -65,10 +65,14 @@ return {
 	},
 
 	DirectionalSound = {
-		Flatness = 0.101,
-		Steepness = 0.36,
-		Range = 0.26, -- Best to be kept at default value as the value will be between -1 and 1
-		RolloffMultiplier = 5,
+		-- Note to self:
+		-- Use this in Desmos to visualize graph
+		-- \left|b\cdot x+c\right|-\left|b\cdot x-c\right|-\left|b\cdot x+a\right|+\left|b\cdot x-a\right|
+		Flatness = 0.09,
+		Steepness = 0.3,
+		Range = 0.59,
+
+		RolloffMultiplier = 4,
 		DirectionalAudioEnabled = true,
 	},
 
