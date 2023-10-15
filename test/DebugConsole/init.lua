@@ -298,6 +298,8 @@ local function RenderCamera()
 	local y = Iris.State(0)
 	local lastY = Iris.State(0)
 
+	local viewportSize = workspace.CurrentCamera.ViewportSize / 1.5
+
 	Iris.TextWrapped({ "\nCamera" })
 
 	-- Iris.Checkbox({ "Is running" }, { isChecked = isRunning })
@@ -318,7 +320,7 @@ local function RenderCamera()
 	Iris.PushConfig({ ContentWidth = UDim.new(0, 65) })
 	Iris.InputNum({ "", [Iris.Args.InputNum.NoButtons] = true }, { number = x })
 	Iris.PopConfig()
-	Iris.SliderNum({ "", 1, -500, 500 }, { number = x })
+	Iris.SliderNum({ "", 1, -viewportSize.X, viewportSize.X }, { number = x })
 	Iris.End()
 
 	Iris.SameLine()
@@ -326,7 +328,7 @@ local function RenderCamera()
 	Iris.PushConfig({ ContentWidth = UDim.new(0, 65) })
 	Iris.InputNum({ "", [Iris.Args.InputNum.NoButtons] = true }, { number = y })
 	Iris.PopConfig()
-	Iris.SliderNum({ "", 1, -500, 500 }, { number = y })
+	Iris.SliderNum({ "", 1, -viewportSize.Y, viewportSize.Y }, { number = y })
 	Iris.End()
 
 	if lastX.value ~= x.value then
