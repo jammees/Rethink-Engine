@@ -249,16 +249,16 @@ function Scene.Remove(object: GuiBase2d | Types.Rigidbody, stripSymbols: boolean
 	-- Return it to the pool
 	Template.FetchGlobal("__Rethink_Pool"):Retire(Scene.IsRigidbody(object) and object:GetFrame() or object)
 
-	if not stripSymbols and t.table(reference.Symbols.IDs) then
-		for _, symbolID in reference.Symbols.IDs do
-			reference.SymbolJanitor:RemoveNoClean(symbolID)
+	if not stripSymbols and t.table(Object.Symbols.IDs) then
+		for _, symbolID in Object.Symbols.IDs do
+			Object.SymbolJanitor:RemoveNoClean(symbolID)
 		end
 	end
 
-	sceneObjects[reference.ID] = nil
+	sceneObjects[Object.ID] = nil
 
-	reference.Janitor:RemoveNoClean(reference.ID)
-	reference.Janitor:Destroy()
+	Object.Janitor:RemoveNoClean(Object.ID)
+	Object:CleanUp()
 
 	Scene.Events.ObjectRemoved:Fire(object)
 end
