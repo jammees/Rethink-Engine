@@ -35,18 +35,8 @@ function Utility.GetVisualObject(object: GuiBase2d | Types.Rigidbody)
 	return Utility.IsRigidbody(object.Object) and object.Object:GetFrame() or object.Object
 end
 
-function Utility.CheckSymbolData(object: Types.ObjectReference, symbol: Types.Symbol)
-	Log.TAssert(t.strictInterface({
-		Object = t.union(t.Instance, t.table),
-		Janitor = t.table,
-		SymbolJanitor = t.table,
-		ID = t.string,
-		Symbols = t.interface({
-			IDs = t.optional(t.table),
-			Permanent = t.optional(t.boolean),
-			LinkIDs = t.optional(t.table),
-		}),
-	})(object))
+function Utility.CheckSymbolData(object: SceneObject.SceneObject, symbol: Types.Symbol)
+	Log.TAssert(SceneObject.Interface(object))
 
 	Log.TAssert(t.strictInterface({
 		__identifier = t.string,
