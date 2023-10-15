@@ -42,6 +42,15 @@ Rethink.IsInitialized = false
 Rethink.Version = script:WaitForChild("Version").Value
 
 --[[
+	Reference to the settings module for Rethink.
+	After `.Init()` had been called, the settings
+	can not be configured anymore.
+
+	@since 0.6.3
+]]
+Rethink.Settings = Settings
+
+--[[
 	Initializes Rethink. This includes:
 
 	- Setting up the game UI elements
