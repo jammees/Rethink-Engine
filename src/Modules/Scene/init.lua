@@ -331,7 +331,8 @@ function Scene.Flush(ignorePermanent: boolean?)
 
 		Scene.Events.ObjectRemoved:Fire(object.Object)
 
-		Scene.Cleanup(object.Object)
+		-- Scene.Cleanup(object.Object)
+		object:CleanUp()
 	end
 
 	Scene.State = "Standby"
