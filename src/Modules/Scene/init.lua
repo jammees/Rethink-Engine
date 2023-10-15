@@ -17,8 +17,6 @@ type Tag = { [number]: string } | string?
 
 type SceneConfig = { Name: string }
 
-export type ObjectReference = Types.ObjectReference
-
 local CollectionService = game:GetService("CollectionService")
 local HTTPService = game:GetService("HttpService")
 
@@ -32,7 +30,7 @@ local Janitor = require(script.Parent.Parent.Vendors.Janitor)
 local t = require(script.Parent.Parent.Vendors.t)
 local Log = require(script.Parent.Parent.Library.Log)
 
-local sceneObjects: { [string]: { [string]: any } } = {}
+local sceneObjects: { [string]: SceneObject.SceneObject } = {}
 
 local Scene = {}
 
@@ -308,7 +306,7 @@ function Scene.Flush(ignorePermanent: boolean?)
 	-- TaskDistributor
 	-- 	:Distribute(
 	-- 		TaskDistributor.GenerateChunk(sceneObjects, Settings.CompilerChunkSize),
-	-- 		function(object: Types.ObjectReference)
+	-- 		function(object: SceneObject.SceneObject)
 	-- 			if object.Symbols.ShouldFlush == false and ignoreShouldFlush == false or ignoreShouldFlush == nil then
 	-- 				return
 	-- 			end
@@ -323,7 +321,7 @@ function Scene.Flush(ignorePermanent: boolean?)
 	-- 	)
 	-- 	:await()
 
-	for _, object: Types.ObjectReference in Scene.GetObjects() do
+	for _, object: SceneObject.SceneObject in Scene.GetObjects() do
 		if
 			(t.boolean(object.Symbols.Permanent) and object.Symbols.Permanent == true)
 			and (not t.boolean(ignorePermanent) or ignorePermanent == false)
@@ -365,7 +363,7 @@ end
 function Scene.RegisterCustomSymbol(
 	name: string,
 	returnKind: number,
-	controller: (object: Types.ObjectReference, symbol: Types.Symbol) -> ()
+	controller: (object: SceneObject.SceneObject, symbol: Types.Symbol) -> ()
 )
 	Log.TAssert(t.string(name))
 	Log.TAssert(t.number(returnKind))
@@ -390,8 +388,7 @@ function Scene.GetFromTag(tag: string): { [number]: GuiBase2d | Types.Rigidbody 
 	local taggedObjects = CollectionService:GetTagged(tag)
 	local foundObjects = {}
 
-	for _, sceneObject: Types.ObjectReference in sceneObjects do
-		local object = Scene.IsRigidbody(sceneObject.Object) and sceneObject.Object:GetFrame() or sceneObject.Object
+	for _, Object: SceneObject.SceneObject in sceneObjects do
 
 		if table.find(taggedObjects, object) then
 			table.insert(foundObjects, sceneObject.Object)
@@ -429,8 +426,7 @@ end
 function Scene.GetSceneObjectFrom(object: GuiBase2d | Types.Rigidbody): SceneObject.SceneObject
 	Log.TAssert(t.union(t.Instance, t.table)(object))
 
-	for _, objectReference: Types.ObjectReference in sceneObjects do
-		if not (objectReference.Object == object) then
+	for _, Object: SceneObject.SceneObject in sceneObjects do
 			continue
 		end
 
@@ -445,9 +441,9 @@ end
 	of the `ObjectReferences`.
 
 	@since 0.5.3
-	@returns Objects `{ [Types.UUID]: ObjectReference }
+	@returns Objects `{ [Types.UUID]: SceneObject }
 ]=]
-function Scene.GetObjects(): { [Types.UUID]: Types.ObjectReference }
+function Scene.GetObjects(): { [Types.UUID]: SceneObject.SceneObject }
 	return sceneObjects
 end
 
