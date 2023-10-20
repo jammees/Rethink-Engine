@@ -73,6 +73,7 @@ function Sound2D:Play(origin: Vector2)
 	origin = origin or Vector2.new(0, 0)
 
 	local soundContainer = Instance.new("Attachment")
+	soundContainer.Name = self.SoundID .. " Emitter" -- added the word Emitter at the end so it sounds way more cooler and technical
 	soundContainer.Parent = container
 
 	local sound: Sound = self.Instances:Get()
