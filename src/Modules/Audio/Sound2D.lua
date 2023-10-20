@@ -72,13 +72,7 @@ end
 function Sound2D:Play(origin: Vector2)
 	origin = origin or Vector2.new(0, 0)
 
-	local viewportSize = workspace.CurrentCamera.ViewportSize
-	local normalizedPosition = origin / viewportSize
-	local containerPosition = Vector3.new(normalizedPosition.X, normalizedPosition.Y, 0)
-
 	local soundContainer = Instance.new("Attachment")
-	soundContainer.Name = self.SoundID
-	soundContainer.Position = containerPosition
 	soundContainer.Parent = container
 
 	local sound: Sound = self.Instances:Get()
@@ -94,6 +88,8 @@ function Sound2D:Play(origin: Vector2)
 			self.Instances:Return(sound)
 		end)
 	end
+
+	self:_UpdateEmitter(self.TrackedObjects[sound])
 
 	sound:Play()
 end
