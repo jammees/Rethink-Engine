@@ -45,6 +45,30 @@ function Sound2D.new(soundID: string | number, properties: Properties?)
 	return self
 end
 
+function Sound2D:_UpdateEmitter(soundData: SoundData)
+	local viewportSize = workspace.CurrentCamera.ViewportSize
+
+	local cameraPosition = Camera.Position
+	local originPosition = soundData.Origin
+
+	local unitCamera = cameraPosition / viewportSize
+	local unitOrigin = originPosition / viewportSize
+
+	local magnitude = unitOrigin - unitCamera - Vector2.one * 0.5
+
+	local x = CalculateEmitterPosition(magnitude.X)
+	local y = CalculateEmitterPosition(magnitude.Y)
+	local emitterPosition = Vector2.new(x, y)
+
+	soundData.Sound.Volume = self.Volume - emitterPosition.Magnitude
+	soundData.Container.Position = Vector3.new(-emitterPosition.X, emitterPosition.Y, 0)
+
+	soundData.Sound.Parent = if Settings.DirectionalSound.PlayLocalIfOriginZero
+			and soundData.Container.Position == Vector3.zero
+		then script
+		else soundData.Container
+end
+
 function Sound2D:Play(origin: Vector2)
 	origin = origin or Vector2.new(0, 0)
 
