@@ -79,8 +79,6 @@ function Sound2D:Play(origin: Vector2)
 	sound.SoundId = self.SoundID
 	sound.Volume = self.Volume
 	sound.Looped = self.Loop
-	sound.RollOffMinDistance = self.MinRange
-	sound.RollOffMaxDistance = self.MaxRange
 	sound.Parent = soundContainer
 
 	if not self.Loop then
