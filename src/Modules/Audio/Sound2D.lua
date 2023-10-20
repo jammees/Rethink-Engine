@@ -53,6 +53,7 @@ function Sound2D.new(soundID: string | number, properties: Properties?)
 	self.SoundID = tostring(soundID)
 
 	self.Instances = ObjectPoolClass.new("Sound", self.Amount)
+	self.TrackedObjects = {}
 
 	return self
 end
@@ -94,8 +95,15 @@ function Sound2D:Play(origin: Vector2)
 	sound.Looped = self.Loop
 	sound.Parent = soundContainer
 
+	self.TrackedObjects[sound] = {
+		Sound = sound,
+		Container = soundContainer,
+		Origin = origin,
+	}
+
 	if not self.Loop then
 		sound.Ended:Connect(function()
+			self.TrackedObjects[sound] = nil
 			self.Instances:Return(sound)
 		end)
 	end
@@ -106,10 +114,11 @@ function Sound2D:Play(origin: Vector2)
 end
 
 function Sound2D:Stop()
-	for _, object in self.Instances.Objects do
-		local sound: Sound = object.Object
-		sound:Stop()
-		self.Instances:Return(sound)
+	for _, soundData: SoundData in self.TrackedObjects do
+		soundData.Sound:Stop()
+		self.Instances:Return(soundData.Sound)
+		soundData.Container:Destroy()
+		self.TrackedObjects[soundData.Sound] = nil
 	end
 end
 
