@@ -137,6 +137,8 @@ function Sound2D:Stop()
 end
 
 function Sound2D:Destroy()
+	self:Stop()
+
 	for _, object in self.Instances.Objects do
 		local sound: Sound = object.Object
 
