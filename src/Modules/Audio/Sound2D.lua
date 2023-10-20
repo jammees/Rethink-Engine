@@ -119,6 +119,7 @@ function Sound2D:Play(origin: Vector2)
 		sound.Ended:Connect(function()
 			self.TrackedObjects[sound] = nil
 			self.Instances:Return(sound)
+			soundContainer:Destroy()
 		end)
 	end
 
