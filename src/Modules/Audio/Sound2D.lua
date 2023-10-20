@@ -4,6 +4,8 @@ type Properties = {
 	Volume: number?,
 }
 
+type SoundData = { Sound: Sound, Origin: Vector2, Container: Attachment }
+
 local Log = require(script.Parent.Parent.Parent.Library.Log)
 local t = require(script.Parent.Parent.Parent.Vendors.t)
 local ObjectPoolClass = require(script.Parent.Parent.Parent.Library.ObjectPool).Class
