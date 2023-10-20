@@ -17,6 +17,12 @@ local Sound2D = {}
 Sound2D.__index = Sound2D
 
 function Sound2D.new(soundID: string | number, properties: Properties?)
+	if not Settings.DirectionalSound.DirectionalAudioEnabled then
+		Log.Warn(`DirectionalAudioEnabled is set to false, returning Sound instead! SoundID: {soundID}`)
+
+		return Sound.new(soundID, properties)
+	end
+
 	Log.TAssert(t.union(t.string, t.number)(soundID))
 	Log.TAssert(t.optional(t.strictInterface({
 		Amount = t.optional(t.number),
