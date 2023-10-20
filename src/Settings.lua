@@ -71,6 +71,7 @@ return {
 		Flatness = 0.3,
 		Steepness = 1,
 		Range = 0.8,
+		Precision = 10,
 
 		RolloffMultiplier = 30,
 		DirectionalAudioEnabled = true,
