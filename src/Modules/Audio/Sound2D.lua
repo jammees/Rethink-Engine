@@ -13,6 +13,16 @@ local Camera = require(script.Parent.Parent.Camera)
 
 local container = nil
 
+-- note to self: desmos graph is located in the settings!!!
+local function CalculateEmitterPosition(x: number)
+	local a = Settings.DirectionalSound.Flatness
+	local b = Settings.DirectionalSound.Steepness
+	local c = Settings.DirectionalSound.Range
+	local offset = math.abs(b * x + c) - math.abs(b * x - c) - math.abs(b * x + a) + math.abs(b * x - a)
+
+	return tonumber(string.format(`%.{Settings.DirectionalSound.Precision}f`, offset))
+end
+
 local Sound2D = {}
 Sound2D.__index = Sound2D
 
