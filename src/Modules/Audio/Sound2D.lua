@@ -117,7 +117,7 @@ end
 container = Instance.new("Part")
 container.Size = Vector3.new(1, 1, 1)
 container.CFrame = CFrame.new()
-container.Name = "SoundPlayer"
+container.Name = "SoundEmitter"
 container.Anchored = true
 container.Parent = workspace
 
