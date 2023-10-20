@@ -46,7 +46,7 @@ Rethink.Version = script:WaitForChild("Version").Value
 	After `.Init()` had been called, the settings
 	can not be configured anymore.
 
-	@since 0.6.3
+	@since 0.8.0
 ]]
 Rethink.Settings = Settings
 
