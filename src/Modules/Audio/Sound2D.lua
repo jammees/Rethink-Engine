@@ -1,9 +1,7 @@
 type Properties = {
-	Amount: number,
-	Loop: boolean,
-	Volume: number,
-	MinRange: number,
-	MaxRange: number,
+	Amount: number?,
+	Loop: boolean?,
+	Volume: number?,
 }
 
 local Log = require(script.Parent.Parent.Parent.Library.Log)
@@ -41,8 +39,6 @@ function Sound2D.new(soundID: string | number, properties: Properties?)
 	self.Loop = properties.Loop or false
 	self.Volume = properties.Volume or 1
 	self.SoundID = tostring(soundID)
-	self.MinRange = properties.MinRange or 10
-	self.MaxRange = properties.MaxRange or 9999999
 
 	self.Instances = ObjectPoolClass.new("Sound", self.Amount)
 
