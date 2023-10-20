@@ -68,11 +68,11 @@ return {
 		-- Note to self:
 		-- Use this in Desmos to visualize graph
 		-- \left|b\cdot x+c\right|-\left|b\cdot x-c\right|-\left|b\cdot x+a\right|+\left|b\cdot x-a\right|
-		Flatness = 0.09,
-		Steepness = 0.3,
-		Range = 0.59,
+		Flatness = 0.3,
+		Steepness = 1,
+		Range = 0.8,
 
-		RolloffMultiplier = 4,
+		RolloffMultiplier = 30,
 		DirectionalAudioEnabled = true,
 	},
 
