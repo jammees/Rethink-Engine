@@ -10,6 +10,9 @@ local Log = require(script.Parent.Parent.Parent.Library.Log)
 local t = require(script.Parent.Parent.Parent.Vendors.t)
 local ObjectPoolClass = require(script.Parent.Parent.Parent.Library.ObjectPool).Class
 local Camera = require(script.Parent.Parent.Camera)
+local Settings = require(script.Parent.Parent.Parent.Settings)
+local Sound = require(script.Parent.Sound)
+local Janitor = require(script.Parent.Parent.Parent.Vendors.Janitor)
 
 local container = nil
 
@@ -54,6 +57,17 @@ function Sound2D.new(soundID: string | number, properties: Properties?)
 
 	self.Instances = ObjectPoolClass.new("Sound", self.Amount)
 	self.TrackedObjects = {}
+
+	self._Janitor = Janitor.new()
+
+	self._Janitor:Add(
+		Camera.Rendered:Connect(function()
+			for _, soundData: SoundData in self.TrackedObjects do
+				self:_UpdateEmitter(soundData)
+			end
+		end),
+		"Disconnect"
+	)
 
 	return self
 end
@@ -130,6 +144,8 @@ function Sound2D:Destroy()
 		sound:Destroy()
 	end
 
+	self._Janitor:Destroy()
+
 	setmetatable(self.Instances, nil)
 	table.clear(self.Instances)
 	setmetatable(self, nil)
@@ -142,18 +158,5 @@ container.CFrame = CFrame.new()
 container.Name = "SoundEmitter"
 container.Anchored = true
 container.Parent = workspace
-
-Camera.Rendered:Connect(function()
-	local cameraPosition = Camera.Position
-	local viewportSize = workspace.CurrentCamera.ViewportSize
-	local normalizedPosition = cameraPosition / viewportSize
-
-	-- even if this looks very weird
-	-- it's here to make my job easier and make the directional
-	-- audio work
-	normalizedPosition *= 30
-
-	container.CFrame = CFrame.new(normalizedPosition.X, normalizedPosition.Y, 0)
-end)
 
 return Sound2D
