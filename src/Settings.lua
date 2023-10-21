@@ -74,7 +74,6 @@ return {
 		Precision = 10,
 		PlayLocalIfOriginZero = true,
 
-		RolloffMultiplier = 30,
 		DirectionalAudioEnabled = true,
 	},
 
