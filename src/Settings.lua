@@ -72,8 +72,8 @@ return {
 		Steepness = 1,
 		Range = 0.8,
 		Precision = 10,
-		PlayLocalIfOriginZero = true,
 
+		PlayLocalIfPositionZero = true,
 		DirectionalAudioEnabled = true,
 	},
 

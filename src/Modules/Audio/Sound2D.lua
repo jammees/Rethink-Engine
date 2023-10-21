@@ -90,7 +90,7 @@ function Sound2D:_UpdateEmitter(soundData: SoundData)
 	soundData.Sound.Volume = self.Volume - emitterPosition.Magnitude
 	soundData.Container.Position = Vector3.new(-emitterPosition.X, emitterPosition.Y, 0)
 
-	soundData.Sound.Parent = if Settings.DirectionalSound.PlayLocalIfOriginZero
+	soundData.Sound.Parent = if Settings.DirectionalSound.PlayLocalIfPositionZero
 			and soundData.Container.Position == Vector3.zero
 		then script
 		else soundData.Container
