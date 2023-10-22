@@ -45,15 +45,16 @@ end
 local PoolClass = {}
 PoolClass.__index = PoolClass
 
-function PoolClass.new(kind: string, starterAmount: number)
+function PoolClass.new(kind: string, starterAmount: number?, recycle: boolean?)
 	local self = setmetatable({}, PoolClass)
 
 	self.Container = CreateContainer()
 	self.Kind = kind
-	self.StarterAmount = starterAmount
+	self.StarterAmount = starterAmount or 1
 	self.Objects = {}
 	self.Available = {}
 	self.Busy = {}
+	self.Recycle = recycle or false
 
 	for _ = 1, starterAmount do
 		self:CreatePoolObject()
@@ -89,6 +90,12 @@ function PoolClass:Get()
 	local objectID = self.Available[1]
 
 	if objectID == nil then
+		if self.Recycle then
+			local oldestObject = self.Objects[self.Busy[1]].Object
+			self:Return(oldestObject)
+			return self:Get()
+		end
+
 		for _ = 1, Settings.Pool.ExtensionSize do
 			self:CreatePoolObject()
 		end
