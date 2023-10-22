@@ -1,17 +1,12 @@
-type Properties = {
-	Amount: number,
-	Loop: boolean,
-	Volume: number,
-}
-
 local Log = require(script.Parent.Parent.Parent.Library.Log)
 local t = require(script.Parent.Parent.Parent.Vendors.t)
 local ObjectPoolClass = require(script.Parent.Parent.Parent.Library.ObjectPool).Class
+local Types = require(script.Parent.Types)
 
 local Sound = {}
 Sound.__index = Sound
 
-function Sound.new(soundID: string | number, properties: Properties?)
+function Sound.new(soundID: string | number, properties: Types.SoundProperties?)
 	Log.TAssert(t.union(t.string, t.number)(soundID))
 	Log.TAssert(t.optional(t.strictInterface({
 		Amount = t.optional(t.number),

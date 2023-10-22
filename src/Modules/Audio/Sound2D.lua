@@ -1,9 +1,3 @@
-type Properties = {
-	Amount: number?,
-	Loop: boolean?,
-	Volume: number?,
-}
-
 type SoundData = { Sound: Sound, Origin: Vector2, Container: Attachment }
 
 local Log = require(script.Parent.Parent.Parent.Library.Log)
@@ -13,6 +7,7 @@ local Camera = require(script.Parent.Parent.Camera)
 local Settings = require(script.Parent.Parent.Parent.Settings)
 local Sound = require(script.Parent.Sound)
 local Janitor = require(script.Parent.Parent.Parent.Vendors.Janitor)
+local Types = require(script.Parent.Types)
 
 local container = nil
 
@@ -29,7 +24,7 @@ end
 local Sound2D = {}
 Sound2D.__index = Sound2D
 
-function Sound2D.new(soundID: string | number, properties: Properties?)
+function Sound2D.new(soundID: string | number, properties: Types.SoundProperties?)
 	if not Settings.DirectionalSound.DirectionalAudioEnabled then
 		Log.Warn(`DirectionalAudioEnabled is set to false, returning Sound instead! SoundID: {soundID}`)
 
