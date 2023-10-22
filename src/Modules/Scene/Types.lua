@@ -44,6 +44,8 @@ export type AvailableSymbols = {
 	LinkGet: any,
 	Class: any,
 	Children: any,
+	OnReady: any,
+	Value: any,
 }
 
 export type Prototype_ChunkObject = {

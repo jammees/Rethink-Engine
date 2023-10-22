@@ -20,9 +20,11 @@ return {
 		LinkTag = 0,
 		Class = 0,
 		Children = 0,
+		OnReady = 0,
 
 		Event = 1,
 		LinkGet = 1,
+		Value = 1,
 	},
 
 	SymbolHandlers = symbolHandlers,
