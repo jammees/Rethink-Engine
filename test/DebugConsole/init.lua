@@ -111,7 +111,7 @@ local function RenderExplorer()
 		[Iris.Args.Window.NoClose] = true,
 		[Iris.Args.Window.NoMove] = true,
 		[Iris.Args.Window.NoResize] = true,
-		[Iris.Args.Window.NoCollapse] = true,
+		-- [Iris.Args.Window.NoCollapse] = true,
 	}, {
 		size = explorerWindow,
 		position = Vector2.new(workspace.CurrentCamera.ViewportSize.X - 150 - 300, 0),
@@ -136,7 +136,7 @@ local function RenderExplorer()
 		[Iris.Args.Window.NoClose] = true,
 		[Iris.Args.Window.NoMove] = true,
 		[Iris.Args.Window.NoResize] = true,
-		[Iris.Args.Window.NoCollapse] = true,
+		-- [Iris.Args.Window.NoCollapse] = true,
 	}, {
 		size = odWindow,
 		position = Vector2.new(workspace.CurrentCamera.ViewportSize.X - 300, 0),
