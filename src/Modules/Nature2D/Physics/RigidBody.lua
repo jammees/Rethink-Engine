@@ -423,18 +423,23 @@ function RigidBody:Render()
 	-- Apply rotations and update positions
 	-- Respects the anchor point of the GuiObject
 
+	local Camera = require(script.Parent.Parent.Parent.Camera)
+	local position = Camera.Position
+
 	if self.anchored then
 		local anchorPos = self.anchorPos
 			- CalculateOffset(self.anchorPos, self.frame.AnchorPoint, self.frame.AbsoluteSize)
-		self.frame.Position = UDim2.fromOffset(anchorPos.X, anchorPos.Y)
+			+ position
+
 		if self.canRotate then
 			self:Rotate(self.anchorRotation)
 		end
+		self.frame.Position = UDim2.fromOffset(anchorPos.X, anchorPos.Y)
 	else
 		local center = self.center - CalculateOffset(self.center, self.frame.AnchorPoint, self.frame.AbsoluteSize)
 		local dif: Vector2 = self.vertices[2].pos - self.vertices[1].pos
 
-		self.frame.Position = UDim2.new(0, center.X, 0, center.Y)
+		self.frame.Position = UDim2.new(0, center.X, 0, center.Y) + UDim2.fromOffset(position.X, position.Y)
 		if self.canRotate then
 			self.frame.Rotation = math.deg(math.atan2(dif.Y, dif.X))
 		end
