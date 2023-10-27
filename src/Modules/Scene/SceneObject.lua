@@ -1,9 +1,11 @@
 local HTTPService = game:GetService("HttpService")
 
 local Janitor = require(script.Parent.Parent.Parent.Vendors.Janitor)
+local Log = require(script.Parent.Parent.Parent.Library.Log)
 local t = require(script.Parent.Parent.Parent.Vendors.t)
 local RigidBody = require(script.Parent.Parent.Nature2D.Physics.RigidBody)
 local Template = require(script.Parent.Parent.Template)
+local Value = require(script.Parent.Symbols.Handlers.ValueSymbol.Value)
 
 local SceneObject = {}
 SceneObject.__index = SceneObject
@@ -54,6 +56,16 @@ end
 
 function SceneObject:GetInstance()
 	return self.IsRigidbody and self.Object:GetFrame() or self.Object
+end
+
+function SceneObject:GetValue(valueName: string): Value.Value
+	Log.TAssert(t.string(valueName))
+
+	if t.none(self.Symbols.Values) then
+		return nil
+	end
+
+	return self.Symbols.Values[valueName]
 end
 
 function SceneObject:CleanUp()
