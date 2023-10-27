@@ -31,8 +31,9 @@ local function ProcessMessage(message: string | { string })
 end
 
 local Log = {}
+Log._Data = {}
 
-function Log.TAssert(predicate: boolean, message: string)
+function Log.TAssert(predicate: boolean, message: string?)
 	assert(t.boolean(predicate))
 	assert(t.optional(t.string)(message))
 
@@ -40,35 +41,82 @@ function Log.TAssert(predicate: boolean, message: string)
 		return
 	end
 
-	error(`[TYPEDEF ERROR] [{GetCallerName()}]: ` .. ProcessMessage(message), 2)
+	error(`[TYPE ERROR] [{GetCallerName()}]: ` .. ProcessMessage(message), 2)
 end
 
-function Log.Print(message: string)
+function Log.Print(message: string, atEvery: number?)
 	assert(t.string(message))
+	assert(t.optional(t.number)(atEvery))
+
+	if not Log._AtEvery(atEvery) then
+		return
+	end
 
 	print(`[{GetCallerName()}]: ` .. ProcessMessage(message))
 end
 
-function Log.Debug(message: string)
+function Log.Debug(message: string, atEvery: number?)
 	assert(t.string(message))
+	assert(t.optional(t.number)(atEvery))
 
 	if not isStudio then
+		return
+	end
+
+	if not Log._AtEvery(atEvery) then
 		return
 	end
 
 	print(`[DEBUG] [{GetCallerName()}]: ` .. ProcessMessage(message))
 end
 
-function Log.Warn(message: string)
+function Log.Warn(message: string, atEvery: number?)
 	assert(t.string(message))
+	assert(t.optional(t.number)(atEvery))
+
+	if not Log._AtEvery(atEvery) then
+		return
+	end
 
 	warn(`[WARN] [{GetCallerName()}]: ` .. ProcessMessage(message))
 end
 
-function Log.Error(message: string)
+function Log.Error(message: string, atEvery: number?)
 	assert(t.string(message))
+	assert(t.optional(t.number)(atEvery))
+
+	if not Log._AtEvery(atEvery) then
+		return
+	end
 
 	error(`[ERROR] [{GetCallerName()}]: ` .. ProcessMessage(message), 2)
+end
+
+function Log._AtEvery(atEvery): boolean
+	if not atEvery then
+		return true
+	end
+
+	local stacktrace = debug.traceback()
+
+	if not Log._Data[stacktrace] or Log._Data[stacktrace].AtEvery ~= atEvery then
+		Log._Data[stacktrace] = {
+			AtEvery = atEvery,
+			Count = 0,
+		}
+	end
+
+	local logData = Log._Data[stacktrace] :: { AtEvery: number, Count: number }
+
+	logData.Count += 1
+
+	if logData.Count < logData.AtEvery then
+		return false
+	end
+
+	logData.Count = 0
+
+	return true
 end
 
 return Log
