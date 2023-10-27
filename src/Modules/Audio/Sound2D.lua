@@ -182,28 +182,28 @@ function Sound2D:_UpdateOrigins(newOrigin: Vector2)
 end
 
 function Sound2D:Stop()
-	for _, soundData: SoundData in self.TrackedObjects do
+	for _, soundData: SoundData in self._TrackedObjects do
 		soundData.Sound:Stop()
-		self.Instances:Return(soundData.Sound)
+		self._Instances:Return(soundData.Sound)
 		soundData.Container:Destroy()
-		self.TrackedObjects[soundData.Sound] = nil
+		self._TrackedObjects[soundData.Sound] = nil
 	end
 end
 
 function Sound2D:Destroy()
 	self:Stop()
 
-	for _, object in self.Instances.Objects do
+	for _, object in self._Instances.Objects do
 		local sound: Sound = object.Object
 
-		self.Instances:Retire(sound)
+		self._Instances:Retire(sound)
 		sound:Destroy()
 	end
 
 	self._Janitor:Destroy()
 
-	setmetatable(self.Instances, nil)
-	table.clear(self.Instances)
+	setmetatable(self._Instances, nil)
+	table.clear(self._Instances)
 	setmetatable(self, nil)
 	table.clear(self)
 end
