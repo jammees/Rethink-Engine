@@ -125,8 +125,10 @@ function Camera.Render(deltaTime: number?)
 	for _, objectData in Camera.Objects do
 		local handler = Camera.GetHandler(objectData)
 
-		-- Pass the data into the handler
-		handler(objectData, delta, deltaTime)
+		if handler == Camera.Handlers.NonBody then
+			-- Pass the data into the handler
+			handler(objectData, delta, deltaTime)
+		end
 	end
 
 	-- Set the prePosition to the new position to make .Render
