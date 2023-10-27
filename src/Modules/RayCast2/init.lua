@@ -103,6 +103,7 @@
 
 local drawLine = require(script.Ray)
 local Convergence = require(script.Convergence)
+local Template = require(script.Parent.Template)
 
 -- [Module]
 
@@ -140,16 +141,21 @@ end
 
 -- [function] RayCast2:Cast()
 
-function RayCast2:Cast(parent: Instance, list: table)
-	assert(parent:IsA("ScreenGui"), "argument must be a ScreenGui instance")
-
+function RayCast2:Cast(list: table)
 	if self._ray then
 		self._ray:Destroy()
 		self._ray = nil
 	end
 
 	if self.Visible then
-		local ray = drawLine(self._origin.x, self._origin.y, self._direction.x, self._direction.y, parent, 1)
+		local ray = drawLine(
+			self._origin.x,
+			self._origin.y,
+			self._direction.x,
+			self._direction.y,
+			Template.FetchGlobal("__Rethink_Ui").RenderFrame,
+			1
+		)
 		self._ray = ray
 	end
 
