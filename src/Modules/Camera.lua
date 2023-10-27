@@ -122,6 +122,7 @@ function Camera.Render(deltaTime: number?)
 	local delta = Camera.Position - prePosition
 
 	-- Loop trough objects
+
 	for _, objectData in Camera.Objects do
 		local handler = Camera.GetHandler(objectData)
 

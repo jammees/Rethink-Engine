@@ -50,14 +50,13 @@ function Sound2D.new(soundID: string | number, properties: Types.SoundProperties
 	self.Volume = properties.Volume or 1
 	self.SoundID = tostring(soundID)
 
-	self.TrackedObjects = {}
-
 	self._Instances = ObjectPoolClass.new("Sound", self.Amount, true)
+	self._TrackedObjects = {}
 	self._Janitor = Janitor.new()
 
 	self._Janitor:Add(
 		Camera.Rendered:Connect(function()
-			for _, soundData: SoundData in self.TrackedObjects do
+			for _, soundData: SoundData in self._TrackedObjects do
 				self:_UpdateEmitter(soundData)
 			end
 		end),
@@ -98,13 +97,13 @@ function Sound2D:Play(origin: Vector2)
 	soundContainer.Name = self.SoundID .. " Emitter" -- added the word Emitter at the end so it sounds way more cooler and technical
 	soundContainer.Parent = container
 
-	local sound: Sound = self.Instances:Get()
+	local sound: Sound = self._Instances:Get()
 	sound.SoundId = self.SoundID
 	sound.Volume = self.Volume
 	sound.Looped = self.Loop
 	sound.Parent = soundContainer
 
-	self.TrackedObjects[sound] = {
+	self._TrackedObjects[sound] = {
 		Sound = sound,
 		Container = soundContainer,
 		Origin = origin,
@@ -112,13 +111,13 @@ function Sound2D:Play(origin: Vector2)
 
 	if not self.Loop then
 		sound.Ended:Connect(function()
-			self.TrackedObjects[sound] = nil
-			self.Instances:Return(sound)
+			self._TrackedObjects[sound] = nil
+			self._Instances:Return(sound)
 			soundContainer:Destroy()
 		end)
 	end
 
-	self:_UpdateEmitter(self.TrackedObjects[sound])
+	self:_UpdateEmitter(self._TrackedObjects[sound])
 
 	sound:Play()
 end
