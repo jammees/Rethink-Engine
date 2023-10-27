@@ -24,7 +24,7 @@ function Sound.new(soundID: string | number, properties: Types.SoundProperties?)
 	self.Volume = properties.Volume or 1
 	self.SoundID = tostring(soundID)
 
-	self.Instances = ObjectPoolClass.new("Sound", self.Amount)
+	self.Instances = ObjectPoolClass.new("Sound", self.Amount, true)
 
 	return self
 end
