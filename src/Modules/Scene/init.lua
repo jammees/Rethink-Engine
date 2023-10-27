@@ -18,7 +18,6 @@ type Tag = { [number]: string } | string?
 type SceneConfig = { Name: string }
 
 local CollectionService = game:GetService("CollectionService")
-local HTTPService = game:GetService("HttpService")
 
 local RigidBody = require(script.Parent.Nature2D.Physics.RigidBody)
 local Template = require(script.Parent.Template)
@@ -26,7 +25,6 @@ local DebugStrings = require(script.Parent.Parent.Strings)
 local Signal = require(script.Parent.Parent.Vendors.goodsignal)
 local Compiler = require(script.Compiler)
 local Symbols = require(script.Symbols)
-local Janitor = require(script.Parent.Parent.Vendors.Janitor)
 local t = require(script.Parent.Parent.Vendors.t)
 local Log = require(script.Parent.Parent.Library.Log)
 local SceneObject = require(script.SceneObject)
