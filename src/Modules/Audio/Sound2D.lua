@@ -8,6 +8,8 @@ local Settings = require(script.Parent.Parent.Parent.Settings)
 local Sound = require(script.Parent.Sound)
 local Janitor = require(script.Parent.Parent.Parent.Vendors.Janitor)
 local Types = require(script.Parent.Types)
+local Scene = require(script.Parent.Parent.Scene)
+local SceneTypes = require(script.Parent.Parent.Scene.Types)
 
 local container = nil
 
@@ -52,6 +54,7 @@ function Sound2D.new(soundID: string | number, properties: Types.SoundProperties
 
 	self._Instances = ObjectPoolClass.new("Sound", self.Amount, true)
 	self._TrackedObjects = {}
+	self._Emitter = nil
 	self._Janitor = Janitor.new()
 
 	self._Janitor:Add(
@@ -144,6 +147,38 @@ function Sound2D:Play(origin: Vector2)
 	self:_UpdateEmitter(self._TrackedObjects[sound])
 
 	sound:Play()
+end
+
+function Sound2D:SetEmitter(object: GuiBase2d | SceneTypes.Rigidbody | nil)
+	if object == nil then
+		self._Janitor:Remove("EmitterSignal")
+		self._Emitter = nil
+
+		return
+	end
+
+	self._Emitter = Scene.GetSceneObjectFrom(object)
+
+	if self._Janitor:Get("EmitterSignal") then
+		self._Janitor:Remove("EmitterSignal")
+	end
+
+	self:_UpdateOrigins(object.AbsolutePosition)
+
+	self._Janitor:Add(
+		self._Emitter.Object:GetPropertyChangedSignal("Position"):Connect(function()
+			self:_UpdateOrigins(object.AbsolutePosition)
+		end),
+		"Disconnect",
+		"EmitterSignal"
+	)
+end
+
+function Sound2D:_UpdateOrigins(newOrigin: Vector2)
+	for _, soundData: SoundData in self._TrackedObjects do
+		soundData.Origin = newOrigin
+		self:_UpdateEmitter(soundData)
+	end
 end
 
 function Sound2D:Stop()
